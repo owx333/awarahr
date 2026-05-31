@@ -162,47 +162,69 @@ tr:hover td{background:rgba(201,168,76,.025)}
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact;
   }
-  /* Hide everything */
   body > *{ visibility:hidden !important; }
 
-  /* PAYSLIP */
+  /* ── PAYSLIP ── */
   body.ps-open .psov{
     visibility:visible !important;
     position:fixed !important; top:0 !important; left:0 !important;
-    width:100% !important; height:auto !important;
-    background:white !important; padding:0 !important;
-    z-index:9999 !important; overflow:visible !important;
-    display:block !important;
+    width:100% !important; height:100% !important;
+    background:white !important; padding:0 !important; margin:0 !important;
+    display:block !important; z-index:9999 !important; overflow:hidden !important;
   }
   body.ps-open .psov *{ visibility:visible !important; }
   body.ps-open .psac{ display:none !important; visibility:hidden !important; }
+
+  /* psw = white payslip box, fit full landscape page */
   body.ps-open .psw{
     width:100% !important; max-width:none !important;
-    margin:0 !important; border:none !important; box-shadow:none !important;
-    font-size:10pt !important;
+    margin:0 !important; padding:0 !important;
+    border:none !important; box-shadow:none !important;
+    font-family:Arial,Helvetica,sans-serif !important;
   }
-  body.ps-open .psi{ padding:6mm !important; }
+  body.ps-open .psi{
+    padding:7mm 10mm 5mm 10mm !important;
+  }
 
-  /* HQ FORMAT */
+  /* Compact font sizes for landscape fit */
+  body.ps-open .psco{ font-size:13pt !important; }
+  body.ps-open .pscp{ font-size:8pt !important; padding:1px 5px !important; }
+  body.ps-open .pseil td{ font-size:9pt !important; padding:1.5px 3px !important; }
+  body.ps-open .pseil .lb{ font-size:9pt !important; }
+  body.ps-open .psmn th{ font-size:9pt !important; padding:3px 5px !important; }
+  body.ps-open .psmn td{ font-size:9.5pt !important; padding:2px 5px !important; }
+  body.ps-open .psmn .ntr td{ font-size:11pt !important; padding:4px 5px !important; }
+  body.ps-open .pssec{ font-size:8.5pt !important; padding:2px !important; }
+  body.ps-open .psgn{ font-size:9pt !important; padding:4px 6px !important; margin-top:3px !important; }
+  body.ps-open .pshd{ margin-bottom:4px !important; }
+
+  /* ── HQ FORMAT ── */
   body.hq-open .hqov{
     visibility:visible !important;
     position:fixed !important; top:0 !important; left:0 !important;
-    width:100% !important; height:auto !important;
-    background:white !important; padding:0 !important;
-    z-index:9999 !important; overflow:visible !important;
-    display:block !important;
+    width:100% !important; height:100% !important;
+    background:white !important; padding:0 !important; margin:0 !important;
+    display:block !important; z-index:9999 !important; overflow:hidden !important;
   }
   body.hq-open .hqov *{ visibility:visible !important; }
   body.hq-open .hqac{ display:none !important; visibility:hidden !important; }
   body.hq-open .hqw{
     width:100% !important; max-width:none !important;
     margin:0 !important; border:none !important;
-    font-size:10pt !important;
   }
-  body.hq-open .hqi{ padding:6mm !important; }
+  body.hq-open .hqi{ padding:7mm 10mm 5mm 10mm !important; }
+  body.hq-open .hqco{ font-size:13pt !important; margin-bottom:5px !important; }
+  body.hq-open .hqinfo td{ font-size:9pt !important; padding:1.5px 3px !important; }
+  body.hq-open .hqmain th,
+  body.hq-open .hqmain td{ font-size:9.5pt !important; padding:2.5px 5px !important; }
+  body.hq-open .hqsec th,
+  body.hq-open .hqsec td{ font-size:9pt !important; padding:2.5px 5px !important; }
+  body.hq-open .hqleave th,
+  body.hq-open .hqleave td{ font-size:9pt !important; padding:2px 5px !important; }
+  body.hq-open .hqsgn{ font-size:9pt !important; padding-top:4px !important; }
 
-  /* margin:0 removes browser's header/footer (URL, title, date/time) */
-  @page{ size:A4 portrait; margin:0; }
+  /* Landscape A4, margin:0 removes browser title/date/footer */
+  @page{ size:A4 landscape; margin:0; }
 }
 </style>
 </head>
