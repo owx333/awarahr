@@ -1,1975 +1,769 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>AWARA — CS Management System (Mockup)</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>冠尊自动发布系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary: #0E4F44;
-    --primary-light: #1A6B5C;
-    --primary-dark: #0A3A32;
-    --primary-glow: rgba(14, 79, 68, 0.08);
-    --accent: #C9A56C;
-    --accent-light: #E0BD89;
-    --accent-dark: #A8854E;
-    --cream: #FAF7F0;
-    --cream-2: #F4EFE3;
-    --cream-3: #ECE5D2;
-    --ink: #1A1A1A;
-    --ink-2: #4A4A4A;
-    --ink-3: #8A8A8A;
-    --border: rgba(14, 79, 68, 0.12);
-    --border-2: rgba(14, 79, 68, 0.06);
-    --success: #2D7A50;
-    --success-bg: #E3F0E8;
-    --warning: #D89B36;
-    --warning-bg: #FBF1DC;
-    --danger: #B8423A;
-    --danger-bg: #F8E3E1;
-    --info: #3B6F9C;
-    --info-bg: #E1ECF6;
-    --shadow-sm: 0 2px 8px rgba(14, 79, 68, 0.06);
-    --shadow-md: 0 4px 20px rgba(14, 79, 68, 0.08);
-    --shadow-lg: 0 12px 40px rgba(14, 79, 68, 0.12);
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --gold-dim: #C9A84C33;
+    --bg: #080C14;
+    --bg2: #0D1220;
+    --bg3: #111827;
+    --text: #E8DCC8;
+    --text-dim: #888;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --fb: #1877F2;
+    --ig: #E1306C;
+    --tg: #29B6D8;
+    --tt: #EE1D52;
+    --yt: #FF0000;
   }
-  
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  
-  html, body { overscroll-behavior: none; }
-  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background: var(--cream);
-    color: var(--ink);
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif SC', 'STSong', serif;
     min-height: 100vh;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    font-size: 15px;
   }
-  
-  .serif { font-family: 'Fraunces', serif; font-feature-settings: 'ss01' on; }
-  
-  /* ========== PERSONA SWITCHER ========== */
-  .persona-bar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--primary-dark);
-    color: var(--cream);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    font-size: 12px;
-    letter-spacing: 0.02em;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-  .persona-bar::-webkit-scrollbar { display: none; }
-  .persona-bar .lbl {
-    color: var(--accent-light);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 10px;
-    flex-shrink: 0;
-  }
-  .persona-bar button {
-    background: rgba(255,255,255,0.08);
-    color: var(--cream);
-    border: 1px solid rgba(255,255,255,0.12);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: all 0.2s;
-  }
-  .persona-bar button.active {
-    background: var(--accent);
-    color: var(--primary-dark);
-    border-color: var(--accent);
-    font-weight: 700;
-  }
-  
-  /* ========== APP CONTAINER ========== */
-  .app {
-    max-width: 480px;
-    margin: 0 auto;
-    background: var(--cream);
-    min-height: calc(100vh - 40px);
-    position: relative;
-    box-shadow: 0 0 60px rgba(14, 79, 68, 0.08);
-  }
-  
-  /* ========== SCREENS ========== */
-  .screen { display: none; padding-bottom: 90px; }
-  .screen.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  
-  /* ========== HEADER ========== */
-  .top-bar {
-    background: var(--cream);
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid var(--border-2);
-    position: sticky;
-    top: 40px;
-    z-index: 50;
-  }
-  .top-bar-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-mark {
-    width: 36px;
-    height: 36px;
-    background: var(--primary);
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    color: var(--accent);
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: 18px;
-    letter-spacing: -0.02em;
-    position: relative;
-    overflow: hidden;
-  }
-  .logo-mark::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, transparent 50%, rgba(201, 165, 108, 0.15) 100%);
-  }
-  .logo-text {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 19px;
-    letter-spacing: -0.02em;
-    color: var(--primary);
-  }
-  .logo-text .sdn {
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    color: var(--ink-3);
-    font-weight: 500;
-    font-family: 'Plus Jakarta Sans';
-    text-transform: uppercase;
-    display: block;
-    margin-top: -2px;
-  }
-  .avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--primary);
-    color: var(--accent);
-    display: grid;
-    place-items: center;
-    font-weight: 700;
-    font-size: 13px;
-    border: 2px solid var(--accent);
-  }
-  .greeting {
-    margin-top: 14px;
-  }
-  .greeting .hi {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--ink-3);
-    font-weight: 600;
-  }
-  .greeting .name {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--primary);
-    margin-top: 2px;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
-  .greeting .name em { font-style: italic; color: var(--accent-dark); }
-  .role-tag {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 10px;
-    padding: 3px 10px;
-    background: var(--primary-glow);
-    color: var(--primary);
-    border-radius: 20px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  
-  /* ========== LOGIN SCREEN ========== */
-  #screen-login {
-    display: none;
-    min-height: 100vh;
-    background: linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
-    color: var(--cream);
-    padding: 40px 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  #screen-login.active { display: flex; flex-direction: column; }
-  #screen-login::before {
-    content: '';
-    position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-    opacity: 0.15;
-  }
-  #screen-login::after {
-    content: '';
-    position: absolute;
-    bottom: -150px;
-    left: -150px;
-    width: 400px;
-    height: 400px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
-    opacity: 0.1;
-  }
-  .login-header {
-    margin-top: 40px;
-    text-align: center;
-    position: relative;
-  }
-  .login-logo {
-    width: 70px;
-    height: 70px;
-    background: var(--accent);
-    color: var(--primary-dark);
-    border-radius: 18px;
-    display: grid;
-    place-items: center;
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: 32px;
-    margin: 0 auto 20px;
-    box-shadow: 0 12px 40px rgba(201, 165, 108, 0.3);
-    position: relative;
-  }
-  .login-title {
-    font-family: 'Fraunces', serif;
-    font-size: 38px;
-    font-weight: 300;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-  .login-title em { font-style: italic; color: var(--accent-light); }
-  .login-sub {
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent-light);
-    margin-top: 12px;
-    font-weight: 600;
-  }
-  .login-form {
-    margin-top: 50px;
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 24px;
-    padding: 28px 24px;
-    position: relative;
-  }
-  .input-group { margin-bottom: 18px; }
-  .input-group label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent-light);
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
-  .input-group input {
-    width: 100%;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 14px 16px;
-    color: var(--cream);
-    font-family: inherit;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .input-group input::placeholder { color: rgba(250, 247, 240, 0.4); }
-  .input-group input:focus { border-color: var(--accent); }
-  .login-btn {
-    width: 100%;
-    background: var(--accent);
-    color: var(--primary-dark);
-    border: none;
-    padding: 16px;
-    border-radius: 12px;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: transform 0.15s, box-shadow 0.15s;
-  }
-  .login-btn:active { transform: scale(0.98); }
-  .login-footer {
-    margin-top: auto;
-    text-align: center;
-    font-size: 11px;
-    color: var(--accent-light);
-    letter-spacing: 0.1em;
-    opacity: 0.7;
-  }
-  
-  /* ========== KPI CARDS ========== */
-  .month-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--cream-2);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    color: var(--ink-2);
-    font-weight: 600;
-    margin: 18px 20px 0;
-    border: 1px solid var(--border-2);
-  }
-  .month-pill .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
-  
-  .kpi-grid {
-    padding: 16px 20px 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .kpi-card {
-    background: var(--cream-2);
-    border-radius: 18px;
-    padding: 18px;
-    position: relative;
-    border: 1px solid var(--border-2);
-    overflow: hidden;
-  }
-  .kpi-card.featured {
-    grid-column: span 2;
-    background: var(--primary);
-    color: var(--cream);
-    border: none;
-  }
-  .kpi-card.featured::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-    opacity: 0.2;
-    pointer-events: none;
-  }
-  .kpi-card .label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--ink-3);
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .kpi-card.featured .label { color: var(--accent-light); }
-  .kpi-card .value {
-    font-family: 'Fraunces', serif;
-    font-size: 32px;
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-  .kpi-card.featured .value { color: var(--cream); font-size: 38px; }
-  .kpi-card .sub {
-    font-size: 12px;
-    color: var(--ink-3);
-    margin-top: 4px;
-    font-weight: 500;
-  }
-  .kpi-card.featured .sub { color: var(--accent-light); }
-  .kpi-card .currency {
-    font-family: 'Plus Jakarta Sans';
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent-dark);
-    margin-right: 4px;
-    vertical-align: 8px;
-  }
-  .kpi-card.featured .currency { color: var(--accent-light); }
-  
-  /* ========== SECTION HEADERS ========== */
-  .section-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding: 28px 20px 12px;
-  }
-  .section-title {
-    font-family: 'Fraunces', serif;
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--primary);
-    letter-spacing: -0.01em;
-  }
-  .section-action {
-    font-size: 12px;
-    color: var(--accent-dark);
-    font-weight: 600;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-  }
-  
-  /* ========== CASE CARDS ========== */
-  .case-list { padding: 0 20px; }
-  .case-card {
-    background: var(--cream-2);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-2);
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
-  .case-card:active { transform: scale(0.99); }
-  .case-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .case-customer {
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--ink);
-    line-height: 1.3;
-    flex: 1;
-  }
-  .case-package {
-    font-size: 12px;
-    color: var(--ink-2);
-    margin-top: 2px;
-    font-weight: 500;
-  }
-  .case-status {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-  .case-status.pending { background: var(--warning-bg); color: var(--warning); }
-  .case-status.submitted { background: var(--info-bg); color: var(--info); }
-  .case-status.approved { background: var(--success-bg); color: var(--success); }
-  .case-status.disbursed { background: var(--primary); color: var(--accent); }
-  .case-status.rejected { background: var(--danger-bg); color: var(--danger); }
-  .case-meta {
-    display: flex;
-    gap: 12px;
-    font-size: 11px;
-    color: var(--ink-3);
-    margin-top: 8px;
-  }
-  .case-meta .badge {
-    background: var(--cream-3);
-    padding: 2px 8px;
-    border-radius: 8px;
-    font-weight: 600;
-  }
-  .case-meta .badge.special { background: rgba(201, 165, 108, 0.2); color: var(--accent-dark); }
-  .case-meta .badge.resubmit { background: rgba(59, 111, 156, 0.15); color: var(--info); }
-  
-  /* ========== BOTTOM NAV ========== */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    background: rgba(250, 247, 240, 0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
-    padding: 8px 12px 24px;
-    display: flex;
-    justify-content: space-around;
-    z-index: 90;
-  }
-  .nav-item {
-    flex: 1;
-    background: none;
-    border: none;
-    color: var(--ink-3);
-    padding: 6px 4px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    transition: color 0.2s;
-  }
-  .nav-item.active { color: var(--primary); }
-  .nav-item.active .icon { background: var(--primary); color: var(--accent); }
-  .nav-item .icon {
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    background: transparent;
-    display: grid;
-    place-items: center;
-    transition: all 0.2s;
-  }
-  .nav-item svg { width: 16px; height: 16px; }
-  
-  /* ========== FAB - Add Case ========== */
-  .fab {
-    position: fixed;
-    bottom: 86px;
-    left: 50%;
-    transform: translateX(calc(-50% + 0px));
-    margin-left: 100px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--primary-dark);
-    border: none;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    box-shadow: 0 8px 24px rgba(201, 165, 108, 0.4);
-    z-index: 95;
-    transition: transform 0.15s;
-  }
-  .fab:active { transform: translateX(calc(-50% + 100px)) scale(0.95); }
-  .fab svg { width: 24px; height: 24px; }
-  
-  /* ========== ADD CASE FORM ========== */
-  .form-page { padding: 0 20px; }
-  .form-group { margin-bottom: 18px; }
-  .form-group label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--ink-3);
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    background: var(--cream-2);
-    border: 1px solid var(--border-2);
-    border-radius: 12px;
-    padding: 14px 16px;
-    color: var(--ink);
-    font-family: inherit;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--primary);
-    background: var(--cream);
-  }
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .case-type-pills {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-  }
-  .case-type-pill {
-    background: var(--cream-2);
-    border: 1px solid var(--border-2);
-    padding: 12px;
-    border-radius: 12px;
-    text-align: center;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-  .case-type-pill.active {
-    background: var(--primary);
-    color: var(--accent);
-    border-color: var(--primary);
-  }
-  .submit-btn {
-    width: 100%;
-    background: var(--primary);
-    color: var(--accent);
-    border: none;
-    padding: 16px;
-    border-radius: 12px;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 12px;
-    box-shadow: var(--shadow-md);
-    transition: transform 0.15s;
-  }
-  .submit-btn:active { transform: scale(0.98); }
-  
-  /* ========== MONTHLY REPORT ========== */
-  .stats-list {
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .stat-row {
-    background: var(--cream-2);
-    border-radius: 14px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid var(--border-2);
-  }
-  .stat-row .stat-label {
-    font-size: 13px;
-    color: var(--ink-2);
-    font-weight: 600;
-  }
-  .stat-row .stat-value {
-    font-family: 'Fraunces', serif;
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--primary);
-    line-height: 1;
-  }
-  .stat-row .stat-value .unit {
-    font-family: 'Plus Jakarta Sans';
-    font-size: 11px;
-    color: var(--ink-3);
-    margin-left: 4px;
-    font-weight: 600;
-  }
-  .stat-row.highlight {
-    background: var(--primary);
-    color: var(--cream);
-    border: none;
-  }
-  .stat-row.highlight .stat-label { color: var(--accent-light); }
-  .stat-row.highlight .stat-value { color: var(--accent); }
-  .stat-row.highlight .stat-value .unit { color: var(--accent-light); }
-  .stat-row.danger { background: var(--danger-bg); }
-  .stat-row.danger .stat-value { color: var(--danger); }
-  
-  .stat-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 8px 4px;
-    opacity: 0.5;
-  }
-  
-  /* ========== TEAM VIEW ========== */
-  .team-card {
-    background: var(--cream-2);
-    border-radius: 18px;
-    padding: 18px;
-    margin: 0 20px 12px;
-    border: 1px solid var(--border-2);
-  }
-  .team-card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border-2);
-  }
-  .team-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: var(--primary);
-    color: var(--accent);
-    display: grid;
-    place-items: center;
-    font-weight: 700;
-    font-size: 14px;
-    font-family: 'Fraunces', serif;
-  }
-  .team-name {
-    font-family: 'Fraunces', serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--primary);
-  }
-  .team-role {
-    font-size: 10px;
-    color: var(--ink-3);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    margin-top: 2px;
-  }
-  .team-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-  }
-  .team-stat .lbl {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--ink-3);
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .team-stat .val {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    color: var(--primary);
-    font-size: 18px;
-    line-height: 1;
-  }
-  .team-stat .val .unit { font-size: 10px; color: var(--ink-3); font-family: 'Plus Jakarta Sans'; font-weight: 600; margin-left: 2px; }
-  
-  /* ========== ADMIN ALL TEAMS ========== */
-  .ranking-card {
-    background: var(--cream-2);
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin: 0 20px 8px;
-    border: 1px solid var(--border-2);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .ranking-card.gold { 
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    color: var(--cream);
-    border: none;
-  }
-  .rank-num {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--accent-dark);
-    line-height: 1;
-    width: 36px;
-    flex-shrink: 0;
-    font-style: italic;
-  }
-  .ranking-card.gold .rank-num { color: var(--accent); }
-  .rank-info { flex: 1; }
-  .rank-name {
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--ink);
-  }
-  .ranking-card.gold .rank-name { color: var(--cream); }
-  .rank-sub {
-    font-size: 11px;
-    color: var(--ink-3);
-    margin-top: 2px;
-  }
-  .ranking-card.gold .rank-sub { color: var(--accent-light); }
-  .rank-stats {
-    text-align: right;
-    flex-shrink: 0;
-  }
-  .rank-stats .big {
-    font-family: 'Fraunces', serif;
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--primary);
-    line-height: 1;
-  }
-  .ranking-card.gold .rank-stats .big { color: var(--accent); }
-  .rank-stats .small {
-    font-size: 10px;
-    color: var(--ink-3);
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-  }
-  .ranking-card.gold .rank-stats .small { color: var(--accent-light); }
-  
-  /* NEW: CS Ranking - Payslip primary */
-  .rank-stats .pri {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 500;
-    color: var(--primary);
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-  .ranking-card.gold .rank-stats .pri { color: var(--accent); }
-  .rank-stats .pri-label {
-    font-size: 8.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--ink-3);
-    font-weight: 700;
-    margin-top: 1px;
-  }
-  .ranking-card.gold .rank-stats .pri-label { color: var(--accent-light); }
-  .rank-stats .sec {
-    font-size: 10.5px;
-    color: var(--ink-2);
-    margin-top: 5px;
-    font-weight: 600;
-  }
-  .rank-stats .sec .dim {
-    color: var(--ink-3);
-    font-weight: 500;
-  }
-  .ranking-card.gold .rank-stats .sec { color: var(--accent-light); }
-  .ranking-card.gold .rank-stats .sec .dim { color: rgba(224, 189, 137, 0.7); }
-  
-  /* ========== AWARDS ========== */
-  .awards-grid {
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-  }
-  .award-card {
-    background: linear-gradient(160deg, #FFF8E8 0%, #F4E7C3 100%);
-    border-radius: 14px;
-    padding: 14px 8px 12px;
-    text-align: center;
-    border: 1px solid var(--accent-light);
-    position: relative;
-    overflow: hidden;
-  }
-  .award-card::before {
-    content: '';
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 80px;
-    height: 80px;
-    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-    opacity: 0.2;
-  }
-  .award-card .trophy {
-    font-size: 22px;
-    margin-bottom: 4px;
-    line-height: 1;
-    position: relative;
-  }
-  .award-card .category {
-    font-size: 8.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--accent-dark);
-    margin-bottom: 8px;
-    line-height: 1.2;
-    position: relative;
-  }
-  .award-card .winner {
-    font-family: 'Fraunces', serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--primary);
-    line-height: 1.1;
-    position: relative;
-  }
-  .award-card .winner-role {
-    font-size: 9px;
-    color: var(--ink-3);
-    margin-top: 1px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    position: relative;
-  }
-  .award-card .stat {
-    margin-top: 8px;
-    font-family: 'Fraunces', serif;
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--accent-dark);
-    line-height: 1;
-    position: relative;
-  }
-  .award-card .stat .unit {
-    font-family: 'Plus Jakarta Sans';
-    font-size: 9px;
-    color: var(--ink-3);
-    margin-left: 1px;
-    font-weight: 600;
-  }
-  
-  /* ========== LOST CARD (red themed) ========== */
-  .kpi-card.lost {
-    background: linear-gradient(160deg, var(--danger-bg) 0%, #F5D2CF 100%);
-    border-color: rgba(184, 66, 58, 0.2);
-  }
-  .kpi-card.lost .value { color: var(--danger); }
-  .kpi-card.lost .sub { color: var(--danger); opacity: 0.8; }
-  .kpi-card.lost .currency { color: var(--danger); }
-  
-  /* ========== TAB SWITCHER ========== */
-  .tabs {
-    display: flex;
-    gap: 0;
-    padding: 0 20px;
-    margin: 16px 0 8px;
-    border-bottom: 1px solid var(--border-2);
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position:  400px 0; }
+  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+  /* ── HEADER ── */
+  #header {
+    background: linear-gradient(135deg, var(--bg2), var(--bg3));
+    border-bottom: 1px solid #C9A84C1A;
+    padding: 18px 24px;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-inner {
+    max-width: 600px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 10px; }
+  .logo-box {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif; font-weight: 700;
+    color: var(--bg); font-size: 15px;
+  }
+  .logo-title { font-size: 14px; font-weight: 700; color: var(--gold-light); }
+  .logo-sub { font-size: 10px; color: #C9A84C55; letter-spacing: 2px; }
+
+  /* Steps */
+  .steps { display: flex; align-items: center; gap: 5px; }
+  .step-dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; transition: all .3s;
+    border: 1px solid #ffffff11; background: #ffffff0D; color: #444;
+  }
+  .step-dot.active {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-color: var(--gold); color: var(--bg);
+  }
+  .step-dot.done { border-color: var(--green); color: var(--green); background: #2ecc7115; }
+  .step-line { width: 14px; height: 1px; background: #ffffff0D; transition: background .3s; }
+  .step-line.done { background: #2ecc7133; }
+
+  /* ── BODY ── */
+  #body { max-width: 600px; margin: 0 auto; padding: 32px 20px 80px; }
+  .panel { animation: fadeUp .4s ease; }
+
+  /* ── INPUTS ── */
+  .label {
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 2px; display: block; margin-bottom: 8px;
+  }
+  input, textarea {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--gold-dim); border-radius: 8px;
+    color: var(--text); padding: 11px 14px; font-size: 13px;
+    font-family: inherit; outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, textarea:focus { border-color: #C9A84C88; }
+  textarea { resize: vertical; line-height: 1.7; }
+  .field { margin-bottom: 18px; }
+  .hint { font-size: 11px; color: #444; margin-top: 4px; }
+
+  /* ── BUTTONS ── */
+  .btn-gold {
+    width: 100%; padding: 14px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none; color: var(--bg); font-size: 14px;
+    font-weight: 700; cursor: pointer; letter-spacing: 1px;
+    font-family: inherit; transition: opacity .2s;
+  }
+  .btn-gold:hover { opacity: .9; }
+  .btn-gold:disabled {
+    background: var(--gold-dim); color: #C9A84C44; cursor: not-allowed;
+  }
+  .btn-ghost {
+    background: transparent; border: none;
+    color: var(--text-dim); font-size: 13px; cursor: pointer;
+    padding: 8px 0; font-family: inherit; margin-top: 14px;
+  }
+  .btn-ghost:hover { color: var(--gold); }
+
+  /* ── PLATFORM CHIPS ── */
+  .chip-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 7px 14px; border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-family: inherit; transition: all .2s;
+    border: 1px solid #ffffff11; background: transparent; color: #555;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .chip.active-fb  { border-color: var(--fb);  background: #1877F211; color: var(--fb);  }
+  .chip.active-ig  { border-color: var(--ig);  background: #E1306C11; color: var(--ig);  }
+  .chip.active-tg  { border-color: var(--tg);  background: #29B6D811; color: var(--tg);  }
+  .chip.active-tt  { border-color: var(--tt);  background: #EE1D5211; color: var(--tt);  }
+  .chip.active-yt  { border-color: var(--yt);  background: #FF000011; color: var(--yt);  }
+  .chip .manual-tag { font-size: 10px; opacity: .6; }
+
+  /* ── SUGGESTIONS ── */
+  .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .sug-chip {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px;
+    background: transparent; border: 1px solid var(--gold-dim);
+    color: #C9A84C77; cursor: pointer; font-family: inherit;
+    transition: all .2s;
+  }
+  .sug-chip:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── GUIDE BOX ── */
+  .guide-box {
+    background: #C9A84C0D; border: 1px solid var(--gold-dim);
+    border-radius: 10px; padding: 16px; margin-bottom: 24px; font-size: 12px;
+  }
+  .guide-box .gtitle { color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+  .guide-row { display: flex; gap: 8px; margin-bottom: 6px; }
+  .guide-key { color: var(--gold); min-width: 130px; }
+  .guide-val { color: var(--text-dim); }
+
+  /* ── TABS ── */
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
   .tab {
-    flex: 1;
-    background: none;
-    border: none;
-    padding: 10px 0 12px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-3);
-    cursor: pointer;
-    position: relative;
-    text-align: center;
+    padding: 7px 14px; border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-family: inherit; transition: all .2s;
+    border: 1px solid #ffffff11; background: transparent; color: #555;
+    display: flex; align-items: center; gap: 7px;
   }
-  .tab.active { color: var(--primary); }
-  .tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 25%;
-    right: 25%;
-    height: 2px;
-    background: var(--accent);
-    border-radius: 2px;
+  .tab.active-fb  { border-color: var(--fb);  background: #1877F211; color: var(--fb);  }
+  .tab.active-ig  { border-color: var(--ig);  background: #E1306C11; color: var(--ig);  }
+  .tab.active-tg  { border-color: var(--tg);  background: #29B6D811; color: var(--tg);  }
+  .tab.active-tt  { border-color: var(--tt);  background: #EE1D5211; color: var(--tt);  }
+  .tab.active-yt  { border-color: var(--yt);  background: #FF000011; color: var(--yt);  }
+
+  /* ── POST CARD ── */
+  .post-card {
+    background: var(--bg2); border-radius: 12px;
+    overflow: hidden; margin-bottom: 20px;
+    border: 1px solid var(--gold-dim);
   }
-  
-  /* ========== INFO BANNER (for mockup demo) ========== */
-  .info-banner {
-    margin: 16px 20px 0;
-    padding: 12px 14px;
-    background: var(--warning-bg);
-    border-radius: 12px;
-    font-size: 12px;
-    color: var(--ink-2);
-    border-left: 3px solid var(--warning);
-    line-height: 1.5;
+  .post-img {
+    width: 100%; height: 180px; object-fit: cover; display: block;
   }
-  .info-banner strong { color: var(--ink); }
-  
-  /* Decorative divider */
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 20px 20px 0;
+  .post-img-placeholder {
+    height: 60px; background: var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #333;
   }
-  .divider-line {
-    flex: 1;
-    height: 1px;
-    background: var(--border);
+  .post-img-loading {
+    height: 120px; background: var(--bg3);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 12px; color: #555;
   }
-  .divider-text {
-    font-size: 10px;
-    color: var(--ink-3);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    font-weight: 600;
+  .post-body { padding: 18px; }
+  .post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .post-title { color: var(--gold-light); font-weight: 700; font-size: 15px; flex: 1; margin-right: 10px; }
+  .post-content {
+    background: var(--bg); border-radius: 8px; padding: 14px;
+    font-size: 13px; color: #C4B89A; line-height: 1.8;
+    white-space: pre-wrap; max-height: 220px; overflow-y: auto;
+    margin-bottom: 12px;
   }
+  .post-status { font-size: 13px; margin-top: 8px; }
+  .post-status.success { color: var(--green); }
+  .post-status.error   { color: var(--red); }
+  .manual-notice {
+    background: #C9A84C0D; border: 1px solid var(--gold-dim);
+    border-radius: 8px; padding: 10px 12px;
+    font-size: 12px; color: var(--gold);
+  }
+
+  /* ── STATUS DOT ── */
+  .sdot {
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block; flex-shrink: 0;
+  }
+  .sdot.idle    { background: #444; }
+  .sdot.loading { background: var(--gold); animation: pulse 1s ease infinite; box-shadow: 0 0 6px var(--gold); }
+  .sdot.success { background: var(--green); }
+  .sdot.error   { background: var(--red); }
+
+  /* ── COPY BTN ── */
+  .copy-btn {
+    background: transparent; border: 1px solid #ffffff22;
+    color: var(--text-dim); padding: 3px 10px;
+    border-radius: 6px; font-size: 11px; cursor: pointer;
+    font-family: inherit; transition: all .2s; white-space: nowrap;
+  }
+  .copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .copy-btn.copied { border-color: var(--green); color: var(--green); background: #2ecc7111; }
+
+  /* ── PUBLISH BTN ── */
+  .btn-publish {
+    width: 100%; padding: 14px; border-radius: 10px;
+    background: linear-gradient(135deg, #1a6b3a, var(--green));
+    border: none; color: #fff; font-size: 14px;
+    font-weight: 700; cursor: pointer; letter-spacing: 1px;
+    font-family: inherit; transition: opacity .2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-publish:hover { opacity: .9; }
+  .btn-publish:disabled { background: #2ecc7122; color: #2ecc7144; cursor: not-allowed; }
+
+  /* ── SPINNER ── */
+  .spinner {
+    border: 2px solid #C9A84C22; border-top-color: var(--gold);
+    border-radius: 50%; animation: spin .7s linear infinite;
+    display: inline-block; flex-shrink: 0;
+  }
+
+  /* ── RESULT PANEL ── */
+  .result-hero { text-align: center; margin-bottom: 28px; }
+  .result-emoji { font-size: 52px; margin-bottom: 12px; }
+  .result-title { color: var(--gold-light); font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .result-sub { color: var(--text-dim); font-size: 13px; }
+  .result-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg2); border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 10px;
+    border: 1px solid #ffffff0D;
+  }
+  .result-row.success { border-color: #2ecc7122; }
+  .result-row.error   { border-color: #e74c3c22; }
+  .result-picon { font-size: 18px; }
+  .result-pname { flex: 1; font-size: 14px; }
+  .tag {
+    padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+
+  /* ── SETTINGS FAB ── */
+  #fab {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--bg2); border: 1px solid var(--gold-dim);
+    color: var(--gold); font-size: 18px; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    transition: all .2s; z-index: 200;
+  }
+  #fab:hover { background: var(--gold-dim); }
+  #fab.visible { display: flex; }
+
+  /* section spacing */
+  .section { margin-bottom: 26px; }
 </style>
 </head>
 <body>
 
-<!-- ========== PERSONA SWITCHER ========== -->
-<div class="persona-bar">
-  <span class="lbl">View as</span>
-  <button data-persona="login">Login</button>
-  <button data-persona="cs" class="active">Anis · CS</button>
-  <button data-persona="leader">Faizah · Leader</button>
-  <button data-persona="admin">Wilson · Admin</button>
+<!-- HEADER -->
+<div id="header">
+  <div class="header-inner">
+    <div class="logo-wrap">
+      <div class="logo-box">冠</div>
+      <div>
+        <div class="logo-title">冠尊自动发布系统</div>
+        <div class="logo-sub">AUTO PUBLISH ENGINE</div>
+      </div>
+    </div>
+    <div class="steps" id="stepsEl"></div>
+  </div>
 </div>
 
-<div class="app">
+<!-- BODY -->
+<div id="body"></div>
 
-<!-- ============================================================ -->
-<!-- SCREEN: LOGIN -->
-<!-- ============================================================ -->
-<section id="screen-login" class="screen">
-  <div class="login-header">
-    <div class="login-logo">A</div>
-    <h1 class="login-title">Aw<em>ara</em></h1>
-    <div class="login-sub">Sdn Bhd · Penang</div>
-  </div>
-  <form class="login-form" onsubmit="event.preventDefault(); switchPersona('cs');">
-    <div class="input-group">
-      <label>Email</label>
-      <input type="email" placeholder="awara_____@gmail.com" value="awaraanis26@gmail.com">
-    </div>
-    <div class="input-group">
-      <label>Password</label>
-      <input type="password" placeholder="••••••••" value="••••••••">
-    </div>
-    <button type="submit" class="login-btn">Sign In</button>
-  </form>
-  <div class="login-footer">
-    AWARA CS Management System · v1.0<br>
-    Powered by Anthropic Claude
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SCREEN: CS DASHBOARD (Anis) -->
-<!-- ============================================================ -->
-<section id="screen-cs" class="screen active">
-  <div class="top-bar">
-    <div class="top-bar-row">
-      <div class="logo">
-        <div class="logo-mark">A</div>
-        <div class="logo-text">Awara<span class="sdn">Sdn Bhd</span></div>
-      </div>
-      <div class="avatar">AN</div>
-    </div>
-    <div class="greeting">
-      <div class="hi">Selamat datang</div>
-      <div class="name">Hi, <em>Anis</em></div>
-      <div class="role-tag">CS · Team Faizah</div>
-    </div>
-  </div>
-  
-  <div class="month-pill">
-    <span class="dot"></span> May 2026 · Live
-  </div>
-  
-  <div class="kpi-grid">
-    <div class="kpi-card featured">
-      <div class="label">Total KFI Disburse</div>
-      <div class="value"><span class="currency">RM</span>24,500</div>
-      <div class="sub">4 cases disbursed this month</div>
-    </div>
-    <div class="kpi-card">
-      <div class="label">Payslip</div>
-      <div class="value">19</div>
-      <div class="sub">collected</div>
-    </div>
-    <div class="kpi-card">
-      <div class="label">Total KPI</div>
-      <div class="value">5</div>
-      <div class="sub">2 Normal · 3 Special</div>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">Recent Cases</div>
-    <a class="section-action">View all →</a>
-  </div>
-  
-  <div class="case-list">
-    <div class="case-card">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">MOHD SUHAIDI BIN MOHD ARIFFIN</div>
-          <div class="case-package">GIATMAJU RM10K</div>
-        </div>
-        <span class="case-status pending">Payslip</span>
-      </div>
-      <div class="case-meta">
-        <span>30 Apr 2026</span>
-        <span class="badge">Normal</span>
-      </div>
-    </div>
-    
-    <div class="case-card">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">NORZILAWATI BINTI MOHD</div>
-          <div class="case-package">GIATMAJU RM16K</div>
-        </div>
-        <span class="case-status submitted">Submitted</span>
-      </div>
-      <div class="case-meta">
-        <span>29 Apr 2026</span>
-        <span class="badge special">Special</span>
-      </div>
-    </div>
-    
-    <div class="case-card">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">NOOR EZDIANI BINTI ZAINAL ABIDIN</div>
-          <div class="case-package">GIATMAJU RM30K</div>
-        </div>
-        <span class="case-status disbursed">Disbursed</span>
-      </div>
-      <div class="case-meta">
-        <span>21 Apr 2026</span>
-        <span class="badge">Normal</span>
-        <span class="badge special">KFI RM12,500</span>
-      </div>
-    </div>
-    
-    <div class="case-card">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">NOORSIDA BINTI HUD</div>
-          <div class="case-package">KOP PELADANG RM18K</div>
-        </div>
-        <span class="case-status approved">Approved</span>
-      </div>
-      <div class="case-meta">
-        <span>15 Apr 2026</span>
-        <span class="badge">Normal</span>
-      </div>
-    </div>
-    
-    <div class="case-card">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">RAHIMIE BINTI AUGUSTINE</div>
-          <div class="case-package">GIATMAJU RM10K</div>
-        </div>
-        <span class="case-status rejected">Rejected</span>
-      </div>
-      <div class="case-meta">
-        <span>04 May 2026</span>
-        <span class="badge resubmit">Resubmit</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SCREEN: ADD CASE -->
-<!-- ============================================================ -->
-<section id="screen-add" class="screen">
-  <div class="top-bar">
-    <div class="top-bar-row">
-      <div class="logo">
-        <div class="logo-mark">A</div>
-        <div class="logo-text">New Case</div>
-      </div>
-      <button class="avatar" onclick="switchScreen('cs')" style="background: var(--cream-2); color: var(--ink-2); border-color: var(--border);">×</button>
-    </div>
-    <div class="greeting">
-      <div class="hi">Tambah Case Baru</div>
-      <div class="name"><em>New</em> Submission</div>
-    </div>
-  </div>
-  
-  <div class="form-page" style="padding-top: 20px;">
-    <div class="form-group">
-      <label>Customer Name</label>
-      <input type="text" placeholder="Masukkan nama penuh customer">
-    </div>
-    
-    <div class="form-group">
-      <label>IC Number</label>
-      <input type="text" placeholder="000000-00-0000">
-    </div>
-    
-    <div class="form-group">
-      <label>Pakej</label>
-      <select>
-        <option>Pilih pakej...</option>
-        <optgroup label="── NORMAL ──">
-          <option>GIATMAJU RM10K</option>
-          <option>GIATMAJU RM16K</option>
-          <option>GIATMAJU RM30K</option>
-          <option>KOP PELADANG RM18K</option>
-          <option>KOP PELADANG RM30K</option>
-        </optgroup>
-        <optgroup label="── SPECIAL ──">
-          <option>KOMAJU</option>
-          <option>KOPRIMAS</option>
-          <option>KPPMB</option>
-          <option>KOSPEM</option>
-          <option>KKM (Max 15K)</option>
-        </optgroup>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label>Case Type</label>
-      <div class="case-type-pills">
-        <div class="case-type-pill active">Normal</div>
-        <div class="case-type-pill">Special</div>
-        <div class="case-type-pill">Resubmit</div>
-      </div>
-    </div>
-    
-    <div class="form-row">
-      <div class="form-group">
-        <label>Date Emel</label>
-        <input type="date" value="2026-05-19">
-      </div>
-      <div class="form-group">
-        <label>Dapat Form</label>
-        <input type="date">
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label>Status</label>
-      <select>
-        <option>Payslip Received</option>
-        <option>Submitted</option>
-        <option>Approved</option>
-        <option>Disbursed</option>
-        <option>Rejected</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label>Remark (optional)</label>
-      <textarea rows="3" placeholder="Sebarang catatan tambahan..."></textarea>
-    </div>
-    
-    <button class="submit-btn" onclick="switchScreen('cs')">Save Case</button>
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SCREEN: MONTHLY REPORT -->
-<!-- ============================================================ -->
-<section id="screen-report" class="screen">
-  <div class="top-bar">
-    <div class="top-bar-row">
-      <div class="logo">
-        <div class="logo-mark">A</div>
-        <div class="logo-text">Monthly Report</div>
-      </div>
-      <div class="avatar">AN</div>
-    </div>
-    <div class="greeting">
-      <div class="hi">May 2026 Performance</div>
-      <div class="name"><em>Your</em> month</div>
-      <div class="role-tag">Anis · Team Faizah</div>
-    </div>
-  </div>
-  
-  <div class="info-banner">
-    <strong>Live Report.</strong> Auto-calculated from your cases. Same data as your current Google Sheet Monthly Report tab — but always up-to-date.
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">Payslip & KPI</div>
-  </div>
-  
-  <div class="stats-list">
-    <div class="stat-row">
-      <span class="stat-label">Payslip Collected</span>
-      <span class="stat-value">19</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">KPI · Normal</span>
-      <span class="stat-value">2</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">KPI · Special</span>
-      <span class="stat-value">3</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">Resubmit Cases</span>
-      <span class="stat-value">1</span>
-    </div>
-    <div class="stat-row highlight">
-      <span class="stat-label">TOTAL KPI</span>
-      <span class="stat-value">5</span>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">Loan Submission · 成交</div>
-  </div>
-  
-  <div class="stats-list">
-    <div class="stat-row">
-      <span class="stat-label">Loan Submission · Normal</span>
-      <span class="stat-value"><span class="unit">RM</span>20,000</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">Loan Submission · Special</span>
-      <span class="stat-value"><span class="unit">RM</span>56,000</span>
-    </div>
-    <div class="stat-row highlight">
-      <span class="stat-label">TOTAL Loan Submission</span>
-      <span class="stat-value"><span class="unit">RM</span>76,000</span>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">KFI · Disbursed</div>
-  </div>
-  
-  <div class="stats-list">
-    <div class="stat-row">
-      <span class="stat-label">KFI · Normal</span>
-      <span class="stat-value"><span class="unit">RM</span>12,500</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">KFI · Special</span>
-      <span class="stat-value"><span class="unit">RM</span>12,000</span>
-    </div>
-    <div class="stat-row highlight">
-      <span class="stat-label">TOTAL KFI Disbursed</span>
-      <span class="stat-value"><span class="unit">RM</span>24,500</span>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">Lost · Reject/Cancel</div>
-  </div>
-  
-  <div class="stats-list">
-    <div class="stat-row danger">
-      <span class="stat-label">Rejected Cases</span>
-      <span class="stat-value">1</span>
-    </div>
-    <div class="stat-row danger">
-      <span class="stat-label">Lost Amount</span>
-      <span class="stat-value"><span class="unit">RM</span>10,000</span>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SCREEN: TEAM LEADER (Faizah) -->
-<!-- ============================================================ -->
-<section id="screen-leader" class="screen">
-  <div class="top-bar">
-    <div class="top-bar-row">
-      <div class="logo">
-        <div class="logo-mark">A</div>
-        <div class="logo-text">Awara<span class="sdn">Sdn Bhd</span></div>
-      </div>
-      <div class="avatar">FZ</div>
-    </div>
-    <div class="greeting">
-      <div class="hi">Team Leader</div>
-      <div class="name">Hi, <em>Faizah</em></div>
-      <div class="role-tag">Leader · Team Faizah</div>
-    </div>
-  </div>
-  
-  <div class="tabs">
-    <button class="tab active">My Performance</button>
-    <button class="tab">Pipeline</button>
-    <button class="tab">My Team</button>
-  </div>
-  
-  <div class="month-pill" style="margin-top: 12px;">
-    <span class="dot"></span> May 2026 · Team Faizah
-  </div>
-  
-  <div class="kpi-grid">
-    <div class="kpi-card featured">
-      <div class="label">Team KFI Total</div>
-      <div class="value"><span class="currency">RM</span>67,300</div>
-      <div class="sub">3 members · 14 cases</div>
-    </div>
-    <div class="kpi-card">
-      <div class="label">Team Payslip</div>
-      <div class="value">52</div>
-      <div class="sub">all members</div>
-    </div>
-    <div class="kpi-card">
-      <div class="label">Team KPI</div>
-      <div class="value">14</div>
-      <div class="sub">excl. resubmit</div>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">Team Members</div>
-  </div>
-  
-  <div class="team-card">
-    <div class="team-card-header">
-      <div class="team-avatar">FZ</div>
-      <div>
-        <div class="team-name">Faizah <span style="font-size:11px; color: var(--accent-dark); font-family: 'Plus Jakarta Sans'; font-weight: 600;">(You)</span></div>
-        <div class="team-role">Leader</div>
-      </div>
-    </div>
-    <div class="team-stats">
-      <div class="team-stat">
-        <div class="lbl">Payslip</div>
-        <div class="val">19</div>
-      </div>
-      <div class="team-stat">
-        <div class="lbl">KPI</div>
-        <div class="val">5</div>
-      </div>
-      <div class="team-stat">
-        <div class="lbl">KFI</div>
-        <div class="val">24.5<span class="unit">k</span></div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="team-card">
-    <div class="team-card-header">
-      <div class="team-avatar" style="background: var(--accent-dark); color: var(--cream);">HI</div>
-      <div>
-        <div class="team-name">Hidayah</div>
-        <div class="team-role">CS</div>
-      </div>
-    </div>
-    <div class="team-stats">
-      <div class="team-stat">
-        <div class="lbl">Payslip</div>
-        <div class="val">14</div>
-      </div>
-      <div class="team-stat">
-        <div class="lbl">KPI</div>
-        <div class="val">4</div>
-      </div>
-      <div class="team-stat">
-        <div class="lbl">KFI</div>
-        <div class="val">18.3<span class="unit">k</span></div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="team-card">
-    <div class="team-card-header">
-      <div class="team-avatar" style="background: var(--accent-dark); color: var(--cream);">AN</div>
-      <div>
-        <div class="team-name">Anis</div>
-        <div class="team-role">CS</div>
-      </div>
-    </div>
-    <div class="team-stats">
-      <div class="team-stat">
-        <div class="lbl">Payslip</div>
-        <div class="val">19</div>
-      </div>
-      <div class="team-stat">
-        <div class="lbl">KPI</div>
-        <div class="val">5</div>
-      </div>
-      <div class="team-stat">
-        <div class="lbl">KFI</div>
-        <div class="val">24.5<span class="unit">k</span></div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">📥 Pipeline · To Process</div>
-    <a class="section-action">View all (12) →</a>
-  </div>
-  
-  <div class="info-banner" style="background: var(--info-bg); border-left-color: var(--info); margin-top: 0;">
-    <strong>Payslip dari team CS</strong> yang masih belum diproses. Click untuk calculate (Kiraan Special) + submit.
-  </div>
-  
-  <div class="case-list" style="margin-top: 12px;">
-    <div class="case-card" style="border-left: 3px solid var(--accent);">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">RAHIMIE BINTI AUGUSTINE</div>
-          <div class="case-package" style="display: flex; align-items: center; gap: 6px;">
-            <span style="width:18px;height:18px;background:var(--accent-dark);color:var(--cream);border-radius:50%;display:inline-grid;place-items:center;font-size:9px;font-weight:700;">AN</span>
-            Anis · 4 May 2026
-          </div>
-        </div>
-        <button style="background: var(--primary); color: var(--accent); border: none; padding: 7px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-family: inherit; cursor: pointer; flex-shrink: 0;">Process</button>
-      </div>
-      <div class="case-meta">
-        <span>📞 Already called</span>
-        <span class="badge">Pakej: TBD</span>
-      </div>
-    </div>
-    
-    <div class="case-card" style="border-left: 3px solid var(--accent);">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">SITI HASNAH BINTI ABDULLAH</div>
-          <div class="case-package" style="display: flex; align-items: center; gap: 6px;">
-            <span style="width:18px;height:18px;background:var(--accent-dark);color:var(--cream);border-radius:50%;display:inline-grid;place-items:center;font-size:9px;font-weight:700;">HI</span>
-            Hidayah · 3 May 2026
-          </div>
-        </div>
-        <button style="background: var(--primary); color: var(--accent); border: none; padding: 7px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-family: inherit; cursor: pointer; flex-shrink: 0;">Process</button>
-      </div>
-      <div class="case-meta">
-        <span>📋 Payslip received</span>
-        <span class="badge special">Likely Special</span>
-      </div>
-    </div>
-    
-    <div class="case-card" style="border-left: 3px solid var(--accent);">
-      <div class="case-card-top">
-        <div>
-          <div class="case-customer">FAUZIAH BINTI HUSSIN</div>
-          <div class="case-package" style="display: flex; align-items: center; gap: 6px;">
-            <span style="width:18px;height:18px;background:var(--accent-dark);color:var(--cream);border-radius:50%;display:inline-grid;place-items:center;font-size:9px;font-weight:700;">AN</span>
-            Anis · 2 May 2026
-          </div>
-        </div>
-        <button style="background: var(--primary); color: var(--accent); border: none; padding: 7px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-family: inherit; cursor: pointer; flex-shrink: 0;">Process</button>
-      </div>
-      <div class="case-meta">
-        <span>📞 Pending Call</span>
-        <span class="badge">Pakej: KOMAJU?</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SCREEN: ADMIN (Wilson) -->
-<!-- ============================================================ -->
-<section id="screen-admin" class="screen">
-  <div class="top-bar">
-    <div class="top-bar-row">
-      <div class="logo">
-        <div class="logo-mark">A</div>
-        <div class="logo-text">Awara<span class="sdn">Sdn Bhd</span></div>
-      </div>
-      <div class="avatar" style="background: var(--accent); color: var(--primary-dark); border-color: var(--primary);">W</div>
-    </div>
-    <div class="greeting">
-      <div class="hi">Boss Dashboard</div>
-      <div class="name">Hi, <em>Wilson</em></div>
-      <div class="role-tag">Admin · All Teams</div>
-    </div>
-  </div>
-  
-  <div class="month-pill">
-    <span class="dot"></span> May 2026 · Company-wide
-  </div>
-  
-  <div class="kpi-grid">
-    <div class="kpi-card featured">
-      <div class="label">Total Loan Submission · 成交额</div>
-      <div class="value"><span class="currency">RM</span>892,400</div>
-      <div class="sub">42 cases submitted · 6 Teams</div>
-    </div>
-    <div class="kpi-card">
-      <div class="label">KFI Disbursed</div>
-      <div class="value"><span class="currency">RM</span>325.8<span style="font-size:18px;">k</span></div>
-      <div class="sub">actual disbursement</div>
-    </div>
-    <div class="kpi-card lost">
-      <div class="label">Lost · Reject/Cancel</div>
-      <div class="value"><span class="currency">RM</span>78.5<span style="font-size:18px;">k</span></div>
-      <div class="sub">8 cases · 8.8%</div>
-    </div>
-    <div class="kpi-card">
-      <div class="label">Total Payslip</div>
-      <div class="value">267</div>
-      <div class="sub">+12% MoM</div>
-    </div>
-    <div class="kpi-card">
-      <div class="label">Total KPI</div>
-      <div class="value">42</div>
-      <div class="sub">excl. reject same month</div>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">🏆 May Awards</div>
-    <a class="section-action">All winners →</a>
-  </div>
-  
-  <div class="awards-grid">
-    <div class="award-card">
-      <div class="trophy">📋</div>
-      <div class="category">Top Payslip</div>
-      <div class="winner">Anis</div>
-      <div class="winner-role">CS · T.Faizah</div>
-      <div class="stat">54</div>
-    </div>
-    <div class="award-card">
-      <div class="trophy">⚡</div>
-      <div class="category">Top KPI</div>
-      <div class="winner">Faizah</div>
-      <div class="winner-role">Leader</div>
-      <div class="stat">13</div>
-    </div>
-    <div class="award-card">
-      <div class="trophy">💰</div>
-      <div class="category">Top KFI</div>
-      <div class="winner">Elly</div>
-      <div class="winner-role">Leader</div>
-      <div class="stat">58<span class="unit">k</span></div>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">Team Ranking</div>
-    <a class="section-action">By KFI →</a>
-  </div>
-  
-  <div class="ranking-card gold">
-    <div class="rank-num">1</div>
-    <div class="rank-info">
-      <div class="rank-name">Team Faizah</div>
-      <div class="rank-sub">Faizah · Hidayah · Anis</div>
-    </div>
-    <div class="rank-stats">
-      <div class="big">RM 67.3k</div>
-      <div class="small">KFI · 14 KPI</div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">2</div>
-    <div class="rank-info">
-      <div class="rank-name">Team Elly</div>
-      <div class="rank-sub">Elly · Tika · Atikah</div>
-    </div>
-    <div class="rank-stats">
-      <div class="big">RM 58.0k</div>
-      <div class="small">KFI · 12 KPI</div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">3</div>
-    <div class="rank-info">
-      <div class="rank-name">Team Izah</div>
-      <div class="rank-sub">Izah · Mira · Amira</div>
-    </div>
-    <div class="rank-stats">
-      <div class="big">RM 54.5k</div>
-      <div class="small">KFI · 9 KPI</div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">4</div>
-    <div class="rank-info">
-      <div class="rank-name">Team Ayna</div>
-      <div class="rank-sub">Ayna · Jihah</div>
-    </div>
-    <div class="rank-stats">
-      <div class="big">RM 47.0k</div>
-      <div class="small">KFI · 4 KPI</div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">5</div>
-    <div class="rank-info">
-      <div class="rank-name">Team Atirah</div>
-      <div class="rank-sub">Atirah (solo)</div>
-    </div>
-    <div class="rank-stats">
-      <div class="big">RM 37.5k</div>
-      <div class="small">KFI · 2 KPI</div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">6</div>
-    <div class="rank-info">
-      <div class="rank-name">Team Hani</div>
-      <div class="rank-sub">Hani (solo)</div>
-    </div>
-    <div class="rank-stats">
-      <div class="big">RM 15.0k</div>
-      <div class="small">KFI · 1 KPI</div>
-    </div>
-  </div>
-  
-  <div class="section-header">
-    <div class="section-title">CS Ranking</div>
-    <a class="section-action">By Payslip →</a>
-  </div>
-  
-  <div class="ranking-card gold">
-    <div class="rank-num">1</div>
-    <div class="rank-info">
-      <div class="rank-name">Anis</div>
-      <div class="rank-sub">CS · T.Faizah</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">54</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">2 KPI <span class="dim">· RM 48k</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">2</div>
-    <div class="rank-info">
-      <div class="rank-name">Atirah</div>
-      <div class="rank-sub">Leader · T.Atirah</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">37</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">2 KPI <span class="dim">· RM 17.6k</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">3</div>
-    <div class="rank-info">
-      <div class="rank-name">Ayna</div>
-      <div class="rank-sub">Leader · T.Ayna</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">34</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">2 KPI <span class="dim">· RM 37k</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">4</div>
-    <div class="rank-info">
-      <div class="rank-name">Izah</div>
-      <div class="rank-sub">Leader · T.Izah</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">27</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">2 KPI <span class="dim">· RM 11.3k</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">5</div>
-    <div class="rank-info">
-      <div class="rank-name">Elly</div>
-      <div class="rank-sub">Leader · T.Elly</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">26</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">4 KPI <span class="dim">· RM 58k</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">6</div>
-    <div class="rank-info">
-      <div class="rank-name">Faizah</div>
-      <div class="rank-sub">Leader · T.Faizah</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">19</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">3 KPI <span class="dim">· RM 24k</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">7</div>
-    <div class="rank-info">
-      <div class="rank-name">Hani</div>
-      <div class="rank-sub">Leader · T.Hani</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">17</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">0 KPI <span class="dim">· RM 15k</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">8</div>
-    <div class="rank-info">
-      <div class="rank-name">Tika</div>
-      <div class="rank-sub">CS · T.Elly</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">16</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">0 KPI <span class="dim">· RM 0</span></div>
-    </div>
-  </div>
-  
-  <div class="ranking-card">
-    <div class="rank-num">9</div>
-    <div class="rank-info">
-      <div class="rank-name">Hidayah</div>
-      <div class="rank-sub">CS · T.Faizah</div>
-    </div>
-    <div class="rank-stats">
-      <div class="pri">14</div>
-      <div class="pri-label">Payslip</div>
-      <div class="sec">1 KPI <span class="dim">· RM 18.3k</span></div>
-    </div>
-  </div>
-  
-  <div class="divider">
-    <div class="divider-line"></div>
-    <div class="divider-text">More</div>
-    <div class="divider-line"></div>
-  </div>
-  
-  <div class="section-header" style="padding-top: 8px;">
-    <div class="section-title">Quick Actions</div>
-  </div>
-  
-  <div style="padding: 0 20px;">
-    <div class="case-card">
-      <div class="case-customer">📊 Generate Monthly Summary PDF</div>
-      <div class="case-package">Auto-compile all teams · all CS · KPI/KFI breakdown</div>
-    </div>
-    <div class="case-card">
-      <div class="case-customer">👥 Manage CS & Team Leaders</div>
-      <div class="case-package">Add new staff · reassign teams · reset password</div>
-    </div>
-    <div class="case-card">
-      <div class="case-customer">📅 Weekly Team Report</div>
-      <div class="case-package">KFI · Calling · Payslip · Closing · Potential per team</div>
-    </div>
-    <div class="case-card">
-      <div class="case-customer">💰 Salary & Payslip Generation</div>
-      <div class="case-package" style="color: var(--accent-dark); font-weight: 600;">Phase 3 · coming soon</div>
-    </div>
-  </div>
-</section>
-
-<!-- ========== FAB ========== -->
-<button class="fab" id="fab" onclick="switchScreen('add')">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-</button>
-
-<!-- ========== BOTTOM NAV ========== -->
-<nav class="bottom-nav" id="bottom-nav">
-  <button class="nav-item active" data-screen="cs">
-    <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-7h6v7h3a1 1 0 001-1V10"/></svg></span>
-    Home
-  </button>
-  <button class="nav-item" data-screen="cs-cases">
-    <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
-    Cases
-  </button>
-  <button class="nav-item" data-screen="report">
-    <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 16l4-8 4 6 5-10"/></svg></span>
-    Report
-  </button>
-  <button class="nav-item" data-screen="profile">
-    <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></span>
-    Profile
-  </button>
-</nav>
-
-</div>
+<!-- FAB -->
+<button id="fab" onclick="goStep(0)" title="设置">⚙</button>
 
 <script>
-const screens = ['login', 'cs', 'add', 'report', 'leader', 'admin'];
+// ── STATE ────────────────────────────────────────────────────────────────────
+const PLATFORMS = [
+  { id:'facebook',  label:'Facebook',  icon:'📘', color:'#1877F2', auto:true  },
+  { id:'instagram', label:'Instagram', icon:'📸', color:'#E1306C', auto:true  },
+  { id:'telegram',  label:'Telegram',  icon:'✈️',  color:'#29B6D8', auto:true  },
+  { id:'tiktok',    label:'TikTok',    icon:'🎵', color:'#EE1D52', auto:false },
+  { id:'youtube',   label:'YouTube',   icon:'▶️',  color:'#FF0000', auto:false },
+];
+const STEPS = ['设置','主题','预览','完成'];
+const SUGGESTIONS = [
+  '生肖属鼠的人取名禁忌',
+  '数字7代表什么性格？',
+  '名字影响孩子运势的3个原因',
+  '五行缺木的人适合什么名字',
+  '数字易学入门：认识你的主性格数',
+  '生肖属虎取名最忌讳哪些字根',
+];
 
-function switchScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const target = document.getElementById('screen-' + name);
-  if (target) target.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  
-  // Hide FAB on certain screens
-  const fab = document.getElementById('fab');
-  const nav = document.getElementById('bottom-nav');
-  if (name === 'login' || name === 'add') {
-    fab.style.display = 'none';
-  } else {
-    fab.style.display = 'grid';
+let state = {
+  step: 0,
+  config: {},
+  topic: '',
+  selectedPlatforms: ['facebook','instagram','telegram','tiktok','youtube'],
+  posts: {},
+  images: {},
+  imageLoading: {},
+  generating: false,
+  publishing: false,
+  publishResults: {},
+  activeTab: 0,
+};
+
+// Load config
+try {
+  const saved = localStorage.getItem('gzAutoConfig');
+  if (saved) {
+    state.config = JSON.parse(saved);
+    if (state.config.fbToken && state.config.igId && state.config.tgToken && state.config.tgChatId)
+      state.step = 1;
   }
-  if (name === 'login') {
-    nav.style.display = 'none';
-  } else {
-    nav.style.display = 'flex';
+} catch(e){}
+
+// ── RENDER ENGINE ────────────────────────────────────────────────────────────
+function render() {
+  renderSteps();
+  const body = document.getElementById('body');
+  const fab  = document.getElementById('fab');
+  fab.className = state.step > 0 ? 'visible' : '';
+
+  if      (state.step === 0) body.innerHTML = setupHTML();
+  else if (state.step === 1) body.innerHTML = topicHTML();
+  else if (state.step === 2) body.innerHTML = generateHTML();
+  else if (state.step === 3) body.innerHTML = resultsHTML();
+
+  bindEvents();
+}
+
+function renderSteps() {
+  const el = document.getElementById('stepsEl');
+  el.innerHTML = STEPS.map((s,i) => {
+    let cls = i === state.step ? 'active' : i < state.step ? 'done' : '';
+    let lbl = i < state.step ? '✓' : i+1;
+    let line = i < STEPS.length-1
+      ? `<div class="step-line ${i < state.step ? 'done':''}"></div>` : '';
+    return `<div class="step-dot ${cls}">${lbl}</div>${line}`;
+  }).join('');
+}
+
+// ── SETUP ─────────────────────────────────────────────────────────────────────
+function setupHTML() {
+  const c = state.config;
+  const fields = [
+    { key:'fbToken',  label:'Facebook Access Token',      type:'password', hint:'Meta for Developers → Graph API Explorer' },
+    { key:'igId',     label:'Instagram Business Account ID', type:'text',  hint:'Meta Business Suite → 设置 → Instagram → 账号ID' },
+    { key:'tgToken',  label:'Telegram Bot Token',         type:'password', hint:'在Telegram搜索 @BotFather → /newbot' },
+    { key:'tgChatId', label:'Telegram Chat / Channel ID', type:'text',     hint:'把Bot加入频道，发消息给 @userinfobot 取得' },
+    { key:'pexelsKey',label:'Pexels API Key（免费配图）', type:'password', hint:'pexels.com/api 免费注册，约1分钟' },
+  ];
+  return `<div class="panel">
+    <div class="section">
+      <div style="color:var(--gold-light);font-size:18px;font-weight:700;margin-bottom:6px">一次性设置</div>
+      <div style="color:var(--text-dim);font-size:13px">填入 API 密钥，存在浏览器本地，之后无需重复</div>
+    </div>
+    ${fields.map(f=>`
+    <div class="field">
+      <label class="label">${f.label}</label>
+      <input type="${f.type}" id="cfg_${f.key}" value="${c[f.key]||''}" placeholder="${f.hint}" oninput="updateConfig('${f.key}',this.value)">
+      <div class="hint">📌 ${f.hint}</div>
+    </div>`).join('')}
+    <div class="guide-box">
+      <div class="gtitle">📖 快速获取指南</div>
+      ${[
+        ['Facebook Token','developers.facebook.com → Graph API Explorer → 生成Token'],
+        ['Instagram ID','Meta Business Suite → 设置 → Instagram → 账号ID'],
+        ['Telegram Bot','Telegram搜索 @BotFather → /newbot → 复制Token'],
+        ['Pexels Key','pexels.com/api → 免费注册 → 复制API Key'],
+      ].map(([k,v])=>`<div class="guide-row"><span class="guide-key">${k}</span><span class="guide-val">${v}</span></div>`).join('')}
+    </div>
+    <button class="btn-gold" id="setupNext" onclick="saveAndNext()">✦ 保存并继续</button>
+  </div>`;
+}
+
+function updateConfig(key, val) {
+  state.config[key] = val;
+  checkSetupBtn();
+}
+function checkSetupBtn() {
+  const btn = document.getElementById('setupNext');
+  if (!btn) return;
+  const c = state.config;
+  const ok = c.fbToken && c.igId && c.tgToken && c.tgChatId;
+  btn.disabled = !ok;
+  btn.textContent = ok ? '✦ 保存并继续' : '请填写必填项（Pexels 可选）';
+}
+function saveAndNext() {
+  try { localStorage.setItem('gzAutoConfig', JSON.stringify(state.config)); } catch(e){}
+  goStep(1);
+}
+
+// ── TOPIC ─────────────────────────────────────────────────────────────────────
+function topicHTML() {
+  return `<div class="panel">
+    <div class="section">
+      <div style="color:var(--gold-light);font-size:18px;font-weight:700;margin-bottom:6px">输入发布主题</div>
+      <div style="color:var(--text-dim);font-size:13px">AI 将为每个平台生成专属文案 + 自动配图</div>
+    </div>
+    <div class="field">
+      <textarea id="topicInput" rows="3" placeholder="例：生肖属鼠的人取名要注意什么？">${state.topic}</textarea>
+      <div class="suggestions">
+        ${SUGGESTIONS.map(s=>`<button class="sug-chip" onclick="setSuggestion('${s}')">${s}</button>`).join('')}
+      </div>
+    </div>
+    <div class="section">
+      <label class="label">目标平台</label>
+      <div class="chip-wrap">
+        ${PLATFORMS.map(p=>{
+          const on = state.selectedPlatforms.includes(p.id);
+          return `<button class="chip ${on?'active-'+p.id:''}" onclick="togglePlatform('${p.id}')">
+            ${p.icon} ${p.label} ${!p.auto?'<span class="manual-tag">(手动)</span>':''}
+          </button>`;
+        }).join('')}
+      </div>
+    </div>
+    <button class="btn-gold" id="genBtn" onclick="generateContent()" ${state.generating?'disabled':''}>
+      ${state.generating
+        ? `<span style="display:flex;align-items:center;justify-content:center;gap:10px"><span class="spinner" style="width:18px;height:18px"></span> AI 生成中...</span>`
+        : '✦ 生成内容'}
+    </button>
+    <button class="btn-ghost" onclick="goStep(0)">← 返回设置</button>
+  </div>`;
+}
+
+function setSuggestion(s) { state.topic = s; render(); }
+function togglePlatform(id) {
+  const idx = state.selectedPlatforms.indexOf(id);
+  if (idx > -1) state.selectedPlatforms.splice(idx,1);
+  else state.selectedPlatforms.push(id);
+  render();
+}
+
+// ── GENERATE ──────────────────────────────────────────────────────────────────
+async function generateContent() {
+  const t = document.getElementById('topicInput')?.value?.trim();
+  if (!t || state.selectedPlatforms.length === 0) return;
+  state.topic = t;
+  state.generating = true;
+  state.posts = {}; state.images = {};
+  render();
+
+  const platformList = state.selectedPlatforms.map(id=>PLATFORMS.find(p=>p.id===id)?.label).join(', ');
+  const prompt = `你是黄冠尊老师（马来西亚著名命理师，专精生肖姓名学和数字易学）的社交媒体助手。
+
+主题：${t}
+平台：${platformList}
+
+请为每个平台生成专属内容。要求：
+- 马来西亚华语，口语化但专业
+- Facebook：800-1200字，故事性，互动式结尾，含表情符号
+- Instagram：150-200字，精简有力，10-15个hashtags（中英混合）
+- Telegram：300-500字，直接实用，含行动呼吁加入WhatsApp群
+- TikTok：100-150字口语脚本，开头3秒要抓眼球
+- YouTube：300字视频描述，含SEO关键词
+
+每个平台末尾自然提及：加入WhatsApp群 https://chat.whatsapp.com/ILxWi7qf61LAReWxlCc694 或 数字易学3天课程RM490。
+
+另外给我一个英文Pexels搜索关键词（3词以内），适合此内容配图。
+
+只返回JSON，格式：
+{"facebook":{"title":"","content":""},"instagram":{"title":"","content":""},"telegram":{"title":"","content":""},"tiktok":{"title":"","content":""},"youtube":{"title":"","content":""},"imageKeyword":"chinese numerology"}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.find(b=>b.type==='text')?.text||'';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    state.selectedPlatforms.forEach(id=>{ if(parsed[id]) state.posts[id]=parsed[id]; });
+
+    if (state.config.pexelsKey && parsed.imageKeyword)
+      fetchImages(parsed.imageKeyword); // non-blocking
+
+    state.generating = false;
+    state.activeTab = 0;
+    goStep(2);
+  } catch(e) {
+    state.generating = false;
+    render();
+    alert('内容生成失败，请检查网络后重试。');
   }
 }
 
-function switchPersona(persona) {
-  document.querySelectorAll('.persona-bar button').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.persona-bar button[data-persona="${persona}"]`).classList.add('active');
-  
-  if (persona === 'login') switchScreen('login');
-  else if (persona === 'cs') switchScreen('cs');
-  else if (persona === 'leader') switchScreen('leader');
-  else if (persona === 'admin') switchScreen('admin');
+async function fetchImages(keyword) {
+  const loading = {};
+  state.selectedPlatforms.forEach(id=>loading[id]=true);
+  state.imageLoading = loading;
+  try { renderImageLoadingState(); } catch(e){}
+
+  try {
+    const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(keyword)}&per_page=5&orientation=landscape`,{
+      headers:{Authorization:state.config.pexelsKey}
+    });
+    const data = await res.json();
+    const photos = data.photos||[];
+    state.selectedPlatforms.forEach((id,i)=>{
+      if(photos[i%photos.length]) state.images[id]={
+        src:photos[i%photos.length].src.large,
+        alt:photos[i%photos.length].alt
+      };
+    });
+  } catch(e){}
+
+  state.imageLoading = {};
+  if (state.step === 2) render();
 }
 
-document.querySelectorAll('.persona-bar button').forEach(btn => {
-  btn.addEventListener('click', () => switchPersona(btn.dataset.persona));
-});
-
-document.querySelectorAll('.bottom-nav .nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.bottom-nav .nav-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    const s = item.dataset.screen;
-    if (s === 'cs') switchScreen('cs');
-    else if (s === 'report') switchScreen('report');
-    else if (s === 'cs-cases') switchScreen('cs');
-    // Profile is just demo, stay on current
+function renderImageLoadingState() {
+  state.selectedPlatforms.forEach(id=>{
+    const el = document.getElementById('img_'+id);
+    if(el) el.innerHTML = `<div class="post-img-loading"><span class="spinner" style="width:20px;height:20px"></span><span>搜索配图中...</span></div>`;
   });
-});
+}
 
-document.querySelectorAll('.case-type-pill').forEach(pill => {
-  pill.addEventListener('click', () => {
-    pill.parentElement.querySelectorAll('.case-type-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-  });
-});
+// ── PREVIEW ───────────────────────────────────────────────────────────────────
+function generateHTML() {
+  const platforms = PLATFORMS.filter(p=>state.selectedPlatforms.includes(p.id));
+  const active = platforms[state.activeTab] || platforms[0];
+  const post = active ? state.posts[active.id] : null;
+  const img  = active ? state.images[active.id] : null;
+  const imgLoading = active ? state.imageLoading[active.id] : false;
+  const result = active ? state.publishResults[active.id] : null;
 
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    tab.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-  });
-});
+  return `<div class="panel">
+    <div class="section">
+      <div style="color:var(--gold-light);font-size:18px;font-weight:700;margin-bottom:6px">预览 & 发布</div>
+      <div style="color:var(--text-dim);font-size:13px">检查内容，确认后一键发布</div>
+    </div>
 
-document.querySelectorAll('.case-card').forEach(card => {
-  card.addEventListener('click', () => {
-    // demo: just gives subtle feedback
-    card.style.transform = 'scale(0.98)';
-    setTimeout(() => card.style.transform = '', 150);
+    <div class="tabs">
+      ${platforms.map((p,i)=>{
+        const r = state.publishResults[p.id];
+        const isActive = i===state.activeTab;
+        return `<button class="tab ${isActive?'active-'+p.id:''}" onclick="switchTab(${i})">
+          <span class="sdot ${r||'idle'}"></span>
+          ${p.icon} ${p.label}
+        </button>`;
+      }).join('')}
+    </div>
+
+    ${active && post ? `
+    <div class="post-card" style="border-color:${active.color}33">
+      <div id="img_${active.id}">
+        ${imgLoading
+          ? `<div class="post-img-loading"><span class="spinner" style="width:20px;height:20px"></span><span>搜索配图中...</span></div>`
+          : img
+            ? `<div style="position:relative"><img class="post-img" src="${img.src}" alt="${img.alt||''}"><div style="position:absolute;bottom:8px;right:8px;background:#00000088;border-radius:4px;padding:2px 8px;font-size:10px;color:#ffffff88">📷 Pexels</div></div>`
+            : `<div class="post-img-placeholder">无配图（未设置 Pexels Key）</div>`
+        }
+      </div>
+      <div class="post-body">
+        <div class="post-header">
+          <div class="post-title">${post.title}</div>
+          <button class="copy-btn" id="copyBtn_${active.id}" onclick="copyPost('${active.id}')">复制</button>
+        </div>
+        <div class="post-content">${escHtml(post.content)}</div>
+        ${result==='success' ? `<div class="post-status success">✅ 已成功发布到 ${active.label}</div>` : ''}
+        ${result==='error'   ? `<div class="post-status error">❌ 发布失败（检查 Token 是否正确）</div>` : ''}
+        ${!active.auto ? `<div class="manual-notice">⚠️ ${active.label} 需手动发布 — 文案已生成，复制后粘贴即可</div>` : ''}
+      </div>
+    </div>` : `<div style="color:var(--text-dim);font-size:13px;padding:20px 0">暂无内容</div>`}
+
+    <button class="btn-publish" id="pubBtn" onclick="publishAll()" ${state.publishing?'disabled':''}>
+      ${state.publishing
+        ? `<span class="spinner" style="width:18px;height:18px;border-color:#2ecc7122;border-top-color:#2ecc7144"></span> 发布中...`
+        : '🚀 一键发布所有平台'}
+    </button>
+    <button class="btn-ghost" onclick="goStep(1)">← 修改主题</button>
+  </div>`;
+}
+
+function switchTab(i) { state.activeTab = i; render(); }
+
+function copyPost(id) {
+  const post = state.posts[id];
+  if (!post) return;
+  navigator.clipboard.writeText(post.title+'\n\n'+post.content);
+  const btn = document.getElementById('copyBtn_'+id);
+  if(btn){ btn.textContent='✓ 已复制'; btn.className='copy-btn copied'; }
+  setTimeout(()=>{ const b=document.getElementById('copyBtn_'+id); if(b){b.textContent='复制';b.className='copy-btn';} },2000);
+}
+
+// ── PUBLISH ───────────────────────────────────────────────────────────────────
+async function publishAll() {
+  state.publishing = true;
+  render();
+
+  for (const pid of state.selectedPlatforms) {
+    const platform = PLATFORMS.find(p=>p.id===pid);
+    if (!platform?.auto) continue;
+    const post = state.posts[pid];
+    if (!post) continue;
+
+    state.publishResults[pid] = 'loading';
+    render();
+
+    const text = post.title+'\n\n'+post.content;
+    try {
+      if (pid==='facebook')  await publishFacebook(text);
+      if (pid==='instagram') await publishInstagram(text);
+      if (pid==='telegram')  await publishTelegram(text);
+      state.publishResults[pid] = 'success';
+    } catch(e) {
+      state.publishResults[pid] = 'error';
+      console.error(pid, e);
+    }
+    render();
+    await sleep(400);
+  }
+
+  state.publishing = false;
+  goStep(3);
+}
+
+async function publishFacebook(message) {
+  const imgUrl = state.images['facebook']?.src;
+  if (imgUrl) {
+    const fd = new FormData();
+    fd.append('url', imgUrl);
+    fd.append('caption', message);
+    fd.append('access_token', state.config.fbToken);
+    const res = await fetch('https://graph.facebook.com/v19.0/me/photos',{method:'POST',body:fd});
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+  } else {
+    const res = await fetch('https://graph.facebook.com/v19.0/me/feed',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message, access_token:state.config.fbToken})
+    });
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+  }
+}
+
+async function publishInstagram(caption) {
+  const imgUrl = state.images['instagram']?.src || 'https://images.pexels.com/photos/4101143/pexels-photo-4101143.jpeg';
+  const r1 = await fetch(`https://graph.facebook.com/v19.0/${state.config.igId}/media`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({image_url:imgUrl, caption, access_token:state.config.fbToken})
   });
-});
+  const d1 = await r1.json();
+  if(d1.error) throw new Error(d1.error.message);
+  const r2 = await fetch(`https://graph.facebook.com/v19.0/${state.config.igId}/media_publish`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({creation_id:d1.id, access_token:state.config.fbToken})
+  });
+  const d2 = await r2.json();
+  if(d2.error) throw new Error(d2.error.message);
+}
+
+async function publishTelegram(text) {
+  if (state.images['telegram']?.src) {
+    const res = await fetch(`https://api.telegram.org/bot${state.config.tgToken}/sendPhoto`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:state.config.tgChatId, photo:state.images['telegram'].src, caption:text})
+    });
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.description);
+    return;
+  }
+  const res = await fetch(`https://api.telegram.org/bot${state.config.tgToken}/sendMessage`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:state.config.tgChatId, text, parse_mode:'HTML'})
+  });
+  const d = await res.json();
+  if(!d.ok) throw new Error(d.description);
+}
+
+// ── RESULTS ───────────────────────────────────────────────────────────────────
+function resultsHTML() {
+  const platforms = PLATFORMS.filter(p=>state.selectedPlatforms.includes(p.id));
+  const autoPlatforms = platforms.filter(p=>p.auto);
+  const successCount = autoPlatforms.filter(p=>state.publishResults[p.id]==='success').length;
+  const allOk = successCount === autoPlatforms.length;
+
+  return `<div class="panel">
+    <div class="result-hero">
+      <div class="result-emoji">${allOk?'🎉':'⚠️'}</div>
+      <div class="result-title">${allOk?'发布完成！':`${successCount}/${autoPlatforms.length} 平台发布成功`}</div>
+      <div class="result-sub">内容已自动发布</div>
+    </div>
+    <div style="margin-bottom:28px">
+      ${platforms.map(p=>{
+        const r = state.publishResults[p.id];
+        let tag='', rowCls='';
+        if(r==='success')   { tag=`<span class="tag" style="background:#2ecc7122;border:1px solid #2ecc7144;color:var(--green)">✅ 已发布</span>`; rowCls='success'; }
+        else if(r==='error'){ tag=`<span class="tag" style="background:#e74c3c22;border:1px solid #e74c3c44;color:var(--red)">❌ 失败</span>`; rowCls='error'; }
+        else if(!p.auto)    { tag=`<span class="tag" style="background:#C9A84C22;border:1px solid #C9A84C44;color:var(--gold)">📋 手动复制</span>`; }
+        else                { tag=`<span class="tag" style="background:#44444422;border:1px solid #44444444;color:#555">跳过</span>`; }
+        return `<div class="result-row ${rowCls}">
+          <span class="result-picon">${p.icon}</span>
+          <span class="result-pname">${p.label}</span>
+          ${tag}
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn-gold" onclick="resetPublish()">✦ 发布新内容</button>
+  </div>`;
+}
+
+function resetPublish() {
+  state.topic=''; state.posts={}; state.images={};
+  state.publishResults={}; state.activeTab=0;
+  goStep(1);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function goStep(n) { state.step=n; render(); window.scrollTo(0,0); }
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function escHtml(s) {
+  if(!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function bindEvents() {
+  // live topic sync
+  const ti = document.getElementById('topicInput');
+  if(ti) ti.addEventListener('input', e=>state.topic=e.target.value);
+  // check setup btn state
+  checkSetupBtn();
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+render();
 </script>
-
 </body>
 </html>
