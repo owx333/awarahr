@@ -157,17 +157,52 @@ tr:hover td{background:rgba(201,168,76,.025)}
 .hqbtn{background:#1a3560;border:none;color:#f5c842;border-radius:6px;padding:.34rem .76rem;cursor:pointer;font-family:inherit;font-size:.72rem;font-weight:600;transition:background .15s;white-space:nowrap}
 .hqbtn:hover{background:#22406e}
 @media print{
-  html,body{ background:white !important; }
+  html,body{
+    background:white !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  /* Hide everything */
   body > *{ visibility:hidden !important; }
-  body.ps-open .psov{ visibility:visible !important; position:fixed !important; top:0 !important; left:0 !important; width:100% !important; background:white !important; padding:0 !important; z-index:9999 !important; overflow:visible !important; display:block !important; }
+
+  /* PAYSLIP */
+  body.ps-open .psov{
+    visibility:visible !important;
+    position:fixed !important; top:0 !important; left:0 !important;
+    width:100% !important; height:auto !important;
+    background:white !important; padding:0 !important;
+    z-index:9999 !important; overflow:visible !important;
+    display:block !important;
+  }
   body.ps-open .psov *{ visibility:visible !important; }
-  body.ps-open .psac{ display:none !important; }
-  body.ps-open .psw{ width:100% !important; max-width:none !important; margin:0 !important; border:none !important; }
-  body.hq-open .hqov{ visibility:visible !important; position:fixed !important; top:0 !important; left:0 !important; width:100% !important; background:white !important; padding:0 !important; z-index:9999 !important; overflow:visible !important; display:block !important; }
+  body.ps-open .psac{ display:none !important; visibility:hidden !important; }
+  body.ps-open .psw{
+    width:100% !important; max-width:none !important;
+    margin:0 !important; border:none !important; box-shadow:none !important;
+    font-size:10pt !important;
+  }
+  body.ps-open .psi{ padding:6mm !important; }
+
+  /* HQ FORMAT */
+  body.hq-open .hqov{
+    visibility:visible !important;
+    position:fixed !important; top:0 !important; left:0 !important;
+    width:100% !important; height:auto !important;
+    background:white !important; padding:0 !important;
+    z-index:9999 !important; overflow:visible !important;
+    display:block !important;
+  }
   body.hq-open .hqov *{ visibility:visible !important; }
-  body.hq-open .hqac{ display:none !important; }
-  body.hq-open .hqw{ width:100% !important; max-width:none !important; margin:0 !important; border:none !important; }
-  @page{ size:A4 portrait; margin:10mm; }
+  body.hq-open .hqac{ display:none !important; visibility:hidden !important; }
+  body.hq-open .hqw{
+    width:100% !important; max-width:none !important;
+    margin:0 !important; border:none !important;
+    font-size:10pt !important;
+  }
+  body.hq-open .hqi{ padding:6mm !important; }
+
+  /* margin:0 removes browser's header/footer (URL, title, date/time) */
+  @page{ size:A4 portrait; margin:0; }
 }
 </style>
 </head>
