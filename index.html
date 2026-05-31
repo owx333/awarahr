@@ -157,16 +157,34 @@ tr:hover td{background:rgba(201,168,76,.025)}
 .hqbtn{background:#1a3560;border:none;color:#f5c842;border-radius:6px;padding:.34rem .76rem;cursor:pointer;font-family:inherit;font-size:.72rem;font-weight:600;transition:background .15s;white-space:nowrap}
 .hqbtn:hover{background:#22406e}
 @media print{
-  body > *{display:none!important}
-  body.ps-open .psov{display:flex!important;position:fixed!important;inset:0!important;background:white!important;padding:0!important;z-index:9999!important}
-  body.ps-open .psw{display:block!important;width:100%!important;margin:0!important}
-  body.ps-open .psw *{display:revert!important}
-  body.ps-open .psac{display:none!important}
-  body.hq-open .hqov{display:flex!important;position:fixed!important;inset:0!important;background:white!important;padding:0!important;z-index:9999!important}
-  body.hq-open .hqw{display:block!important;width:100%!important;margin:0!important}
-  body.hq-open .hqw *{display:revert!important}
-  body.hq-open .hqac{display:none!important}
-  @page{margin:10mm;size:A4}
+  /* visibility:hidden hides parent but lets children override — unlike display:none */
+  body > *{ visibility:hidden !important; }
+
+  /* PAYSLIP PRINT */
+  body.ps-open .psov{
+    visibility:visible !important;
+    position:fixed !important; inset:0 !important;
+    background:white !important; padding:0 !important;
+    z-index:9999 !important; overflow:visible !important;
+    display:flex !important; flex-direction:column !important;
+    align-items:center !important; justify-content:flex-start !important;
+  }
+  body.ps-open .psov *{ visibility:visible !important; }
+  body.ps-open .psac{ display:none !important; visibility:hidden !important; }
+
+  /* HQ FORMAT PRINT */
+  body.hq-open .hqov{
+    visibility:visible !important;
+    position:fixed !important; inset:0 !important;
+    background:white !important; padding:0 !important;
+    z-index:9999 !important; overflow:visible !important;
+    display:flex !important; flex-direction:column !important;
+    align-items:center !important; justify-content:flex-start !important;
+  }
+  body.hq-open .hqov *{ visibility:visible !important; }
+  body.hq-open .hqac{ display:none !important; visibility:hidden !important; }
+
+  @page{ margin:8mm; size:A4; }
 }
 </style>
 </head>
