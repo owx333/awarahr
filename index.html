@@ -411,7 +411,7 @@ tr:hover td{background:rgba(201,168,76,.025)}
                 <tr>
                   <th>#</th><th>Nama</th><th>Gaji Asas</th>
                   <th>Cuti</th><th>MC</th><th>Lewat (RM)</th>
-                  <th>KPI</th><th>KFI</th><th>Incentive</th><th>Basic Perf.</th><th>Submission Loan</th><th>Advance</th>
+                  <th>KPI</th><th>KFI</th><th>Incentive</th><th>Basic Perf.</th><th title="Payslip Collection">PS Coll.</th><th title="KPI Submission">KPI Sub.</th><th title="KFI & Disbursement">KFI Disb.</th><th>Submission Loan</th><th>Advance</th>
                   <th>EPF</th><th>SOCSO</th><th>EIS</th>
                   <th>Unpaid</th><th>Total Potong</th><th>Net Pay</th><th>Slip / HQ</th>
                 </tr>
@@ -428,6 +428,9 @@ tr:hover td{background:rgba(201,168,76,.025)}
                   <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'kfi')" @change="upField(emp.id,'kfi',$event.target.value)" title="KFI — ada EPF"></td>
                   <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'incentive')" @change="upField(emp.id,'incentive',$event.target.value)" title="Incentive — tiada EPF"></td>
                   <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'perfBonus')" @change="upField(emp.id,'perfBonus',$event.target.value)" title="Basic Performance"></td>
+                  <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'psCollection')" @change="upField(emp.id,'psCollection',$event.target.value)" title="Payslip Collection"></td>
+                  <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'kpiSub')" @change="upField(emp.id,'kpiSub',$event.target.value)" title="KPI Submission"></td>
+                  <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'kfiDsb')" @change="upField(emp.id,'kfiDsb',$event.target.value)" title="KFI & Disbursement"></td>
                   <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'submissionLoan')" @change="upField(emp.id,'submissionLoan',$event.target.value)" title="Total Submission Loan"></td>
                   <td><input class="ci" type="number" min="0" step="0.01" :value="getField(emp.id,'advance')" @change="upField(emp.id,'advance',$event.target.value)"></td>
                   <td class="tr">{{(!emp.hasEpf||emp.exempt)?'—':f2(calcRow(emp).epfE)}}</td>
@@ -619,10 +622,30 @@ tr:hover td{background:rgba(201,168,76,.025)}
         </table>
         <div class="pssec">★ FOR COMPANY USE ONLY ★</div>
         <table class="psmn" style="margin-top:1px">
-          <tr><td style="width:34%;font-weight:bold">BASIC OF PERFORMANCE</td><td style="width:16%" class="r">{{(printInfo.c.perfBonus||0)*1>0?f2(printInfo.c.perfBonus):''}}</td><td style="width:34%">EPF (EMPLOYER)</td><td class="r" style="width:16%">{{printInfo.c.epfR>0?f2(printInfo.c.epfR):'—'}}</td></tr>
-          <tr><td style="font-weight:bold">COLLECTION</td><td></td><td>SOCSO (EMPLOYER)</td><td class="r">{{printInfo.c.socsoR>0?f2(printInfo.c.socsoR):'—'}}</td></tr>
-          <tr><td style="font-weight:bold">SUBMISSION</td><td></td><td>EIS (EMPLOYER)</td><td class="r">{{printInfo.c.eisR>0?f2(printInfo.c.eisR):'—'}}</td></tr>
-          <tr><td style="font-weight:bold">TOTAL SUBMISSION LOAN</td><td></td><td style="font-weight:bold">TOTAL CONTRIBUTIONS</td><td class="r bb">{{f2(printInfo.c.epfR+printInfo.c.socsoR+printInfo.c.eisR)}}</td></tr>
+          <tr>
+            <td style="width:34%;font-weight:bold">Payslip Collection</td>
+            <td style="width:16%" class="r">{{(printInfo.c.psCollection||0)>0?f2(printInfo.c.psCollection):''}}</td>
+            <td style="width:34%">EPF (EMPLOYER)</td>
+            <td class="r" style="width:16%">{{printInfo.c.epfR>0?f2(printInfo.c.epfR):'—'}}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold">KPI Submission</td>
+            <td class="r">{{(printInfo.c.kpiSub||0)>0?f2(printInfo.c.kpiSub):''}}</td>
+            <td>SOCSO (EMPLOYER)</td>
+            <td class="r">{{printInfo.c.socsoR>0?f2(printInfo.c.socsoR):'—'}}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold">KFI &amp; Disbursement</td>
+            <td class="r">{{(printInfo.c.kfiDsb||0)>0?f2(printInfo.c.kfiDsb):''}}</td>
+            <td>EIS (EMPLOYER)</td>
+            <td class="r">{{printInfo.c.eisR>0?f2(printInfo.c.eisR):'—'}}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold">Total Loan Submissions</td>
+            <td class="r">{{(printInfo.c.submissionLoan||0)>0?f2(printInfo.c.submissionLoan):''}}</td>
+            <td style="font-weight:bold">TOTAL CONTRIBUTIONS</td>
+            <td class="r bb">{{f2(printInfo.c.epfR+printInfo.c.socsoR+printInfo.c.eisR)}}</td>
+          </tr>
         </table>
         <table class="psmn" style="margin-top:1px">
           <thead><tr><th style="width:50%">&nbsp;</th><th style="width:25%">UP TO MONTH</th><th style="width:25%">BALANCE</th></tr></thead>
@@ -918,7 +941,7 @@ function compute(emp,raw={},wd=22,ym=''){
   const late=+(raw.lateAmt||0),adv=+(raw.advance||0);
   const submission=+(raw.submissionLoan||0);
   const ded=R2(ep.e+so.e+ei.e+unp+late+adv);
-  return{...raw,gross,epfBase,kpi,kfi,incentive,perf,
+  return{...raw,gross,epfBase,kpi,kfi,incentive,perf,psCollection:+(raw.psCollection||0),kpiSub:+(raw.kpiSub||0),kfiDsb:+(raw.kfiDsb||0),
     epfE:ep.e,epfR:ep.r,socsoE:so.e,socsoR:so.r,eisE:ei.e,eisR:ei.r,
     unpaid:unp,leaveDays:lv,mcDays:mc,submissionLoan:submission,
     totalDed:ded,net:R2(gross-ded)};
@@ -1121,7 +1144,11 @@ createApp({
     };
 
     // ── PAYSLIP ──
-    const openPrint = (emp,c,ym) => { printInfo.value={emp,c,ym}; };
+    const openPrint = (emp,c,ym) => {
+      const empPrls = Object.keys(prls.value).sort();
+      const psNo = empPrls.indexOf(ym) + 1;
+      printInfo.value = { emp, c, ym, payslipNo: psNo > 0 ? psNo : '' };
+    };
     const doPrint = () => { document.body.classList.add('ps-open'); window.print(); setTimeout(()=>document.body.classList.remove('ps-open'),800); };
 
     // ── HQ FORMAT ──
@@ -1207,7 +1234,7 @@ createApp({
     watch(sortedPRLKeys,(keys)=>{ if(keys.length&&!rptYM.value) rptYM.value=keys[0]; });
 
     return{
-      MONTHS,ready,mode,view,empUser,emps,prls,toastMsg,isProbation,
+      MONTHS,ready,mode,view,empUser,emps,prls,toastMsg,isProbation,isProbation,
       loginTab,adminPw,empIC,loginErr,
       yr,mo,wdInput,activeEmps,activeYM,currentPR,
       getField,calcRow,payrollTotals,
