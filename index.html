@@ -157,34 +157,17 @@ tr:hover td{background:rgba(201,168,76,.025)}
 .hqbtn{background:#1a3560;border:none;color:#f5c842;border-radius:6px;padding:.34rem .76rem;cursor:pointer;font-family:inherit;font-size:.72rem;font-weight:600;transition:background .15s;white-space:nowrap}
 .hqbtn:hover{background:#22406e}
 @media print{
-  /* visibility:hidden hides parent but lets children override — unlike display:none */
+  html,body{ background:white !important; }
   body > *{ visibility:hidden !important; }
-
-  /* PAYSLIP PRINT */
-  body.ps-open .psov{
-    visibility:visible !important;
-    position:fixed !important; inset:0 !important;
-    background:white !important; padding:0 !important;
-    z-index:9999 !important; overflow:visible !important;
-    display:flex !important; flex-direction:column !important;
-    align-items:center !important; justify-content:flex-start !important;
-  }
+  body.ps-open .psov{ visibility:visible !important; position:fixed !important; top:0 !important; left:0 !important; width:100% !important; background:white !important; padding:0 !important; z-index:9999 !important; overflow:visible !important; display:block !important; }
   body.ps-open .psov *{ visibility:visible !important; }
-  body.ps-open .psac{ display:none !important; visibility:hidden !important; }
-
-  /* HQ FORMAT PRINT */
-  body.hq-open .hqov{
-    visibility:visible !important;
-    position:fixed !important; inset:0 !important;
-    background:white !important; padding:0 !important;
-    z-index:9999 !important; overflow:visible !important;
-    display:flex !important; flex-direction:column !important;
-    align-items:center !important; justify-content:flex-start !important;
-  }
+  body.ps-open .psac{ display:none !important; }
+  body.ps-open .psw{ width:100% !important; max-width:none !important; margin:0 !important; border:none !important; }
+  body.hq-open .hqov{ visibility:visible !important; position:fixed !important; top:0 !important; left:0 !important; width:100% !important; background:white !important; padding:0 !important; z-index:9999 !important; overflow:visible !important; display:block !important; }
   body.hq-open .hqov *{ visibility:visible !important; }
-  body.hq-open .hqac{ display:none !important; visibility:hidden !important; }
-
-  @page{ margin:8mm; size:A4; }
+  body.hq-open .hqac{ display:none !important; }
+  body.hq-open .hqw{ width:100% !important; max-width:none !important; margin:0 !important; border:none !important; }
+  @page{ size:A4 portrait; margin:10mm; }
 }
 </style>
 </head>
@@ -379,7 +362,7 @@ tr:hover td{background:rgba(201,168,76,.025)}
               <tbody>
                 <tr v-for="(emp,idx) in activeEmps" :key="emp.id">
                   <td style="color:#7090b8">{{idx+1}}</td>
-                  <td><div class="te">{{emp.name}}</div><div class="te2">{{emp.position}} <span v-if="!emp.hasEpf" class="b bx" style="font-size:.56rem">No EPF</span><span v-if="emp.isConfirmed" class="b ba" style="font-size:.56rem">Confirmed</span></div></td>
+                  <td><div class="te">{{emp.name}}</div><div class="te2">{{emp.position}} <span v-if="!emp.hasEpf" class="b bx" style="font-size:.56rem">No EPF</span><span v-if="emp.isConfirmed" class="b ba" style="font-size:.56rem">Confirmed</span><span v-if="isProbation(emp)" style="background:#2a1a00;color:#f5a623;border:1px solid #f5a62355;border-radius:3px;font-size:.56rem;padding:.1rem .3rem;font-weight:600;margin-left:.2rem">⏳ Probation · EPF {{emp.epfStartYM}}</span></div></td>
                   <td class="tn">{{f2(emp.basicSalary)}}</td>
                   <td><input class="ci" type="number" min="0" step="0.5" :value="getField(emp.id,'leaveDays')" @change="upField(emp.id,'leaveDays',$event.target.value)" :style="!emp.unpaidLeave?'opacity:.35':''"></td>
                   <td><input class="ci" type="number" min="0" :value="getField(emp.id,'mcDays')" @change="upField(emp.id,'mcDays',$event.target.value)"></td>
@@ -770,6 +753,18 @@ tr:hover td{background:rgba(201,168,76,.025)}
             <input type="checkbox" v-model="empForm.hasEpf">
             ✅ Ada EPF / SOCSO / EIS
           </label>
+          <div v-if="empForm.hasEpf" style="margin-top:.55rem;padding:.65rem .75rem;background:#111f38;border-radius:8px;border:1px solid #1e3660">
+            <label class="fl" style="margin-bottom:.3rem">📅 EPF/SOCSO/EIS mula dari bulan</label>
+            <input class="fi" type="month" v-model="empForm.epfStartYM" style="color-scheme:dark">
+            <div style="color:#7090b8;font-size:.62rem;margin-top:.25rem;line-height:1.5">
+              Kosongkan = EPF dari hari pertama kerja.<br>
+              Set bulan tertentu = EPF hanya bermula bulan itu (sebelum itu dikira probation).
+            </div>
+            <div v-if="empForm.epfStartYM" style="margin-top:.4rem;background:#2a1a00;border:1px solid #f5a62355;border-radius:6px;padding:.4rem .65rem;color:#f5a623;font-size:.72rem">
+              ⏳ Sebelum {{empForm.epfStartYM}} → Tiada EPF/SOCSO/EIS (Probation)<br>
+              ✅ Mulai {{empForm.epfStartYM}} → EPF/SOCSO/EIS dikira automatik
+            </div>
+          </div>
           <label class="cbr" style="margin-top:.45rem">
             <input type="checkbox" v-model="empForm.unpaidLeave">
             🗓️ Cuti / MC Tanpa Gaji (potong gaji kalau ambil cuti)
@@ -843,7 +838,7 @@ const ymk = (y,m) => `${y}-${String(m).padStart(2,'0')}`;
 function calEPF(w){if(!w||w<=0)return{e:0,r:0};return{e:Math.round(w*0.11),r:w<=5000?Math.round(w*0.13):Math.round(w*0.12)};}
 function calSOCSO(w){if(!w||w<=0)return{e:0,r:0};const c=Math.min(w,5000),bl=c%50===0?Math.max(0,c-50):Math.floor(c/50)*50;return{e:R2(Math.floor(bl*0.005*100)/100),r:R2(Math.floor(bl*0.0175/0.05)*0.05)};}
 function calEIS(w){if(!w||w<=0)return{e:0,r:0};const c=Math.min(w,4000),bl=c%50===0?Math.max(0,c-50):Math.floor(c/50)*50;const a=R2(Math.floor(bl*0.002*100)/100);return{e:a,r:a};}
-function compute(emp,raw={},wd=22){
+function compute(emp,raw={},wd=22,ym=''){
   const b=+(emp.basicSalary||0);
   const kpi=+(raw.kpi||0);          // KPI commission — EPF-able
   const kfi=+(raw.kfi||0);          // KFI commission — EPF-able
@@ -852,8 +847,10 @@ function compute(emp,raw={},wd=22){
   // EPF base = basic + KPI + KFI + Basic Performance
   const epfBase = b + kpi + kfi + perf;
   const gross = b + kpi + kfi + incentive + perf;
-  // No EPF/SOCSO/EIS if exempt OR not ticked "Ada EPF"
-  const ex = !!emp.exempt || !emp.hasEpf;
+  // Probation: epfStartYM is set and current month hasn't reached it yet
+  const onProbation = emp.epfStartYM && ym && ym < emp.epfStartYM;
+  // No EPF/SOCSO/EIS if: permanent exempt OR probation period OR hasEpf not ticked
+  const ex = !!emp.exempt || !!onProbation || !emp.hasEpf;
   const ep=ex?{e:0,r:0}:calEPF(epfBase);
   const so=ex?{e:0,r:0}:calSOCSO(b);
   const ei=ex?{e:0,r:0}:calEIS(b);
@@ -950,6 +947,9 @@ createApp({
       ready.value = true;
     });
 
+    // Helper: check if employee is still on probation for current payroll month
+    const isProbation = emp => !emp.exempt && emp.epfStartYM && activeYM.value < emp.epfStartYM;
+
     const notify = msg => {
       toastMsg.value = msg;
       if(toastTimer) clearTimeout(toastTimer);
@@ -979,7 +979,7 @@ createApp({
     const getField = (eid,f) => currentPR.value?.entries?.[eid]?.[f]||0;
     const calcRow = emp => {
       const raw = currentPR.value?.entries?.[emp.id]||{};
-      return compute(emp, raw, currentPR.value?.workingDays||22);
+      return compute(emp, raw, currentPR.value?.workingDays||22, activeYM.value);
     };
 
     const payrollTotals = computed(()=>{
@@ -1124,7 +1124,7 @@ createApp({
     const rptRows = computed(()=>{
       if(!rptYM.value||!prls.value[rptYM.value]) return[];
       const pr=prls.value[rptYM.value];
-      return activeEmps.value.map(emp=>{const raw=pr.entries?.[emp.id]||{},c=compute(emp,raw,pr.workingDays);return{emp,raw,c};});
+      return activeEmps.value.map(emp=>{const raw=pr.entries?.[emp.id]||{},c=compute(emp,raw,pr.workingDays,rptYM.value);return{emp,raw,c};});
     });
     const rptTotals = computed(()=>{
       return rptRows.value.reduce((a,{c})=>({gross:a.gross+c.gross,net:a.net+c.net,ded:a.ded+c.totalDed,epfEr:a.epfEr+c.epfR,socsoEr:a.socsoEr+c.socsoR,eisEr:a.eisEr+c.eisR}),{gross:0,net:0,ded:0,epfEr:0,socsoEr:0,eisEr:0});
@@ -1137,7 +1137,7 @@ createApp({
     const empRaw = computed(()=>empCurrentPR.value?.entries?.[empUser.value?.id]||{});
     const empCalc = computed(()=>{
       if(!empUser.value||!empCurrentPR.value) return{gross:0,epfE:0,epfR:0,socsoE:0,socsoR:0,eisE:0,eisR:0,unpaid:0,totalDed:0,net:0};
-      return compute(empUser.value, empRaw.value, empCurrentPR.value.workingDays);
+      return compute(empUser.value, empRaw.value, empCurrentPR.value.workingDays, empYM.value);
     });
     const empUpdateField = (f,v) => {
       if(!empCurrentPR.value||!empUser.value) return;
@@ -1150,7 +1150,7 @@ createApp({
     watch(sortedPRLKeys,(keys)=>{ if(keys.length&&!rptYM.value) rptYM.value=keys[0]; });
 
     return{
-      MONTHS,ready,mode,view,empUser,emps,prls,toastMsg,
+      MONTHS,ready,mode,view,empUser,emps,prls,toastMsg,isProbation,
       loginTab,adminPw,empIC,loginErr,
       yr,mo,wdInput,activeEmps,activeYM,currentPR,
       getField,calcRow,payrollTotals,
