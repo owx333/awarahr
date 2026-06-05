@@ -87,6 +87,20 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .sync-pill{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);
   background:rgba(255,255,255,.05);border:1px solid var(--border);padding:7px 13px;border-radius:30px;cursor:pointer}
 .sync-pill .led{width:8px;height:8px;border-radius:50%;background:#56688a}
+.period-sel{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--ink);
+  padding:7px 11px;border-radius:30px;font-size:12px;outline:none;cursor:pointer}
+.period-sel:focus{border-color:#5B8DEF}
+.period-sel option{background:#101A2E;color:var(--ink)}
+.muted{color:var(--muted)}
+.attn{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px}
+.attn-i{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.15s}
+.attn-i:hover{background:rgba(255,255,255,.08)}
+.attn-i b{display:block;font-family:'JetBrains Mono';font-size:24px;line-height:1}
+.attn-i span{display:block;font-size:11px;color:var(--muted);margin-top:5px}
+@media(max-width:760px){.attn{grid-template-columns:repeat(3,1fr)}}
+.seg2{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.seg2 button{padding:8px 16px;font-size:12.5px;color:var(--muted);font-weight:600}
+.seg2 button.on{background:var(--brand);color:#06101F}
 .sync-pill.live .led{background:#3FC8C0;box-shadow:0 0 0 3px rgba(63,200,192,.22)}
 .content{padding:22px 26px 60px;max-width:1400px;width:100%}
 .view{display:none;animation:fade .3s}
@@ -269,6 +283,9 @@ td.num,th.num{text-align:right;font-family:'JetBrains Mono'}
         <div class="crumb" id="viewCrumb">关键经营指标总览</div>
       </div>
       <div class="spacer"></div>
+      <select id="periodSel" class="period-sel" onchange="setPeriod(this.value)" title="时间范围">
+        <option value="all">全部时间</option><option value="12m">近12个月</option><option value="6m">近6个月</option><option value="3m">近3个月</option>
+      </select>
       <div class="sync-pill" id="syncPill" onclick="go('settings')"><span class="led"></span><span id="syncTxt">本地存储</span></div>
     </div>
     <div class="content" id="content"></div>
@@ -329,6 +346,8 @@ function load(){
   DB.settings.dict=DB.settings.dict||{};
   for(const k in DICT_DEFAULTS){ if(!Array.isArray(DB.settings.dict[k])||!DB.settings.dict[k].length) DB.settings.dict[k]=[...DICT_DEFAULTS[k]]; }
   DB.settings.hiddenViews=DB.settings.hiddenViews||[];
+  DB.settings.targets=DB.settings.targets||{sales:0,profit:0};
+  DB.purchases=DB.purchases||[];
 }
 /* read an editable dictionary list */
 function D(k){ return (DB.settings.dict&&DB.settings.dict[k])||[]; }
@@ -382,7 +401,8 @@ function seedDemo(){
     ['SKU-B202','备用电池','cat1',55,95,'Panasonic','pcs'],
     ['SKU-C302','清洁剂（升）','cat3',9,15,'本地','公升'],
   ];
-  const products=prodDefs.map((p,i)=>({id:'pr'+(i+1),sku:p[0],name:p[1],categoryId:p[2],cost:p[3],price:p[4],brand:p[5]||'',unit:p[6]||'pcs'}));
+  const products=prodDefs.map((p,i)=>({id:'pr'+(i+1),sku:p[0],name:p[1],categoryId:p[2],cost:p[3],price:p[4],brand:p[5]||'',unit:p[6]||'pcs',
+    openingStock:0,safetyStock:[20,15,10,5,10,20,15,8,30,25,12,6][i]||10}));
   const custDefs=[
     ['宏达机械有限公司','019-2334455','宏达机械','sp1','制造业','槟城','老客户介绍','准时付款'],
     ['绿野农业科技','012-7788990','绿野农科','sp2','农业','吉打','朋友介绍','正常'],
@@ -439,23 +459,37 @@ function seedDemo(){
     }
   });
   orders.sort((a,b)=>a.date<b.date?1:-1);
-  DB={categories:cats,products,customers,salespersons:sps,orders,
-    settings:{password:'8888',gateOn:true,sheetId:'',sheetTabs:{customers:'customers',products:'products',orders:'orders'}}};
+  // purchases (进货) so stock = opening + purchased - sold yields a varied mix
+  const sold={}; orders.forEach(o=>o.items.forEach(it=>{sold[it.productId]=(sold[it.productId]||0)+it.qty;}));
+  const deltas=[80,55,12,6,-4,40,25,9,70,50,18,-2];
+  const purchases=[]; let pc=1;
+  products.forEach((p,i)=>{ const want=(sold[p.id]||0)+(deltas[i]!=null?deltas[i]:20);
+    if(want>0){ purchases.push({id:'pu'+(pc++),date:offsetDate(-(165-i*7)),productId:p.id,qty:want,unitCost:p.cost,supplier:p.brand||'供应商',note:'期初进货'}); }
+  });
+  DB={categories:cats,products,customers,salespersons:sps,orders,purchases,
+    settings:{password:'8888',gateOn:true,sheetId:'',sheetTabs:{customers:'customers',products:'products',orders:'orders'},
+      dict:{industries:[...INDUSTRIES],regions:[...REGIONS],sources:[...SOURCES],payHabits:[...PAYHABITS],payMethods:[...PAYMETHODS],channels:[...CHANNELS],units:[...UNITS]},
+      hiddenViews:[],targets:{sales:0,profit:0}}};
   save();
 }
 function offsetDate(days){ const d=new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
 function mulberry(a){ return function(){ a|=0;a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 /* ---------- Computations ---------- */
+let period='all';
+const periodLabel={all:'全部时间','12m':'近12个月','6m':'近6个月','3m':'近3个月'};
+function periodCutoff(){ const m={'3m':3,'6m':6,'12m':12}[period]; if(!m)return null;
+  const d=new Date(); d.setMonth(d.getMonth()-m); return d.toISOString().slice(0,10); }
+function ordersInPeriod(){ const c=periodCutoff(); return c? DB.orders.filter(o=>o.date>=c) : DB.orders; }
+
 function customerStats(){
-  const map={};
+  const ORD=ordersInPeriod(); const map={};
   DB.customers.forEach(c=> map[c.id]={...c,sales:0,profit:0,count:0,last:null});
-  DB.orders.forEach(o=>{
+  ORD.forEach(o=>{
     const m=map[o.customerId]; if(!m)return;
     m.sales+=o.totalAmount; m.profit+=o.totalProfit; m.count++;
     if(!m.last||o.date>m.last) m.last=o.date;
   });
   const arr=Object.values(map);
-  // RFM tiering
   const active=arr.filter(c=>c.count>0);
   const profits=active.map(c=>c.profit).sort((a,b)=>b-a);
   const topProfit = profits.length? profits[Math.floor(profits.length*0.25)] : 0;
@@ -470,17 +504,20 @@ function customerStats(){
       else if(c.count>=2) c.tier='active';
       else c.tier='potential';
     }
+    c.aov = c.count? c.sales/c.count : 0;
   });
   return arr;
 }
 function productStats(){
-  const map={};
+  const ORD=ordersInPeriod(); const map={};
   DB.products.forEach(p=> map[p.id]={...p,qty:0,sales:0,profit:0,orders:0,last:null});
-  DB.orders.forEach(o=> o.items.forEach(it=>{
+  ORD.forEach(o=> o.items.forEach(it=>{
     const m=map[it.productId]; if(!m)return;
     m.qty+=it.qty; m.sales+=it.qty*it.unitPrice; m.profit+=it.qty*(it.unitPrice-it.unitCost); m.orders++;
     if(!m.last||o.date>m.last)m.last=o.date;
   }));
+  const purchased={}; (DB.purchases||[]).forEach(pu=>{ purchased[pu.productId]=(purchased[pu.productId]||0)+(+pu.qty||0); });
+  const soldAll={}; DB.orders.forEach(o=>o.items.forEach(it=>{ soldAll[it.productId]=(soldAll[it.productId]||0)+it.qty; }));
   const arr=Object.values(map);
   const td=today();
   arr.forEach(p=>{
@@ -488,27 +525,35 @@ function productStats(){
     p.recency = p.last? daysBetween(p.last,td):null;
     p.lowProfit = p.margin>0 && p.margin<0.20;
     p.slow = p.qty===0 || (p.recency!=null && p.recency>120);
+    p.purchased=purchased[p.id]||0; p.soldAll=soldAll[p.id]||0;
+    p.stock=(+p.openingStock||0)+p.purchased-p.soldAll;
+    p.safety=+p.safetyStock||0; p.stockValue=p.stock*(+p.cost||0);
+    p.outOfStock=p.stock<=0; p.lowStock=!p.outOfStock && p.stock<=p.safety;
   });
   return arr;
 }
 function salespersonStats(){
-  const map={};
+  const ORD=ordersInPeriod(); const map={};
   DB.salespersons.forEach(s=> map[s.id]={...s,sales:0,profit:0,orders:0,custs:new Set()});
-  DB.orders.forEach(o=>{
+  ORD.forEach(o=>{
     const m=map[o.salespersonId]; if(!m)return;
     m.sales+=o.totalAmount; m.profit+=o.totalProfit; m.orders++; m.custs.add(o.customerId);
   });
   return Object.values(map).map(s=>({...s,customers:s.custs.size}));
 }
 function totals(){
-  const rev=DB.orders.reduce((s,o)=>s+o.totalAmount,0);
-  const pft=DB.orders.reduce((s,o)=>s+o.totalProfit,0);
+  const ORD=ordersInPeriod();
+  const rev=ORD.reduce((s,o)=>s+o.totalAmount,0);
+  const pft=ORD.reduce((s,o)=>s+o.totalProfit,0);
+  const ps=productStats();
+  const stockValue=ps.reduce((s,p)=>s+(p.stockValue>0?p.stockValue:0),0);
   return {rev,pft,custs:DB.customers.length,prods:DB.products.length,
-    margin: rev>0?pft/rev:0, orders:DB.orders.length};
+    margin: rev>0?pft/rev:0, orders:ORD.length,
+    stockValue, lowCount:ps.filter(p=>p.lowStock).length, outCount:ps.filter(p=>p.outOfStock).length};
 }
-function monthlyTrend(months=6){
-  const td=new Date(); const labels=[],sales=[],profit=[];
-  const buckets={};
+function monthlyTrend(months){
+  if(!months) months={all:12,'12m':12,'6m':6,'3m':3}[period]||12;
+  const td=new Date(); const labels=[],sales=[],profit=[]; const buckets={};
   for(let i=months-1;i>=0;i--){
     const d=new Date(td.getFullYear(),td.getMonth()-i,1);
     const k=d.toISOString().slice(0,7);
@@ -518,6 +563,15 @@ function monthlyTrend(months=6){
   Object.keys(buckets).forEach(k=>{ sales.push(R(buckets[k].s)); profit.push(R(buckets[k].p)); });
   return {labels,sales,profit};
 }
+function momGrowth(){
+  const now=new Date(); const cm=now.toISOString().slice(0,7);
+  const pm=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().slice(0,7);
+  let cR=0,cP=0,pR=0,pP=0;
+  DB.orders.forEach(o=>{const k=ym(o.date); if(k===cm){cR+=o.totalAmount;cP+=o.totalProfit;} else if(k===pm){pR+=o.totalAmount;pP+=o.totalProfit;}});
+  const g=(c,p)=> p>0?(c-p)/p:(c>0?1:0);
+  return {revPct:g(cR,pR),pftPct:g(cP,pP),curRev:cR,curPft:cP,hasPrev:(pP>0||pR>0)};
+}
+function setPeriod(v){ period=v; render(curView); }
 const tierName={vip:'VIP',active:'活跃',potential:'潜力',risk:'风险',lost:'流失',gray:'—'};
 
 /* ---------- Auth ---------- */
@@ -541,6 +595,7 @@ const NAV=[
   {id:'dashboard',name:'仪表盘',ic:'📊',crumb:'关键经营指标总览'},
   {id:'customers',name:'客户管理',ic:'👥',crumb:'客户资料与价值分层'},
   {id:'products',name:'产品管理',ic:'📦',crumb:'产品利润与滞销分析'},
+  {id:'inventory',name:'库存 / 进货',ic:'🏷️',crumb:'库存水位 · 进货记录 · 低库存预警'},
   {id:'orders',name:'销售记录',ic:'🧾',crumb:'订单数据 · 分析核心来源'},
   {id:'profit',name:'利润分析',ic:'💰',crumb:'客户 / 产品 / 销售利润洞察'},
   {id:'insights',name:'经营洞察',ic:'📍',crumb:'地区 / 行业 / 来源 多维分析'},
@@ -577,25 +632,49 @@ function updateSyncPill(){
 }
 function render(id){
   const fn={dashboard:viewDashboard,customers:viewCustomers,products:viewProducts,
-    orders:viewOrders,profit:viewProfit,insights:viewInsights,team:viewTeam,reports:viewReports,settings:viewSettings}[id];
+    orders:viewOrders,profit:viewProfit,insights:viewInsights,team:viewTeam,reports:viewReports,settings:viewSettings,inventory:viewInventory}[id];
   document.getElementById('content').innerHTML=fn();
-  const after={dashboard:afterDashboard,profit:afterProfit,insights:afterInsights,team:afterTeam}[id];
+  const after={dashboard:afterDashboard,profit:afterProfit,insights:afterInsights,team:afterTeam,inventory:afterInventory}[id];
   if(after) setTimeout(after,30);
 }
 /* ==================== DASHBOARD ==================== */
+function deltaHTML(p){ if(!isFinite(p)||p===0) return '<span style="color:var(--muted)">持平</span>';
+  const up=p>0; return `<span style="color:${up?'#5FC08A':'#F2888C'};font-weight:700">${up?'▲':'▼'} ${Math.abs(p*100).toFixed(1)}%</span>`; }
 function viewDashboard(){
-  const t=totals();
-  const recentOrders=DB.orders.slice(0,6);
-  const recentCust=[...DB.customers].sort((a,b)=>(a.createdAt<b.createdAt?1:-1)).slice(0,5);
+  const t=totals(); const mom=momGrowth(); const tg=DB.settings.targets||{sales:0,profit:0};
+  const cs=customerStats(); const ps=productStats();
+  const riskN=cs.filter(c=>c.tier==='risk'||c.tier==='lost').length;
+  const lowProfitN=ps.filter(p=>p.lowProfit).length, slowN=ps.filter(p=>p.slow).length;
+  const lowStockN=ps.filter(p=>p.lowStock).length, outN=ps.filter(p=>p.outOfStock).length;
+  const revDelta = mom.hasPrev? deltaHTML(mom.revPct)+' 环比' : `${t.orders} 张订单`;
+  const pftDelta = mom.hasPrev? deltaHTML(mom.pftPct)+' 环比' : `利润率 ${pct(t.margin)}`;
+  const prog=(a,b)=> b>0? Math.min(100,a/b*100):0;
+  const tgBlock = (tg.sales>0||tg.profit>0) ? `
+      <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="muted">销售额 ${money(mom.curRev)} / ${money(tg.sales)}</span><b>${prog(mom.curRev,tg.sales).toFixed(0)}%</b></div>
+        <div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curRev,tg.sales)}%;background:linear-gradient(90deg,#5B8DEF,#6FD3E8)"></i></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="muted">利润 ${money(mom.curPft)} / ${money(tg.profit)}</span><b>${prog(mom.curPft,tg.profit).toFixed(0)}%</b></div>
+        <div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curPft,tg.profit)}%;background:linear-gradient(90deg,#3FC8C0,#62B847)"></i></div></div>`
+    : `<div class="empty" style="padding:24px 10px;font-size:12.5px">未设定本月目标。到 <b>系统设置 → 目标设定</b> 设定后这里会显示达成进度。</div>`;
   return `
   <div class="kpis">
-    <div class="kpi c1"><div class="lbl">💵 总销售额 Total Revenue</div><div class="val">${money(t.rev)}</div><div class="delta">${t.orders} 张订单</div></div>
-    <div class="kpi c2"><div class="lbl">📈 总利润 Total Profit</div><div class="val">${money(t.pft)}</div><div class="delta">利润率 ${pct(t.margin)}</div></div>
-    <div class="kpi c3"><div class="lbl">👥 客户总数 Customers</div><div class="val">${num(t.custs)}</div><div class="delta">活跃客户分层见客户管理</div></div>
-    <div class="kpi c4"><div class="lbl">📦 产品总数 Products</div><div class="val">${num(t.prods)}</div><div class="delta">${DB.categories.length} 个分类</div></div>
+    <div class="kpi c1"><div class="lbl">💵 总销售额 Revenue</div><div class="val">${money(t.rev)}</div><div class="delta">${revDelta}</div></div>
+    <div class="kpi c2"><div class="lbl">📈 总利润 Profit</div><div class="val">${money(t.pft)}</div><div class="delta">${pftDelta}</div></div>
+    <div class="kpi c3"><div class="lbl">📦 库存总值 Stock Value</div><div class="val">${money(t.stockValue)}</div><div class="delta">${t.prods} 个产品</div></div>
+    <div class="kpi c4"><div class="lbl">👥 客户总数 Customers</div><div class="val">${num(t.custs)}</div><div class="delta">${t.orders} 张订单 · ${periodLabel[period]}</div></div>
   </div>
   <div class="grid2">
-    <div class="card"><h3>📈 销售与利润趋势</h3><div class="csub">近 6 个月走势</div><div class="chwrap"><canvas id="chTrend"></canvas></div></div>
+    <div class="card"><h3>🎯 本月目标达成</h3><div class="csub">本自然月销售 / 利润 vs 目标</div>${tgBlock}</div>
+    <div class="card"><h3>⚠️ 待关注</h3><div class="csub">需要你处理的经营信号（点击查看）</div>
+      <div class="attn">
+        <div class="attn-i" onclick="custFilter='risk';go('customers')"><b style="color:#F0A878">${riskN}</b><span>风险/流失客户</span></div>
+        <div class="attn-i" onclick="prodFilter='low';go('products')"><b style="color:#F0989C">${lowProfitN}</b><span>低利润产品</span></div>
+        <div class="attn-i" onclick="prodFilter='slow';go('products')"><b style="color:#EBCB6E">${slowN}</b><span>滞销产品</span></div>
+        <div class="attn-i" onclick="go('inventory')"><b style="color:#F0A878">${lowStockN}</b><span>低库存</span></div>
+        <div class="attn-i" onclick="go('inventory')"><b style="color:#F0989C">${outN}</b><span>缺货</span></div>
+      </div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>📈 销售与利润趋势</h3><div class="csub">${periodLabel[period]} · 月度走势</div><div class="chwrap"><canvas id="chTrend"></canvas></div></div>
     <div class="card"><h3>🏆 客户利润排行 Top 6</h3><div class="csub">最赚钱的客户</div><div class="chwrap"><canvas id="chCustRank"></canvas></div></div>
   </div>
   <div class="grid2">
@@ -605,16 +684,16 @@ function viewDashboard(){
   <div class="grid2">
     <div class="card"><h3>🧾 最近订单</h3><div class="csub">最新成交记录</div>
       <div class="tablewrap"><table><thead><tr><th>订单号</th><th>客户</th><th class="num">金额</th><th class="num">利润</th></tr></thead><tbody>
-      ${recentOrders.map(o=>{const c=byId(DB.customers,o.customerId);return `<tr><td class="mono">${esc(o.orderNo)}</td><td>${esc(c?c.name:'—')}</td><td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--lime)">${money(o.totalProfit)}</td></tr>`;}).join('')||'<tr><td colspan="4" class="empty">暂无订单</td></tr>'}
+      ${DB.orders.slice(0,6).map(o=>{const c=byId(DB.customers,o.customerId);return `<tr><td class="mono">${esc(o.orderNo)}</td><td>${esc(c?c.name:'—')}</td><td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--lime)">${money(o.totalProfit)}</td></tr>`;}).join('')||'<tr><td colspan="4" class="empty">暂无订单</td></tr>'}
       </tbody></table></div></div>
     <div class="card"><h3>✨ 最近新增客户</h3><div class="csub">新进客户</div>
       <div class="tablewrap"><table><thead><tr><th>客户名称</th><th>电话</th><th>负责销售</th></tr></thead><tbody>
-      ${recentCust.map(c=>{const s=byId(DB.salespersons,c.salespersonId);return `<tr><td>${esc(c.name)}</td><td class="mono">${esc(c.phone)}</td><td>${esc(s?s.name:'—')}</td></tr>`;}).join('')||'<tr><td colspan="3" class="empty">暂无客户</td></tr>'}
+      ${[...DB.customers].sort((a,b)=>(a.createdAt<b.createdAt?1:-1)).slice(0,5).map(c=>{const s=byId(DB.salespersons,c.salespersonId);return `<tr><td>${esc(c.name)}</td><td class="mono">${esc(c.phone)}</td><td>${esc(s?s.name:'—')}</td></tr>`;}).join('')||'<tr><td colspan="3" class="empty">暂无客户</td></tr>'}
       </tbody></table></div></div>
   </div>`;
 }
 function afterDashboard(){
-  const tr=monthlyTrend(6);
+  const tr=monthlyTrend();
   charts.trend=new Chart(document.getElementById('chTrend'),{type:'line',
     data:{labels:tr.labels,datasets:[
       {label:'销售额',data:tr.sales,borderColor:'#5B8DEF',backgroundColor:'rgba(79,157,222,.12)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
@@ -673,7 +752,7 @@ function refreshCust(){
       const s=byId(DB.salespersons,c.salespersonId);
       const ph=c.payHabit||'正常';
       return `<tr>
-        <td><b>${esc(c.name)}</b><div style="font-size:11px;color:var(--muted)">${esc(c.company||'')}</div></td>
+        <td><b style="cursor:pointer" onclick="openCustomerDetail('${c.id}')">${esc(c.name)}</b><div style="font-size:11px;color:var(--muted)">${esc(c.company||'')}</div></td>
         <td>${esc(c.industry||'—')}</td>
         <td>${esc(c.region||'—')}</td>
         <td>${esc(s?s.name:'—')}</td>
@@ -683,7 +762,7 @@ function refreshCust(){
         <td class="num" style="color:var(--lime);font-weight:600">${money(c.profit)}</td>
         <td class="num">${c.count}</td>
         <td>${c.last?c.last+(c.recency!=null?` <span style="color:var(--muted)">(${c.recency}天前)</span>`:''):'<span style="color:var(--muted)">从未</span>'}</td>
-        <td class="no-print"><button class="icbtn" onclick="editCustomer('${c.id}')">✎</button> <button class="icbtn" onclick="delCustomer('${c.id}')">🗑</button></td>
+        <td class="no-print"><button class="icbtn" onclick="openCustomerDetail('${c.id}')">👁</button> <button class="icbtn" onclick="editCustomer('${c.id}')">✎</button> <button class="icbtn" onclick="delCustomer('${c.id}')">🗑</button></td>
       </tr>`;}).join('')||'<tr><td colspan="11" class="empty"><div class="big">👥</div>没有符合条件的客户</td></tr>'}
     </tbody></table></div>`;
 }
@@ -757,7 +836,7 @@ function refreshProd(){
   arr.sort((a,b)=>b.profit-a.profit);
   el.innerHTML=`<div class="tablewrap"><table><thead><tr>
     <th>SKU</th><th>产品名称</th><th>分类</th><th>品牌/供应商</th><th class="num">成本</th><th class="num">售价</th>
-    <th class="num">销量</th><th class="num">销售额</th><th class="num">利润</th><th class="num">利润率</th><th>状态</th><th></th>
+    <th class="num">销量</th><th class="num">销售额</th><th class="num">利润</th><th class="num">利润率</th><th class="num">库存</th><th>状态</th><th></th>
     </tr></thead><tbody>${arr.map(p=>{
       const cat=byId(DB.categories,p.categoryId);
       let badge='';
@@ -765,15 +844,17 @@ function refreshProd(){
       if(p.slow)badge+='<span class="tag2 slow">滞销</span>';
       if(!badge&&p.qty>0)badge='<span class="tag2 ok">正常</span>';
       return `<tr>
-        <td class="mono">${esc(p.sku)}</td><td><b>${esc(p.name)}</b></td><td>${esc(cat?cat.name:'—')}</td><td>${esc(p.brand||'—')}</td>
+        <td class="mono">${esc(p.sku)}</td><td><b style="cursor:pointer" onclick="openProductDetail('${p.id}')">${esc(p.name)}</b></td><td>${esc(cat?cat.name:'—')}</td><td>${esc(p.brand||'—')}</td>
         <td class="num">${money(p.cost,2)}</td><td class="num">${money(p.price,2)}</td>
         <td class="num">${num(p.qty)} <span style="color:var(--muted);font-size:11px">${esc(p.unit||'')}</span></td><td class="num">${money(p.sales)}</td>
         <td class="num" style="color:var(--lime);font-weight:600">${money(p.profit)}</td>
-        <td class="num">${pct(p.margin)}</td><td>${badge||'—'}</td>
-        <td class="no-print"><button class="icbtn" onclick="editProduct('${p.id}')">✎</button> <button class="icbtn" onclick="delProduct('${p.id}')">🗑</button></td>
-      </tr>`;}).join('')||'<tr><td colspan="12" class="empty"><div class="big">📦</div>没有符合条件的产品</td></tr>'}
+        <td class="num">${pct(p.margin)}</td><td class="num">${stockCell(p)}</td><td>${badge||'—'}</td>
+        <td class="no-print"><button class="icbtn" onclick="openProductDetail('${p.id}')">👁</button> <button class="icbtn" onclick="editProduct('${p.id}')">✎</button> <button class="icbtn" onclick="delProduct('${p.id}')">🗑</button></td>
+      </tr>`;}).join('')||'<tr><td colspan="13" class="empty"><div class="big">📦</div>没有符合条件的产品</td></tr>'}
     </tbody></table></div>`;
 }
+function stockCell(p){ const c=p.outOfStock?'#F0989C':(p.lowStock?'#F0A878':'var(--ink)');
+  return `<span style="color:${c};font-weight:600">${num(p.stock)}</span> <span style="color:var(--muted);font-size:11px">${esc(p.unit||'')}</span>`; }
 function editProduct(id){
   const p=id?byId(DB.products,id):{};
   const catOpts=DB.categories.map(c=>`<option value="${c.id}" ${p.categoryId===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
@@ -784,7 +865,9 @@ function editProduct(id){
     <div class="frow"><div class="field"><label>品牌 / 供应商</label><input id="p_brand" value="${esc(p.brand||'')}" placeholder="例如 3M / 本地 / 自营"></div>
       <div class="field"><label>单位</label><input id="p_unit" list="unitList" value="${esc(p.unit||'pcs')}"><datalist id="unitList">${D('units').map(u=>`<option value="${u}">`).join('')}</datalist></div></div>
     <div class="frow"><div class="field"><label>成本 (RM)</label><input id="p_cost" type="number" step="0.01" value="${p.cost??''}"></div>
-      <div class="field"><label>售价 (RM)</label><input id="p_price" type="number" step="0.01" value="${p.price??''}"></div></div>`,
+      <div class="field"><label>售价 (RM)</label><input id="p_price" type="number" step="0.01" value="${p.price??''}"></div></div>
+    <div class="frow"><div class="field"><label>期初库存</label><input id="p_open" type="number" value="${p.openingStock??0}"></div>
+      <div class="field"><label>安全库存（低于则预警）</label><input id="p_safe" type="number" value="${p.safetyStock??0}"></div></div>`,
     `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveProduct('${id||''}')">保存</button>`);
 }
 function saveProduct(id){
@@ -792,6 +875,7 @@ function saveProduct(id){
   if(!sku||!name){toast('请填写 SKU 与产品名称');return;}
   const data={sku,name,categoryId:document.getElementById('p_cat').value,
     brand:document.getElementById('p_brand').value.trim(),unit:document.getElementById('p_unit').value.trim()||'pcs',
+    openingStock:+document.getElementById('p_open').value||0,safetyStock:+document.getElementById('p_safe').value||0,
     cost:+document.getElementById('p_cost').value||0,price:+document.getElementById('p_price').value||0};
   if(id)Object.assign(byId(DB.products,id),data);
   else DB.products.push({id:uid('pr'),...data});
@@ -800,6 +884,139 @@ function saveProduct(id){
 function delProduct(id){
   const p=byId(DB.products,id);
   confirmBox(`确定删除产品「${p.name}」？`,()=>{DB.products=DB.products.filter(x=>x.id!==id);save();refreshProd();toast('已删除');});
+}
+
+/* ==================== INVENTORY / 进货 ==================== */
+function viewInventory(){
+  const ps=productStats();
+  const totalVal=ps.reduce((s,p)=>s+(p.stockValue>0?p.stockValue:0),0);
+  const low=ps.filter(p=>p.lowStock), out=ps.filter(p=>p.outOfStock);
+  const alerts=[...out,...low];
+  const inv=[...ps].sort((a,b)=>b.stockValue-a.stockValue);
+  const pur=[...(DB.purchases||[])].sort((a,b)=>a.date<b.date?1:-1).slice(0,40);
+  return `
+  <div class="kpis">
+    <div class="kpi c1"><div class="lbl">💰 库存总值 Stock Value</div><div class="val">${money(totalVal)}</div><div class="delta">按成本计</div></div>
+    <div class="kpi c3"><div class="lbl">⚠️ 低库存 SKU</div><div class="val">${low.length}</div><div class="delta">低于安全库存</div></div>
+    <div class="kpi c4"><div class="lbl">🛑 缺货 SKU</div><div class="val">${out.length}</div><div class="delta">需尽快补货</div></div>
+    <div class="kpi c2"><div class="lbl">📦 产品种类 SKU</div><div class="val">${ps.length}</div><div class="delta">${(DB.purchases||[]).length} 笔进货记录</div></div>
+  </div>
+  ${alerts.length?`<div class="card" style="margin-bottom:16px"><h3>🔔 补货预警</h3><div class="csub">以下产品库存不足，建议尽快进货</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${alerts.map(p=>`<span class="chip" style="cursor:pointer" onclick="editPurchase('','${p.id}')">${p.outOfStock?'🛑':'⚠️'} ${esc(p.name)} · 余 ${num(p.stock)}${esc(p.unit||'')}</span>`).join('')}</div></div>`:''}
+  <div class="grid3">
+    <div class="card"><h3>🏷️ 库存明细</h3><div class="csub">当前库存 = 期初 + 累计进货 − 累计销售</div>
+      <div class="tablewrap"><table><thead><tr><th>产品</th><th class="num">当前库存</th><th class="num">安全库存</th><th>状态</th><th class="num">累计进货</th><th class="num">累计售出</th><th class="num">库存价值</th></tr></thead><tbody>
+      ${inv.map(p=>`<tr><td><b>${esc(p.name)}</b> <span style="color:var(--muted);font-size:11px">${esc(p.sku)}</span></td>
+        <td class="num">${stockCell(p)}</td><td class="num">${num(p.safety)}</td>
+        <td>${p.outOfStock?'<span class="tag2 lo">缺货</span>':(p.lowStock?'<span class="tag2 risk">低库存</span>':'<span class="tag2 ok">正常</span>')}</td>
+        <td class="num">${num(p.purchased)}</td><td class="num">${num(p.soldAll)}</td>
+        <td class="num">${money(p.stockValue)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">暂无产品</td></tr>'}
+      </tbody></table></div></div>
+    <div class="card"><h3>💎 库存价值 Top 8</h3><div class="csub">资金压在哪些货上</div><div class="chwrap"><canvas id="chInvVal"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>📥 进货记录</h3>
+    <div class="toolbar no-print" style="margin-bottom:12px"><div class="csub" style="margin:0">记录每笔进货，自动累加库存</div><div class="spacer"></div><button class="btn gold sm" onclick="editPurchase()">＋ 新增进货</button></div>
+    <div class="tablewrap"><table><thead><tr><th>日期</th><th>产品</th><th class="num">数量</th><th class="num">进价</th><th class="num">金额</th><th>供应商</th><th>备注</th><th></th></tr></thead><tbody>
+    ${pur.map(pu=>{const p=byId(DB.products,pu.productId);return `<tr><td class="mono">${pu.date}</td><td>${esc(p?p.name:'—')}</td>
+      <td class="num">${num(pu.qty)}</td><td class="num">${money(pu.unitCost,2)}</td><td class="num">${money(pu.qty*pu.unitCost)}</td>
+      <td>${esc(pu.supplier||'—')}</td><td style="color:var(--muted)">${esc(pu.note||'')}</td>
+      <td class="no-print"><button class="icbtn" onclick="editPurchase('${pu.id}')">✎</button> <button class="icbtn" onclick="delPurchase('${pu.id}')">🗑</button></td></tr>`;}).join('')||'<tr><td colspan="8" class="empty"><div class="big">📥</div>暂无进货记录</td></tr>'}
+    </tbody></table></div></div>`;
+}
+function afterInventory(){
+  const inv=productStats().filter(p=>p.stockValue>0).sort((a,b)=>b.stockValue-a.stockValue).slice(0,8);
+  const el=document.getElementById('chInvVal'); if(!el)return;
+  charts.inv=new Chart(el,{type:'bar',data:{labels:inv.map(p=>p.name),datasets:[{data:inv.map(p=>R(p.stockValue)),backgroundColor:'#5B8DEF',borderRadius:6}]},options:barOpts(true)});
+}
+function editPurchase(id,presetPid){
+  const pu=id?(DB.purchases||[]).find(x=>x.id===id):null;
+  const pid=pu?pu.productId:(presetPid||'');
+  const prodOpts=DB.products.map(p=>`<option value="${p.id}" ${pid===p.id?'selected':''}>${esc(p.name)} (${esc(p.sku)})</option>`).join('');
+  const defCost=pu?pu.unitCost:(byId(DB.products,pid)||{}).cost||'';
+  const defSup=pu?pu.supplier:(byId(DB.products,pid)||{}).brand||'';
+  openModal(id?'编辑进货':'新增进货',`
+    <div class="frow"><div class="field"><label>日期</label><input id="pu_date" type="date" value="${pu?pu.date:today()}"></div>
+      <div class="field"><label>产品 *</label><select id="pu_prod" onchange="puFill()"><option value="">— 选产品 —</option>${prodOpts}</select></div></div>
+    <div class="frow3"><div class="field"><label>数量 *</label><input id="pu_qty" type="number" min="1" value="${pu?pu.qty:1}"></div>
+      <div class="field"><label>进价 (RM)</label><input id="pu_cost" type="number" step="0.01" value="${defCost}"></div>
+      <div class="field"><label>供应商</label><input id="pu_sup" value="${esc(defSup)}"></div></div>
+    <div class="field"><label>备注</label><input id="pu_note" value="${esc(pu?pu.note||'':'')}" placeholder="选填"></div>`,
+    `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="savePurchase('${id||''}')">保存</button>`);
+}
+function puFill(){ const p=byId(DB.products,document.getElementById('pu_prod').value); if(p){ if(!document.getElementById('pu_cost').value)document.getElementById('pu_cost').value=p.cost; if(!document.getElementById('pu_sup').value)document.getElementById('pu_sup').value=p.brand||''; } }
+function savePurchase(id){
+  const productId=document.getElementById('pu_prod').value; if(!productId){toast('请选择产品');return;}
+  const data={date:document.getElementById('pu_date').value||today(),productId,
+    qty:+document.getElementById('pu_qty').value||0,unitCost:+document.getElementById('pu_cost').value||0,
+    supplier:document.getElementById('pu_sup').value.trim(),note:document.getElementById('pu_note').value.trim()};
+  if(data.qty<=0){toast('数量需大于0');return;}
+  DB.purchases=DB.purchases||[];
+  if(id)Object.assign(DB.purchases.find(x=>x.id===id),data); else DB.purchases.push({id:uid('pu'),...data});
+  save();closeModal();render('inventory');toast('进货已保存');
+}
+function delPurchase(id){ confirmBox('确定删除这笔进货记录？',()=>{DB.purchases=DB.purchases.filter(x=>x.id!==id);save();render('inventory');toast('已删除');}); }
+
+/* ==================== DETAIL DRILL-DOWN ==================== */
+function lastMonths(n){ const td=new Date(); const keys=[],labels=[];
+  for(let i=n-1;i>=0;i--){const d=new Date(td.getFullYear(),td.getMonth()-i,1);keys.push(d.toISOString().slice(0,7));labels.push((d.getMonth()+1)+'月');}
+  return {keys,labels}; }
+function dkpi(items){ return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 16px">${items.map(it=>`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">${it[0]}</div><div style="font-family:'JetBrains Mono';font-size:16px;font-weight:700;margin-top:3px;color:#fff">${it[1]}</div></div>`).join('')}</div>`; }
+function drawDetailChart(cid,labels,sales,profit){
+  setTimeout(()=>{ const el=document.getElementById(cid); if(!el)return;
+    try{charts.detail&&charts.detail.destroy();}catch(e){}
+    charts.detail=new Chart(el,{type:'line',data:{labels,datasets:[
+      {label:'销售额',data:sales.map(R),borderColor:'#5B8DEF',backgroundColor:'rgba(91,141,239,.12)',fill:true,tension:.35,borderWidth:2,pointRadius:2},
+      {label:'利润',data:profit.map(R),borderColor:'#3FC8C0',backgroundColor:'rgba(63,200,192,.10)',fill:true,tension:.35,borderWidth:2,pointRadius:2}]},options:lineOpts()});
+  },50);
+}
+function openCustomerDetail(id){
+  const c=byId(DB.customers,id); if(!c)return;
+  const cs=customerStats().find(x=>x.id===id)||{};
+  let sales=0,profit=0,count=0,last=null; const prodMap={}; const recent=[];
+  DB.orders.forEach(o=>{ if(o.customerId!==id)return; sales+=o.totalAmount;profit+=o.totalProfit;count++;
+    if(!last||o.date>last)last=o.date; recent.push(o);
+    o.items.forEach(it=>{ const p=byId(DB.products,it.productId); const nm=p?p.name:'—'; prodMap[nm]=(prodMap[nm]||0)+it.qty*(it.unitPrice-it.unitCost); }); });
+  const lm=lastMonths(12); const mS=lm.keys.map(()=>0),mP=lm.keys.map(()=>0);
+  DB.orders.forEach(o=>{ if(o.customerId!==id)return; const idx=lm.keys.indexOf(ym(o.date)); if(idx>=0){mS[idx]+=o.totalAmount;mP[idx]+=o.totalProfit;} });
+  const topProd=Object.entries(prodMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  recent.sort((a,b)=>a.date<b.date?1:-1);
+  const aov=count?sales/count:0;
+  openModal(`👤 ${esc(c.name)}`,`
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+      <span class="tag2 ${cs.tier||'gray'}">${tierName[cs.tier]||'—'}</span>
+      ${c.industry?`<span class="tag2 gray">${esc(c.industry)}</span>`:''}${c.region?`<span class="tag2 gray">${esc(c.region)}</span>`:''}
+      ${c.source?`<span class="tag2 gray">来源:${esc(c.source)}</span>`:''}${c.payHabit?`<span class="tag2 ${payClass[c.payHabit]||'gray'}">${esc(c.payHabit)}</span>`:''}</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${esc(c.company||'')} ${c.phone?'· '+esc(c.phone):''} · 负责:${esc((byId(DB.salespersons,c.salespersonId)||{}).name||'—')}</div>
+    ${dkpi([['总销售额',money(sales)],['总利润',money(profit)],['订单数',count],['客单价 AOV',money(aov)],['复购',count>1?'是':'否'],['最近购买',last||'从未']])}
+    <div class="card" style="padding:14px;margin-bottom:14px"><h3 style="font-size:13px">📈 近12月 销售/利润</h3><div class="chwrap sm" style="height:180px"><canvas id="chDetail"></canvas></div></div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px">🛒 购买偏好（按利润）</div>
+    ${topProd.map(([nm,pf])=>`<div class="rankrow"><div class="rnm">${esc(nm)}</div><div class="rval">${money(pf)}</div></div>`).join('')||'<div class="empty" style="padding:14px">暂无</div>'}
+    <div style="font-weight:700;font-size:13px;margin:16px 0 8px">🧾 最近订单</div>
+    <div class="tablewrap"><table><thead><tr><th>单号</th><th>日期</th><th class="num">金额</th><th class="num">利润</th></tr></thead><tbody>
+    ${recent.slice(0,6).map(o=>`<tr><td class="mono">${esc(o.orderNo)}</td><td class="mono">${o.date}</td><td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--lime)">${money(o.totalProfit)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">暂无</td></tr>'}
+    </tbody></table></div>`,
+    `<button class="btn ghost" onclick="editCustomer('${id}')">编辑</button><button class="btn gold" onclick="closeModal()">关闭</button>`);
+  drawDetailChart('chDetail',lm.labels,mS,mP);
+}
+function openProductDetail(id){
+  const p=byId(DB.products,id); if(!p)return;
+  const ps=productStats().find(x=>x.id===id)||{};
+  let sold=0,sales=0,profit=0; const custMap={};
+  DB.orders.forEach(o=>o.items.forEach(it=>{ if(it.productId!==id)return; sold+=it.qty;sales+=it.qty*it.unitPrice;profit+=it.qty*(it.unitPrice-it.unitCost);
+    const nm=(byId(DB.customers,o.customerId)||{}).name||'—'; custMap[nm]=(custMap[nm]||0)+it.qty*(it.unitPrice-it.unitCost); }));
+  const lm=lastMonths(12); const mS=lm.keys.map(()=>0),mP=lm.keys.map(()=>0);
+  DB.orders.forEach(o=>{const idx=lm.keys.indexOf(ym(o.date)); if(idx<0)return; o.items.forEach(it=>{if(it.productId===id){mS[idx]+=it.qty*it.unitPrice;mP[idx]+=it.qty*(it.unitPrice-it.unitCost);}});});
+  const topCust=Object.entries(custMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const cat=byId(DB.categories,p.categoryId);
+  const margin=sales>0?profit/sales:0;
+  openModal(`📦 ${esc(p.name)}`,`
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${esc(p.sku)} · ${esc(cat?cat.name:'未分类')} · ${esc(p.brand||'—')} · 单位 ${esc(p.unit||'')}</div>
+    ${dkpi([['累计销量',num(sold)],['销售额',money(sales)],['利润',money(profit)],['利润率',pct(margin)],['当前库存',num(ps.stock||0)],['库存价值',money(ps.stockValue||0)]])}
+    <div class="card" style="padding:14px;margin-bottom:14px"><h3 style="font-size:13px">📈 近12月 销售/利润</h3><div class="chwrap sm" style="height:180px"><canvas id="chDetail"></canvas></div></div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px">👥 主要客户（按利润）</div>
+    ${topCust.map(([nm,pf])=>`<div class="rankrow"><div class="rnm">${esc(nm)}</div><div class="rval">${money(pf)}</div></div>`).join('')||'<div class="empty" style="padding:14px">暂无</div>'}`,
+    `<button class="btn ghost" onclick="editProduct('${id}')">编辑</button><button class="btn gold" onclick="closeModal()">关闭</button>`);
+  drawDetailChart('chDetail',lm.labels,mS,mP);
 }
 /* ==================== ORDERS ==================== */
 let orderSearch='';
@@ -909,6 +1126,7 @@ function delOrder(id){
   confirmBox(`确定删除订单「${o.orderNo}」？`,()=>{DB.orders=DB.orders.filter(x=>x.id!==id);save();refreshOrders();toast('已删除');});
 }
 /* ==================== PROFIT ANALYSIS ==================== */
+let abcMode='customer';
 function viewProfit(){
   const cs=customerStats().filter(c=>c.profit>0).sort((a,b)=>b.profit-a.profit);
   const totalP=cs.reduce((s,c)=>s+c.profit,0)||1;
@@ -938,7 +1156,11 @@ function viewProfit(){
       <td class="mono">${esc(p.sku)}</td><td>${esc(p.name)}</td><td class="num">${num(p.qty)}</td>
       <td class="num">${money(p.profit)}</td><td class="num" style="color:#F2888C;font-weight:600">${pct(p.margin)}</td></tr>`).join('')
       ||'<tr><td colspan="5" class="empty">👍 暂无低利润产品</td></tr>'}
-    </tbody></table></div></div>`;
+    </tbody></table></div></div>
+  <div class="card" style="margin-top:16px"><h3>📊 ABC / 帕累托分析</h3><div class="csub">关键少数：A 类约贡献 80% 利润，应优先服务；C 类长尾可优化</div>
+    <div class="seg2"><button class="${abcMode==='customer'?'on':''}" onclick="setAbc('customer')">按客户</button><button class="${abcMode==='product'?'on':''}" onclick="setAbc('product')">按产品</button></div>
+    <div id="abcSummary" style="margin:14px 0">${abcSummaryHTML(abcMode)}</div>
+    <div class="chwrap"><canvas id="chABC"></canvas></div></div>`;
 }
 function afterProfit(){
   const cs=customerStats().filter(c=>c.profit>0).sort((a,b)=>b.profit-a.profit);
@@ -950,7 +1172,34 @@ function afterProfit(){
     data:{labels,datasets:[{data,backgroundColor:cols,borderWidth:2,borderColor:'#101A2E'}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
       plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:7,usePointStyle:true,boxWidth:8}}}}});
+  const ab=abcData(abcMode).arr.slice(0,15);
+  const elA=document.getElementById('chABC');
+  if(elA) charts.abc=new Chart(elA,{data:{labels:ab.map(x=>x.name),datasets:[
+    {type:'bar',label:'利润',data:ab.map(x=>R(x.profit)),backgroundColor:ab.map(x=>x.cls==='A'?'#5FC08A':x.cls==='B'?'#E6C260':'#93A4C0'),borderRadius:5,yAxisID:'y'},
+    {type:'line',label:'累计 %',data:ab.map(x=>R(x.cum*100)),borderColor:'#5B8DEF',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2,borderWidth:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{usePointStyle:true,padding:12}}},
+    scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.07)'},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}},
+      y1:{position:'right',beginAtZero:true,max:100,grid:{display:false},ticks:{callback:v=>v+'%'}},
+      x:{ticks:{font:{family:'Noto Sans SC',size:10}},grid:{display:false}}}}});
 }
+function abcData(mode){
+  let arr = mode==='product'
+    ? productStats().filter(p=>p.profit>0).map(p=>({name:p.name,profit:p.profit}))
+    : customerStats().filter(c=>c.profit>0).map(c=>({name:c.name,profit:c.profit}));
+  arr.sort((a,b)=>b.profit-a.profit);
+  const total=arr.reduce((s,x)=>s+x.profit,0)||1; let cum=0;
+  arr.forEach(x=>{cum+=x.profit;x.cum=cum/total;x.cls=x.cum<=0.8?'A':(x.cum<=0.95?'B':'C');});
+  return {arr,total};
+}
+function abcSummaryHTML(mode){
+  const {arr,total}=abcData(mode); const g={A:{n:0,p:0},B:{n:0,p:0},C:{n:0,p:0}};
+  arr.forEach(x=>{g[x.cls].n++;g[x.cls].p+=x.profit;});
+  const unit=mode==='product'?'产品':'客户';
+  const box=(k,desc,col)=>`<div style="flex:1;min-width:150px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-left:3px solid ${col};border-radius:10px;padding:10px 12px"><div style="font-size:11.5px;color:var(--muted)">${k} 类 · ${desc}</div><div style="font-weight:700;margin-top:3px;font-size:13px">${g[k].n} 个${unit} · 占利润 ${pct(total?g[k].p/total:0)}</div></div>`;
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box('A','关键少数','#5FC08A')}${box('B','次要','#E6C260')}${box('C','长尾','#93A4C0')}</div>`;
+}
+function setAbc(m){ abcMode=m; render('profit'); }
 function rankRow(i,name,val,frac){
   const g=i<3?'g'+(i+1):'';
   return `<div class="rankrow"><div class="rk ${g}">${i+1}</div><div class="rnm">${esc(name)}</div>
@@ -969,7 +1218,7 @@ function aggBy(field){
 }
 function aggOrderBy(field){
   const m={};
-  DB.orders.forEach(o=>{const k=o[field]||'未分类';(m[k]=m[k]||{key:k,amount:0,profit:0,count:0});
+  ordersInPeriod().forEach(o=>{const k=o[field]||'未分类';(m[k]=m[k]||{key:k,amount:0,profit:0,count:0});
     m[k].amount+=o.totalAmount;m[k].profit+=o.totalProfit;m[k].count++;});
   return Object.values(m).sort((a,b)=>b.profit-a.profit);
 }
@@ -1145,6 +1394,7 @@ function viewSettings(){
       <label class="btn ghost sm" style="cursor:pointer">📤 导入客户<input type="file" hidden accept=".xlsx,.xls,.csv" onchange="importExcel(event,'customers')"></label>
       <label class="btn ghost sm" style="cursor:pointer">📤 导入产品<input type="file" hidden accept=".xlsx,.xls,.csv" onchange="importExcel(event,'products')"></label>
       <label class="btn ghost sm" style="cursor:pointer">📤 导入订单<input type="file" hidden accept=".xlsx,.xls,.csv" onchange="importExcel(event,'orders')"></label>
+      <label class="btn ghost sm" style="cursor:pointer">📤 导入进货<input type="file" hidden accept=".xlsx,.xls,.csv" onchange="importExcel(event,'purchases')"></label>
       <button class="btn sm" onclick="exportTemplate()">📋 下载导入模板</button>
     </div></div>
 
@@ -1156,6 +1406,13 @@ function viewSettings(){
     <div class="setrow"><div class="l"><b>存储方式</b><span>${Store.ok?'浏览器本地存储（数据保留在此设备）':'⚠️ 预览模式（内存，刷新后重置）— 部署到网站后将自动持久保存'}</span></div>
       <button class="btn ghost sm" onclick="saveSettings()">保存设置</button></div>
   </div>
+
+  <div class="card" style="margin-top:16px"><h3>🎯 目标设定（本月）</h3><div class="csub">设定本自然月的销售额与利润目标，仪表盘「目标达成」会显示进度</div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>本月销售额目标 (RM)</label><input id="tg_sales" type="number" value="${DB.settings.targets.sales||0}"></div>
+      <div class="field"><label>本月利润目标 (RM)</label><input id="tg_profit" type="number" value="${DB.settings.targets.profit||0}"></div>
+    </div>
+    <button class="btn gold sm" onclick="saveTargets()">保存目标</button></div>
 
   <div class="card" style="margin-top:16px"><h3>⚠️ 数据管理</h3>
     <div class="setrow"><div class="l"><b>重置为示范数据</b><span>清空现有数据并恢复示范数据</span></div>
@@ -1173,6 +1430,10 @@ function saveSheetCfg(){
 function saveSettings(){
   DB.settings.password=document.getElementById('set_pw').value.trim()||'8888';
   save();toast('设置已保存');
+}
+function saveTargets(){
+  DB.settings.targets={sales:+document.getElementById('tg_sales').value||0,profit:+document.getElementById('tg_profit').value||0};
+  save();toast('目标已保存');
 }
 function toggleGate(){DB.settings.gateOn=!DB.settings.gateOn;document.getElementById('gateSw').classList.toggle('on');save();}
 
@@ -1251,6 +1512,7 @@ function importExcel(ev,type){
       if(type==='customers')ingestCustomers(rows);
       if(type==='products')ingestProducts(rows);
       if(type==='orders')ingestOrders(rows);
+      if(type==='purchases')ingestPurchases(rows);
       save();go(curView);toast(`已导入 ${rows.length} 行`);
     }catch(err){toast('导入失败：请检查文件格式');}
   };
@@ -1265,8 +1527,20 @@ function ingestProducts(rows){
     const catName=String(gv(r,['category','分类'])).trim();
     let catId=''; if(catName){let c=DB.categories.find(x=>x.name===catName); if(!c){c={id:uid('cat'),name:catName};DB.categories.push(c);} catId=c.id;}
     const data={sku,name,categoryId:catId,brand:String(gv(r,['brand','品牌','supplier','供应商'])).trim(),
-      unit:String(gv(r,['unit','单位'])).trim()||'pcs',cost:+gv(r,['cost','成本'])||0,price:+gv(r,['price','售价'])||0};
+      unit:String(gv(r,['unit','单位'])).trim()||'pcs',cost:+gv(r,['cost','成本'])||0,price:+gv(r,['price','售价'])||0,
+      openingStock:+gv(r,['openingstock','期初库存','库存'])||0,safetyStock:+gv(r,['safetystock','安全库存'])||0};
     if(p)Object.assign(p,data); else DB.products.push({id:uid('pr'),...data});
+  });
+}
+function ingestPurchases(rows){
+  rows.forEach(r=>{
+    const pname=String(gv(r,['product','产品','sku'])).trim(); if(!pname)return;
+    let p=DB.products.find(x=>x.name===pname||x.sku===pname);
+    if(!p){ p={id:uid('pr'),sku:pname,name:pname,categoryId:'',cost:+gv(r,['unitcost','进价','成本'])||0,price:0,unit:'pcs',openingStock:0,safetyStock:0}; DB.products.push(p); }
+    DB.purchases=DB.purchases||[];
+    DB.purchases.push({id:uid('pu'),date:fmtDate(gv(r,['date','日期'])),productId:p.id,
+      qty:+gv(r,['qty','数量'])||0,unitCost:+gv(r,['unitcost','进价','成本'])||p.cost||0,
+      supplier:String(gv(r,['supplier','供应商'])).trim(),note:String(gv(r,['note','备注'])).trim()});
   });
 }
 function ingestCustomers(rows){
@@ -1325,8 +1599,14 @@ function exportExcel(type){
   }
   if(type==='products'||type==='all'){
     const ps=productStats().sort((a,b)=>b.profit-a.profit).map(p=>({SKU:p.sku,产品名称:p.name,
-      分类:(byId(DB.categories,p.categoryId)||{}).name||'',品牌供应商:p.brand||'',单位:p.unit||'',成本:p.cost,售价:p.price,销量:p.qty,销售额:R(p.sales),利润:R(p.profit),利润率:(p.margin*100).toFixed(1)+'%',状态:p.lowProfit?'低利润':p.slow?'滞销':'正常'}));
+      分类:(byId(DB.categories,p.categoryId)||{}).name||'',品牌供应商:p.brand||'',单位:p.unit||'',成本:p.cost,售价:p.price,销量:p.qty,销售额:R(p.sales),利润:R(p.profit),利润率:(p.margin*100).toFixed(1)+'%',
+      当前库存:p.stock,安全库存:p.safety,库存价值:R(p.stockValue),状态:p.outOfStock?'缺货':p.lowStock?'低库存':p.lowProfit?'低利润':p.slow?'滞销':'正常'}));
     XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(ps),'产品利润');
+  }
+  if(type==='inventory'||type==='all'){
+    const pur=(DB.purchases||[]).slice().sort((a,b)=>a.date<b.date?1:-1).map(pu=>{const p=byId(DB.products,pu.productId);
+      return {date:pu.date,product:p?p.name:'',qty:pu.qty,unitCost:pu.unitCost,金额:R(pu.qty*pu.unitCost),supplier:pu.supplier||'',note:pu.note||''};});
+    if(pur.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(pur),'进货记录');
   }
   if(type==='all'){
     const ts=salespersonStats().sort((a,b)=>b.profit-a.profit).map(s=>({销售员:s.name,销售额:R(s.sales),利润:R(s.profit),订单数:s.orders,客户数:s.customers}));
@@ -1347,8 +1627,9 @@ function exportExcel(type){
 function exportTemplate(){
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{name:'示范客户',phone:'012-3456789',company:'示范公司',industry:'制造业',region:'槟城',source:'朋友介绍',payHabit:'准时付款',ssm:'SSM123',salesperson:'陈伟豪'}]),'customers');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{sku:'SKU-001',name:'示范产品',category:'配件',brand:'本地',unit:'pcs',cost:10,price:30}]),'products');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{sku:'SKU-001',name:'示范产品',category:'配件',brand:'本地',unit:'pcs',cost:10,price:30,openingStock:0,safetyStock:10}]),'products');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{orderNo:'PO-0001',date:today(),customer:'示范客户',salesperson:'陈伟豪',channel:'店面',payMethod:'现金',product:'示范产品',qty:2,unitPrice:30,unitCost:10,discount:0}]),'orders');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{date:today(),product:'示范产品',qty:50,unitCost:10,supplier:'供应商A',note:'补货'}]),'purchases');
   XLSX.writeFile(wb,'ProRadar_导入模板.xlsx'); toast('模板已下载');
 }
 
