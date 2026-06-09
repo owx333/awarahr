@@ -101,6 +101,8 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .seg2{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .seg2 button{padding:8px 16px;font-size:12.5px;color:var(--muted);font-weight:600}
 .seg2 button.on{background:var(--brand);color:#06101F}
+.thsort{cursor:pointer;user-select:none;white-space:nowrap}
+.thsort:hover{color:var(--ink)}
 .sync-pill.live .led{background:#3FC8C0;box-shadow:0 0 0 3px rgba(63,200,192,.22)}
 .content{padding:22px 26px 60px;max-width:1400px;width:100%}
 .view{display:none;animation:fade .3s}
@@ -233,10 +235,27 @@ td.num,th.num{text-align:right;font-family:'JetBrains Mono'}
   .sb-mask.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
 }
 .sb-mask{display:none}
+#reportOverlay{position:fixed;inset:0;z-index:900;background:#fff;color:#222;overflow:auto;padding:26px}
+.rpt{max-width:900px;margin:0 auto;font-family:'Noto Sans SC',sans-serif;color:#222}
+.rpt h2{font-family:'Sora','Noto Sans SC',sans-serif;font-size:15px;color:#1C2541;margin:18px 0 6px;border-left:3px solid #5B8DEF;padding-left:8px}
+.rpt table{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0 8px}
+.rpt th,.rpt td{border:1px solid #e2e6ee;padding:7px 9px;text-align:left}
+.rpt th{background:#f2f5fa;color:#445;font-weight:600}
+.rpt td.n,.rpt th.n{text-align:right;font-family:'JetBrains Mono'}
+.rpt-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 4px}
+.rpt-kpi div{border:1px solid #e3e8f2;border-radius:8px;padding:9px 12px}
+.rpt-kpi small{color:#778;font-size:11px}.rpt-kpi b{display:block;font-family:'JetBrains Mono';font-size:17px;margin-top:2px;color:#1C2541}
+.rpt-bar{display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e6ee;border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:13px}
+.rpt-actions{position:sticky;top:0;display:flex;gap:10px;justify-content:flex-end;background:#fff;padding-bottom:10px;margin-bottom:6px}
+body.reporting{overflow:hidden}
 @media print{
   .sidebar,.topbar,.no-print,.modal{display:none!important}
   .main{margin-left:0}.content{padding:0}body{background:#fff;color:#111}
   .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;background:#fff;color:#111}
+  body.reporting #app,body.reporting #login,body.reporting #modal,body.reporting #toast{display:none!important}
+  #reportOverlay{position:static;padding:0;overflow:visible}
+  .rpt-actions{display:none!important}.rpt h2{break-after:avoid}
+  @page{margin:14mm}
 }
 
 </style>
@@ -333,21 +352,32 @@ const PAYHABITS=['准时付款','正常','偶尔拖延','经常拖欠'];
 const PAYMETHODS=['现金','银行转账','支票','电子钱包','信用卡','其他'];
 const CHANNELS=['店面','电话','WhatsApp','线上商店','业务员上门','其他'];
 const UNITS=['pcs','盒','包','kg','公升','套','台','小时','次'];
+const EXPENSECATS=['租金','薪水','水电','Marketing','运输','办公用品','维修','佣金','其他'];
 const payClass={'准时付款':'ok','正常':'potential','偶尔拖延':'risk','经常拖欠':'lo'};
 function optList(arr,sel){return arr.map(x=>`<option value="${x}" ${sel===x?'selected':''}>${x}</option>`).join('');}
+/* hide-profit (员工视图) helper: wrap profit/cost money displays */
+function P(v,d=0){ return DB.settings.hideProfit ? '•••' : money(v,d); }
 
 function save(){ Store.set(KEY, JSON.stringify(DB)); }
 function load(){
   const raw=Store.get(KEY);
   if(raw){try{DB=JSON.parse(raw);}catch(e){seedDemo();}}
   else seedDemo();
+  normalizeDB();
+}
+function normalizeDB(){
+  DB.categories=DB.categories||[]; DB.products=DB.products||[]; DB.customers=DB.customers||[];
+  DB.salespersons=DB.salespersons||[]; DB.orders=DB.orders||[];
   DB.settings=Object.assign({password:'8888',gateOn:true,sheetId:'',sheetTabs:{customers:'customers',products:'products',orders:'orders'}},DB.settings||{});
-  const DICT_DEFAULTS={industries:INDUSTRIES,regions:REGIONS,sources:SOURCES,payHabits:PAYHABITS,payMethods:PAYMETHODS,channels:CHANNELS,units:UNITS};
+  const DICT_DEFAULTS={industries:INDUSTRIES,regions:REGIONS,sources:SOURCES,payHabits:PAYHABITS,payMethods:PAYMETHODS,channels:CHANNELS,units:UNITS,expenseCats:EXPENSECATS};
   DB.settings.dict=DB.settings.dict||{};
   for(const k in DICT_DEFAULTS){ if(!Array.isArray(DB.settings.dict[k])||!DB.settings.dict[k].length) DB.settings.dict[k]=[...DICT_DEFAULTS[k]]; }
   DB.settings.hiddenViews=DB.settings.hiddenViews||[];
   DB.settings.targets=DB.settings.targets||{sales:0,profit:0};
-  DB.purchases=DB.purchases||[];
+  DB.settings.hideProfit=DB.settings.hideProfit||false;
+  DB.purchases=DB.purchases||[]; DB.expenses=DB.expenses||[]; DB.returns=DB.returns||[]; DB.followups=DB.followups||[];
+  // default older orders to paid
+  DB.orders.forEach(o=>{ if(o.paymentStatus===undefined){o.paymentStatus='paid';o.paidAmount=o.totalAmount;} });
 }
 /* read an editable dictionary list */
 function D(k){ return (DB.settings.dict&&DB.settings.dict[k])||[]; }
@@ -452,8 +482,10 @@ function seedDemo(){
       const totalAmount=gross-discount;
       const payMethod=PAYMETHODS[Math.floor(rng()*4)];
       const channel=CHANNELS[Math.floor(rng()*CHANNELS.length)];
+      let paymentStatus='paid',paidAmount=totalAmount; const rp=rng();
+      if(day>-50){ if(rp<0.25){paymentStatus='unpaid';paidAmount=0;} else if(rp<0.42){paymentStatus='partial';paidAmount=Math.round(totalAmount*0.5);} }
       orders.push({id:'or'+(oc),orderNo:'PO-'+String(26000+oc),customerId:cu.id,
-        salespersonId:cu.salespersonId,date:offsetDate(day),items,discount,payMethod,channel,
+        salespersonId:cu.salespersonId,date:offsetDate(day),items,discount,payMethod,channel,paymentStatus,paidAmount,
         totalAmount,totalCost,totalProfit:totalAmount-totalCost});
       oc++;
     }
@@ -466,10 +498,27 @@ function seedDemo(){
   products.forEach((p,i)=>{ const want=(sold[p.id]||0)+(deltas[i]!=null?deltas[i]:20);
     if(want>0){ purchases.push({id:'pu'+(pc++),date:offsetDate(-(165-i*7)),productId:p.id,qty:want,unitCost:p.cost,supplier:p.brand||'供应商',note:'期初进货'}); }
   });
-  DB={categories:cats,products,customers,salespersons:sps,orders,purchases,
+  // expenses — recurring monthly operating costs for last 7 months
+  const expenses=[]; let ec=1; const now=new Date();
+  for(let m=6;m>=0;m--){ const d=new Date(now.getFullYear(),now.getMonth()-m,5); const ds=d.toISOString().slice(0,10);
+    [['租金',3500],['薪水',12000+Math.floor(rng()*2000)],['水电',800+Math.floor(rng()*300)],['Marketing',1500+Math.floor(rng()*1500)],['运输',600+Math.floor(rng()*400)],['办公用品',300+Math.floor(rng()*200)]]
+      .forEach(e=>expenses.push({id:'ex'+(ec++),date:ds,category:e[0],amount:e[1],note:'',recurring:e[0]==='租金'||e[0]==='薪水'}));
+  }
+  // returns — a few
+  const returns=[]; let rc=1;
+  for(let k=0;k<6;k++){ const o=orders[Math.floor(rng()*Math.min(orders.length,30))]; if(!o||!o.items.length)continue;
+    const it=o.items[0]; const q=1+Math.floor(rng()*2);
+    returns.push({id:'rt'+(rc++),date:offsetDate(-(5+Math.floor(rng()*60))),productId:it.productId,customerId:o.customerId,
+      qty:q,unitPrice:it.unitPrice,unitCost:it.unitCost,reason:['品质问题','客户退订','发错货','损坏'][Math.floor(rng()*4)]});
+  }
+  // follow-ups — for a couple of lapsed customers
+  const followups=[]; let fc=1;
+  [customers[10],customers[13],customers[4]].forEach((cu,i)=>{ if(!cu)return;
+    followups.push({id:'fu'+(fc++),customerId:cu.id,created:offsetDate(-10),due:offsetDate(i*2),note:'回访了解近况，争取复购',done:false,doneDate:null}); });
+  DB={categories:cats,products,customers,salespersons:sps,orders,purchases,expenses,returns,followups,
     settings:{password:'8888',gateOn:true,sheetId:'',sheetTabs:{customers:'customers',products:'products',orders:'orders'},
-      dict:{industries:[...INDUSTRIES],regions:[...REGIONS],sources:[...SOURCES],payHabits:[...PAYHABITS],payMethods:[...PAYMETHODS],channels:[...CHANNELS],units:[...UNITS]},
-      hiddenViews:[],targets:{sales:0,profit:0}}};
+      dict:{industries:[...INDUSTRIES],regions:[...REGIONS],sources:[...SOURCES],payHabits:[...PAYHABITS],payMethods:[...PAYMETHODS],channels:[...CHANNELS],units:[...UNITS],expenseCats:[...EXPENSECATS]},
+      hiddenViews:[],targets:{sales:0,profit:0},hideProfit:false}};
   save();
 }
 function offsetDate(days){ const d=new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
@@ -480,6 +529,8 @@ const periodLabel={all:'全部时间','12m':'近12个月','6m':'近6个月','3m'
 function periodCutoff(){ const m={'3m':3,'6m':6,'12m':12}[period]; if(!m)return null;
   const d=new Date(); d.setMonth(d.getMonth()-m); return d.toISOString().slice(0,10); }
 function ordersInPeriod(){ const c=periodCutoff(); return c? DB.orders.filter(o=>o.date>=c) : DB.orders; }
+function expensesInPeriod(){ const c=periodCutoff(); return c? (DB.expenses||[]).filter(e=>e.date>=c):(DB.expenses||[]); }
+function returnsInPeriod(){ const c=periodCutoff(); return c? (DB.returns||[]).filter(r=>r.date>=c):(DB.returns||[]); }
 
 function customerStats(){
   const ORD=ordersInPeriod(); const map={};
@@ -489,6 +540,8 @@ function customerStats(){
     m.sales+=o.totalAmount; m.profit+=o.totalProfit; m.count++;
     if(!m.last||o.date>m.last) m.last=o.date;
   });
+  returnsInPeriod().forEach(r=>{ const m=map[r.customerId]; if(!m)return;
+    m.sales-=r.qty*r.unitPrice; m.profit-=r.qty*(r.unitPrice-r.unitCost); });
   const arr=Object.values(map);
   const active=arr.filter(c=>c.count>0);
   const profits=active.map(c=>c.profit).sort((a,b)=>b-a);
@@ -516,19 +569,28 @@ function productStats(){
     m.qty+=it.qty; m.sales+=it.qty*it.unitPrice; m.profit+=it.qty*(it.unitPrice-it.unitCost); m.orders++;
     if(!m.last||o.date>m.last)m.last=o.date;
   }));
+  returnsInPeriod().forEach(r=>{ const m=map[r.productId]; if(!m)return;
+    m.qty-=r.qty; m.sales-=r.qty*r.unitPrice; m.profit-=r.qty*(r.unitPrice-r.unitCost); });
   const purchased={}; (DB.purchases||[]).forEach(pu=>{ purchased[pu.productId]=(purchased[pu.productId]||0)+(+pu.qty||0); });
   const soldAll={}; DB.orders.forEach(o=>o.items.forEach(it=>{ soldAll[it.productId]=(soldAll[it.productId]||0)+it.qty; }));
+  const retAll={}; (DB.returns||[]).forEach(r=>{ retAll[r.productId]=(retAll[r.productId]||0)+(+r.qty||0); });
+  const cut90=offsetDate(-90); const sold90={};
+  DB.orders.forEach(o=>{ if(o.date>=cut90) o.items.forEach(it=>{ sold90[it.productId]=(sold90[it.productId]||0)+it.qty; }); });
   const arr=Object.values(map);
   const td=today();
   arr.forEach(p=>{
     p.margin = p.sales>0 ? p.profit/p.sales : (p.price>0?(p.price-p.cost)/p.price:0);
     p.recency = p.last? daysBetween(p.last,td):null;
     p.lowProfit = p.margin>0 && p.margin<0.20;
-    p.slow = p.qty===0 || (p.recency!=null && p.recency>120);
-    p.purchased=purchased[p.id]||0; p.soldAll=soldAll[p.id]||0;
-    p.stock=(+p.openingStock||0)+p.purchased-p.soldAll;
+    p.slow = p.qty<=0 || (p.recency!=null && p.recency>120);
+    p.purchased=purchased[p.id]||0; p.soldAll=soldAll[p.id]||0; p.returned=retAll[p.id]||0;
+    p.stock=(+p.openingStock||0)+p.purchased-p.soldAll+p.returned;
     p.safety=+p.safetyStock||0; p.stockValue=p.stock*(+p.cost||0);
     p.outOfStock=p.stock<=0; p.lowStock=!p.outOfStock && p.stock<=p.safety;
+    p.dailyV=(sold90[p.id]||0)/90;
+    p.daysCover = p.dailyV>0 ? Math.round(p.stock/p.dailyV) : null;
+    const target = p.dailyV*30 + p.safety;
+    p.suggestQty = (p.stock<=p.safety || (p.daysCover!=null && p.daysCover<30)) ? Math.max(0, Math.ceil(target - p.stock)) : 0;
   });
   return arr;
 }
@@ -541,14 +603,35 @@ function salespersonStats(){
   });
   return Object.values(map).map(s=>({...s,customers:s.custs.size}));
 }
+/* ---- finance helpers ---- */
+function arOutstanding(){ // current receivables snapshot (all orders)
+  let total=0; const byCust={};
+  DB.orders.forEach(o=>{ const bal=(o.totalAmount||0)-(o.paidAmount!=null?o.paidAmount:(o.paymentStatus==='paid'?o.totalAmount:0));
+    if(bal>0.5){ total+=bal; byCust[o.customerId]=(byCust[o.customerId]||0)+bal; } });
+  return {total,byCust};
+}
+function arAging(){ const buckets={'0-30':0,'31-60':0,'61-90':0,'90+':0}; const td=today();
+  DB.orders.forEach(o=>{ const bal=(o.totalAmount||0)-(o.paidAmount!=null?o.paidAmount:(o.paymentStatus==='paid'?o.totalAmount:0));
+    if(bal<=0.5)return; const age=daysBetween(o.date,td);
+    if(age<=30)buckets['0-30']+=bal; else if(age<=60)buckets['31-60']+=bal; else if(age<=90)buckets['61-90']+=bal; else buckets['90+']+=bal; });
+  return buckets;
+}
 function totals(){
   const ORD=ordersInPeriod();
-  const rev=ORD.reduce((s,o)=>s+o.totalAmount,0);
-  const pft=ORD.reduce((s,o)=>s+o.totalProfit,0);
+  const grossRev=ORD.reduce((s,o)=>s+o.totalAmount,0);
+  const grossPft=ORD.reduce((s,o)=>s+o.totalProfit,0);
+  const RET=returnsInPeriod();
+  const retAmt=RET.reduce((s,r)=>s+r.qty*r.unitPrice,0);
+  const retPft=RET.reduce((s,r)=>s+r.qty*(r.unitPrice-r.unitCost),0);
+  const rev=grossRev-retAmt; const grossProfit=grossPft-retPft;
+  const expenses=expensesInPeriod().reduce((s,e)=>s+(+e.amount||0),0);
+  const netProfit=grossProfit-expenses;
   const ps=productStats();
   const stockValue=ps.reduce((s,p)=>s+(p.stockValue>0?p.stockValue:0),0);
-  return {rev,pft,custs:DB.customers.length,prods:DB.products.length,
-    margin: rev>0?pft/rev:0, orders:ORD.length,
+  const ar=arOutstanding().total;
+  return {rev,pft:grossProfit,grossProfit,returns:retAmt,expenses,netProfit,ar,
+    custs:DB.customers.length,prods:DB.products.length,
+    margin: rev>0?grossProfit/rev:0, netMargin: rev>0?netProfit/rev:0, orders:ORD.length,
     stockValue, lowCount:ps.filter(p=>p.lowStock).length, outCount:ps.filter(p=>p.outOfStock).length};
 }
 function monthlyTrend(months){
@@ -572,6 +655,46 @@ function momGrowth(){
   return {revPct:g(cR,pR),pftPct:g(cP,pP),curRev:cR,curPft:cP,hasPrev:(pP>0||pR>0)};
 }
 function setPeriod(v){ period=v; render(curView); }
+function cashflowMonthly(months){
+  if(!months) months={all:12,'12m':12,'6m':6,'3m':3}[period]||12;
+  const td=new Date(); const labels=[],inflow=[],outflow=[]; const keys=[];
+  for(let i=months-1;i>=0;i--){const d=new Date(td.getFullYear(),td.getMonth()-i,1);keys.push(d.toISOString().slice(0,7));labels.push((d.getMonth()+1)+'月');}
+  const inB={},outB={}; keys.forEach(k=>{inB[k]=0;outB[k]=0;});
+  DB.orders.forEach(o=>{const k=ym(o.date); if(inB[k]!=null) inB[k]+=(o.paidAmount!=null?o.paidAmount:(o.paymentStatus==='paid'?o.totalAmount:0));});
+  (DB.purchases||[]).forEach(pu=>{const k=ym(pu.date); if(outB[k]!=null) outB[k]+=pu.qty*pu.unitCost;});
+  (DB.expenses||[]).forEach(e=>{const k=ym(e.date); if(outB[k]!=null) outB[k]+=(+e.amount||0);});
+  keys.forEach(k=>{inflow.push(R(inB[k]));outflow.push(R(outB[k]));});
+  return {labels,inflow,outflow};
+}
+function cohortData(){
+  const firstBy={},pftBy={},ocBy={};
+  DB.orders.forEach(o=>{ const k=ym(o.date);
+    if(!firstBy[o.customerId]||k<firstBy[o.customerId]) firstBy[o.customerId]=k;
+    pftBy[o.customerId]=(pftBy[o.customerId]||0)+o.totalProfit; ocBy[o.customerId]=(ocBy[o.customerId]||0)+1; });
+  const g={};
+  Object.keys(firstBy).forEach(cid=>{const k=firstBy[cid];(g[k]=g[k]||{n:0,profit:0,repeat:0});g[k].n++;g[k].profit+=pftBy[cid]||0;if((ocBy[cid]||0)>1)g[k].repeat++;});
+  return Object.keys(g).sort().map(k=>({month:k,n:g[k].n,profit:g[k].profit,avgCLV:g[k].n?g[k].profit/g[k].n:0,repeatRate:g[k].n?g[k].repeat/g[k].n:0}));
+}
+function clvSummary(){ const oc={}; let totalPft=0;
+  DB.orders.forEach(o=>{oc[o.customerId]=(oc[o.customerId]||0)+1; totalPft+=o.totalProfit;});
+  const buyers=Object.keys(oc).length||1; let repeat=0; Object.values(oc).forEach(n=>{if(n>1)repeat++;});
+  return {avgCLV:totalPft/buyers,repeatRate:repeat/buyers,buyers,repeat}; }
+function periodCompare(){
+  const m={'3m':3,'6m':6,'12m':12}[period]; if(!m) return null;
+  const now=new Date();
+  const cs=new Date(now.getFullYear(),now.getMonth()-m,now.getDate()).toISOString().slice(0,10);
+  const ps=new Date(now.getFullYear(),now.getMonth()-2*m,now.getDate()).toISOString().slice(0,10);
+  let cR=0,pR=0,cP=0,pP=0;
+  DB.orders.forEach(o=>{ if(o.date>=cs){cR+=o.totalAmount;cP+=o.totalProfit;} else if(o.date>=ps){pR+=o.totalAmount;pP+=o.totalProfit;} });
+  const g=(c,p)=>p>0?(c-p)/p:(c>0?1:0);
+  return {revPct:g(cR,pR),pftPct:g(cP,pP),hasPrev:(pR>0||pP>0)};
+}
+function forecast(series,n){
+  const N=series.length; if(N<2) return Array(n).fill(series[N-1]||0);
+  let sx=0,sy=0,sxx=0,sxy=0; series.forEach((y,x)=>{sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;});
+  const denom=(N*sxx-sx*sx)||1; const b=(N*sxy-sx*sy)/denom; const a=(sy-b*sx)/N;
+  const out=[]; for(let i=0;i<n;i++) out.push(Math.max(0,Math.round(a+b*(N+i)))); return out;
+}
 const tierName={vip:'VIP',active:'活跃',potential:'潜力',risk:'风险',lost:'流失',gray:'—'};
 
 /* ---------- Auth ---------- */
@@ -599,7 +722,9 @@ const NAV=[
   {id:'orders',name:'销售记录',ic:'🧾',crumb:'订单数据 · 分析核心来源'},
   {id:'profit',name:'利润分析',ic:'💰',crumb:'客户 / 产品 / 销售利润洞察'},
   {id:'insights',name:'经营洞察',ic:'📍',crumb:'地区 / 行业 / 来源 多维分析'},
+  {id:'finance',name:'财务',ic:'💸',crumb:'净利 · 开销 · 应收账款 · 现金流'},
   {id:'team',name:'销售团队',ic:'🎯',crumb:'销售员业绩排行'},
+  {id:'crm',name:'客户跟进',ic:'📞',crumb:'跟进任务 · 待办 · 客户互动'},
   {id:'reports',name:'报告中心',ic:'📑',crumb:'导出 PDF / Excel 报告'},
   {id:'settings',name:'系统设置',ic:'⚙️',crumb:'数据同步与系统配置'},
 ];
@@ -632,9 +757,9 @@ function updateSyncPill(){
 }
 function render(id){
   const fn={dashboard:viewDashboard,customers:viewCustomers,products:viewProducts,
-    orders:viewOrders,profit:viewProfit,insights:viewInsights,team:viewTeam,reports:viewReports,settings:viewSettings,inventory:viewInventory}[id];
+    orders:viewOrders,profit:viewProfit,insights:viewInsights,team:viewTeam,reports:viewReports,settings:viewSettings,inventory:viewInventory,finance:viewFinance,crm:viewCRM}[id];
   document.getElementById('content').innerHTML=fn();
-  const after={dashboard:afterDashboard,profit:afterProfit,insights:afterInsights,team:afterTeam,inventory:afterInventory}[id];
+  const after={dashboard:afterDashboard,profit:afterProfit,insights:afterInsights,team:afterTeam,inventory:afterInventory,finance:afterFinance}[id];
   if(after) setTimeout(after,30);
 }
 /* ==================== DASHBOARD ==================== */
@@ -646,21 +771,23 @@ function viewDashboard(){
   const riskN=cs.filter(c=>c.tier==='risk'||c.tier==='lost').length;
   const lowProfitN=ps.filter(p=>p.lowProfit).length, slowN=ps.filter(p=>p.slow).length;
   const lowStockN=ps.filter(p=>p.lowStock).length, outN=ps.filter(p=>p.outOfStock).length;
-  const revDelta = mom.hasPrev? deltaHTML(mom.revPct)+' 环比' : `${t.orders} 张订单`;
-  const pftDelta = mom.hasPrev? deltaHTML(mom.pftPct)+' 环比' : `利润率 ${pct(t.margin)}`;
+  const cmp = period==='all'? momGrowth() : periodCompare();
+  const cmpLbl = period==='all'? '环比' : 'vs 上期';
+  const revDelta = (cmp&&cmp.hasPrev)? deltaHTML(cmp.revPct)+' '+cmpLbl : `${t.orders} 张订单`;
+  const pftDelta = (cmp&&cmp.hasPrev)? deltaHTML(cmp.pftPct)+' '+cmpLbl : (DB.settings.hideProfit?'毛利率 •••':`毛利率 ${pct(t.margin)}`);
   const prog=(a,b)=> b>0? Math.min(100,a/b*100):0;
   const tgBlock = (tg.sales>0||tg.profit>0) ? `
       <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="muted">销售额 ${money(mom.curRev)} / ${money(tg.sales)}</span><b>${prog(mom.curRev,tg.sales).toFixed(0)}%</b></div>
         <div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curRev,tg.sales)}%;background:linear-gradient(90deg,#5B8DEF,#6FD3E8)"></i></div></div>
-      <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="muted">利润 ${money(mom.curPft)} / ${money(tg.profit)}</span><b>${prog(mom.curPft,tg.profit).toFixed(0)}%</b></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="muted">利润 ${DB.settings.hideProfit?'•••':money(mom.curPft)} / ${money(tg.profit)}</span><b>${prog(mom.curPft,tg.profit).toFixed(0)}%</b></div>
         <div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curPft,tg.profit)}%;background:linear-gradient(90deg,#3FC8C0,#62B847)"></i></div></div>`
     : `<div class="empty" style="padding:24px 10px;font-size:12.5px">未设定本月目标。到 <b>系统设置 → 目标设定</b> 设定后这里会显示达成进度。</div>`;
   return `
   <div class="kpis">
     <div class="kpi c1"><div class="lbl">💵 总销售额 Revenue</div><div class="val">${money(t.rev)}</div><div class="delta">${revDelta}</div></div>
-    <div class="kpi c2"><div class="lbl">📈 总利润 Profit</div><div class="val">${money(t.pft)}</div><div class="delta">${pftDelta}</div></div>
-    <div class="kpi c3"><div class="lbl">📦 库存总值 Stock Value</div><div class="val">${money(t.stockValue)}</div><div class="delta">${t.prods} 个产品</div></div>
-    <div class="kpi c4"><div class="lbl">👥 客户总数 Customers</div><div class="val">${num(t.custs)}</div><div class="delta">${t.orders} 张订单 · ${periodLabel[period]}</div></div>
+    <div class="kpi c2"><div class="lbl">💰 净利 Net Profit</div><div class="val">${P(t.netProfit)}</div><div class="delta">毛利 ${P(t.grossProfit)} · ${pftDelta}</div></div>
+    <div class="kpi c3"><div class="lbl">🧾 应收账款 AR</div><div class="val">${money(t.ar)}</div><div class="delta">本期开销 ${money(t.expenses)}</div></div>
+    <div class="kpi c4"><div class="lbl">👥 客户 / 订单</div><div class="val">${num(t.custs)}</div><div class="delta">${t.orders} 单 · 库存值 ${money(t.stockValue)}</div></div>
   </div>
   <div class="grid2">
     <div class="card"><h3>🎯 本月目标达成</h3><div class="csub">本自然月销售 / 利润 vs 目标</div>${tgBlock}</div>
@@ -674,7 +801,7 @@ function viewDashboard(){
       </div></div>
   </div>
   <div class="grid2">
-    <div class="card"><h3>📈 销售与利润趋势</h3><div class="csub">${periodLabel[period]} · 月度走势</div><div class="chwrap"><canvas id="chTrend"></canvas></div></div>
+    <div class="card"><h3>📈 销售与利润趋势</h3><div class="csub">${periodLabel[period]} · 月度走势（虚线 = 未来 3 月预测）</div><div class="chwrap"><canvas id="chTrend"></canvas></div></div>
     <div class="card"><h3>🏆 客户利润排行 Top 6</h3><div class="csub">最赚钱的客户</div><div class="chwrap"><canvas id="chCustRank"></canvas></div></div>
   </div>
   <div class="grid2">
@@ -694,10 +821,17 @@ function viewDashboard(){
 }
 function afterDashboard(){
   const tr=monthlyTrend();
+  const fN=3; const fs=forecast(tr.sales,fN), fp=forecast(tr.profit,fN);
+  const nd=new Date(); const fLabels=[]; for(let i=1;i<=fN;i++){const d=new Date(nd.getFullYear(),nd.getMonth()+i,1);fLabels.push((d.getMonth()+1)+'月');}
+  const allLabels=[...tr.labels,...fLabels];
+  const pad=(arr)=>[...arr,...Array(fN).fill(null)];
+  const fc=(hist,f)=>[...Array(hist.length-1).fill(null),hist[hist.length-1],...f];
   charts.trend=new Chart(document.getElementById('chTrend'),{type:'line',
-    data:{labels:tr.labels,datasets:[
-      {label:'销售额',data:tr.sales,borderColor:'#5B8DEF',backgroundColor:'rgba(79,157,222,.12)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
-      {label:'利润',data:tr.profit,borderColor:'#3FC8C0',backgroundColor:'rgba(98,184,71,.10)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3}
+    data:{labels:allLabels,datasets:[
+      {label:'销售额',data:pad(tr.sales),borderColor:'#5B8DEF',backgroundColor:'rgba(91,141,239,.12)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
+      {label:'利润',data:pad(tr.profit),borderColor:'#3FC8C0',backgroundColor:'rgba(63,200,192,.10)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
+      {label:'销售预测',data:fc(tr.sales,fs),borderColor:'#5B8DEF',borderDash:[5,4],borderWidth:2,pointRadius:2,fill:false,tension:.3},
+      {label:'利润预测',data:fc(tr.profit,fp),borderColor:'#3FC8C0',borderDash:[5,4],borderWidth:2,pointRadius:2,fill:false,tension:.3}
     ]},options:lineOpts()});
 
   const cs=customerStats().filter(c=>c.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,6);
@@ -744,11 +878,13 @@ function refreshCust(){
   if(custRegion!=='all') arr=arr.filter(c=>c.region===custRegion);
   if(custIndustry!=='all') arr=arr.filter(c=>c.industry===custIndustry);
   if(custSearch){const q=custSearch.toLowerCase(); arr=arr.filter(c=>(c.name+c.phone+c.company).toLowerCase().includes(q));}
-  arr.sort((a,b)=>b.profit-a.profit);
+  arr.sort(cmpBy(custSort.k,custSort.d));
+  const total=arr.length; const rows=arr.slice(0,custShow);
   el.innerHTML=`<div class="tablewrap"><table><thead><tr>
-    <th>客户名称</th><th>行业</th><th>地区</th><th>负责销售</th><th>等级</th><th>付款</th>
-    <th class="num">总销售额</th><th class="num">总利润</th><th class="num">订单数</th><th>最近购买</th><th></th>
-    </tr></thead><tbody>${arr.map(c=>{
+    ${thsort('客户名称','name',custSort,'sortCust')}${thsort('行业','industry',custSort,'sortCust')}${thsort('地区','region',custSort,'sortCust')}
+    <th>负责销售</th>${thsort('等级','tier',custSort,'sortCust')}<th>付款</th>
+    ${thsort('总销售额','sales',custSort,'sortCust',1)}${thsort('总利润','profit',custSort,'sortCust',1)}${thsort('订单数','count',custSort,'sortCust',1)}${thsort('最近购买','last',custSort,'sortCust')}<th></th>
+    </tr></thead><tbody>${rows.map(c=>{
       const s=byId(DB.salespersons,c.salespersonId);
       const ph=c.payHabit||'正常';
       return `<tr>
@@ -764,6 +900,7 @@ function refreshCust(){
         <td>${c.last?c.last+(c.recency!=null?` <span style="color:var(--muted)">(${c.recency}天前)</span>`:''):'<span style="color:var(--muted)">从未</span>'}</td>
         <td class="no-print"><button class="icbtn" onclick="openCustomerDetail('${c.id}')">👁</button> <button class="icbtn" onclick="editCustomer('${c.id}')">✎</button> <button class="icbtn" onclick="delCustomer('${c.id}')">🗑</button></td>
       </tr>`;}).join('')||'<tr><td colspan="11" class="empty"><div class="big">👥</div>没有符合条件的客户</td></tr>'}
+      ${moreRow(11,total,custShow,'custShow=1e9;refreshCust()')}
     </tbody></table></div>`;
 }
 function editCustomer(id){
@@ -833,11 +970,13 @@ function refreshProd(){
   if(prodFilter==='low')arr=arr.filter(p=>p.lowProfit);
   if(prodFilter==='slow')arr=arr.filter(p=>p.slow);
   if(prodSearch){const q=prodSearch.toLowerCase();arr=arr.filter(p=>(p.sku+p.name).toLowerCase().includes(q));}
-  arr.sort((a,b)=>b.profit-a.profit);
+  arr.sort(cmpBy(prodSort.k,prodSort.d));
+  const total=arr.length, rows=arr.slice(0,prodShow);
   el.innerHTML=`<div class="tablewrap"><table><thead><tr>
-    <th>SKU</th><th>产品名称</th><th>分类</th><th>品牌/供应商</th><th class="num">成本</th><th class="num">售价</th>
-    <th class="num">销量</th><th class="num">销售额</th><th class="num">利润</th><th class="num">利润率</th><th class="num">库存</th><th>状态</th><th></th>
-    </tr></thead><tbody>${arr.map(p=>{
+    ${thsort('SKU','sku',prodSort,'sortProd')}${thsort('产品名称','name',prodSort,'sortProd')}<th>分类</th><th>品牌/供应商</th>
+    ${thsort('成本','cost',prodSort,'sortProd',1)}${thsort('售价','price',prodSort,'sortProd',1)}${thsort('销量','qty',prodSort,'sortProd',1)}
+    ${thsort('销售额','sales',prodSort,'sortProd',1)}${thsort('利润','profit',prodSort,'sortProd',1)}${thsort('利润率','margin',prodSort,'sortProd',1)}${thsort('库存','stock',prodSort,'sortProd',1)}<th>状态</th><th></th>
+    </tr></thead><tbody>${rows.map(p=>{
       const cat=byId(DB.categories,p.categoryId);
       let badge='';
       if(p.lowProfit)badge+='<span class="tag2 lo">低利润</span> ';
@@ -851,6 +990,7 @@ function refreshProd(){
         <td class="num">${pct(p.margin)}</td><td class="num">${stockCell(p)}</td><td>${badge||'—'}</td>
         <td class="no-print"><button class="icbtn" onclick="openProductDetail('${p.id}')">👁</button> <button class="icbtn" onclick="editProduct('${p.id}')">✎</button> <button class="icbtn" onclick="delProduct('${p.id}')">🗑</button></td>
       </tr>`;}).join('')||'<tr><td colspan="13" class="empty"><div class="big">📦</div>没有符合条件的产品</td></tr>'}
+      ${moreRow(13,total,prodShow,'prodShow=1e9;refreshProd()')}
     </tbody></table></div>`;
 }
 function stockCell(p){ const c=p.outOfStock?'#F0989C':(p.lowStock?'#F0A878':'var(--ink)');
@@ -892,6 +1032,7 @@ function viewInventory(){
   const totalVal=ps.reduce((s,p)=>s+(p.stockValue>0?p.stockValue:0),0);
   const low=ps.filter(p=>p.lowStock), out=ps.filter(p=>p.outOfStock);
   const alerts=[...out,...low];
+  const reorder=ps.filter(p=>p.suggestQty>0).sort((a,b)=>(a.daysCover==null?1e9:a.daysCover)-(b.daysCover==null?1e9:b.daysCover));
   const inv=[...ps].sort((a,b)=>b.stockValue-a.stockValue);
   const pur=[...(DB.purchases||[])].sort((a,b)=>a.date<b.date?1:-1).slice(0,40);
   return `
@@ -903,6 +1044,14 @@ function viewInventory(){
   </div>
   ${alerts.length?`<div class="card" style="margin-bottom:16px"><h3>🔔 补货预警</h3><div class="csub">以下产品库存不足，建议尽快进货</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${alerts.map(p=>`<span class="chip" style="cursor:pointer" onclick="editPurchase('','${p.id}')">${p.outOfStock?'🛑':'⚠️'} ${esc(p.name)} · 余 ${num(p.stock)}${esc(p.unit||'')}</span>`).join('')}</div></div>`:''}
+  ${reorder.length?`<div class="card" style="margin-bottom:16px"><h3>📋 智能补货建议</h3><div class="csub">按近 90 天销售速度 + 安全库存自动计算 · 点「进货」一键补货</div>
+    <div class="tablewrap"><table><thead><tr><th>产品</th><th class="num">当前库存</th><th class="num">日均销</th><th class="num">预计可用</th><th class="num">建议进货</th><th></th></tr></thead><tbody>
+    ${reorder.map(p=>`<tr><td><b>${esc(p.name)}</b> <span style="color:var(--muted);font-size:11px">${esc(p.sku)}</span></td>
+      <td class="num">${stockCell(p)}</td><td class="num">${p.dailyV.toFixed(1)}</td>
+      <td class="num" style="color:${p.daysCover!=null&&p.daysCover<14?'#F0989C':'var(--ink)'}">${p.daysCover!=null?p.daysCover+' 天':'—'}</td>
+      <td class="num" style="color:#5FC08A;font-weight:700">${num(p.suggestQty)} ${esc(p.unit||'')}</td>
+      <td class="no-print"><button class="btn gold sm" onclick="quickReorder('${p.id}',${p.suggestQty})">进货</button></td></tr>`).join('')}
+    </tbody></table></div></div>`:''}
   <div class="grid3">
     <div class="card"><h3>🏷️ 库存明细</h3><div class="csub">当前库存 = 期初 + 累计进货 − 累计销售</div>
       <div class="tablewrap"><table><thead><tr><th>产品</th><th class="num">当前库存</th><th class="num">安全库存</th><th>状态</th><th class="num">累计进货</th><th class="num">累计售出</th><th class="num">库存价值</th></tr></thead><tbody>
@@ -928,16 +1077,18 @@ function afterInventory(){
   const el=document.getElementById('chInvVal'); if(!el)return;
   charts.inv=new Chart(el,{type:'bar',data:{labels:inv.map(p=>p.name),datasets:[{data:inv.map(p=>R(p.stockValue)),backgroundColor:'#5B8DEF',borderRadius:6}]},options:barOpts(true)});
 }
-function editPurchase(id,presetPid){
+function quickReorder(pid,qty){ editPurchase('',pid,qty); }
+function editPurchase(id,presetPid,presetQty){
   const pu=id?(DB.purchases||[]).find(x=>x.id===id):null;
   const pid=pu?pu.productId:(presetPid||'');
   const prodOpts=DB.products.map(p=>`<option value="${p.id}" ${pid===p.id?'selected':''}>${esc(p.name)} (${esc(p.sku)})</option>`).join('');
   const defCost=pu?pu.unitCost:(byId(DB.products,pid)||{}).cost||'';
   const defSup=pu?pu.supplier:(byId(DB.products,pid)||{}).brand||'';
+  const defQty=pu?pu.qty:(presetQty||1);
   openModal(id?'编辑进货':'新增进货',`
     <div class="frow"><div class="field"><label>日期</label><input id="pu_date" type="date" value="${pu?pu.date:today()}"></div>
       <div class="field"><label>产品 *</label><select id="pu_prod" onchange="puFill()"><option value="">— 选产品 —</option>${prodOpts}</select></div></div>
-    <div class="frow3"><div class="field"><label>数量 *</label><input id="pu_qty" type="number" min="1" value="${pu?pu.qty:1}"></div>
+    <div class="frow3"><div class="field"><label>数量 *</label><input id="pu_qty" type="number" min="1" value="${defQty}"></div>
       <div class="field"><label>进价 (RM)</label><input id="pu_cost" type="number" step="0.01" value="${defCost}"></div>
       <div class="field"><label>供应商</label><input id="pu_sup" value="${esc(defSup)}"></div></div>
     <div class="field"><label>备注</label><input id="pu_note" value="${esc(pu?pu.note||'':'')}" placeholder="选填"></div>`,
@@ -994,7 +1145,9 @@ function openCustomerDetail(id){
     <div style="font-weight:700;font-size:13px;margin:16px 0 8px">🧾 最近订单</div>
     <div class="tablewrap"><table><thead><tr><th>单号</th><th>日期</th><th class="num">金额</th><th class="num">利润</th></tr></thead><tbody>
     ${recent.slice(0,6).map(o=>`<tr><td class="mono">${esc(o.orderNo)}</td><td class="mono">${o.date}</td><td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--lime)">${money(o.totalProfit)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">暂无</td></tr>'}
-    </tbody></table></div>`,
+    </tbody></table></div>
+    <div style="display:flex;align-items:center;margin:16px 0 8px"><div style="font-weight:700;font-size:13px;flex:1">📞 跟进记录</div><button class="btn ghost sm no-print" onclick="editFollowup('','${id}')">＋ 加跟进</button></div>
+    ${(DB.followups||[]).filter(f=>f.customerId===id).sort((a,b)=>((b.due||b.created||'')<(a.due||a.created||'')?-1:1)).map(f=>`<div class="rankrow"><div class="rnm" style="white-space:normal">${f.done?'✅':'📌'} ${esc(f.note||'')}<div style="font-size:11px;color:var(--muted)">${f.done?('完成 '+(f.doneDate||'')):('到期 '+(f.due||''))}</div></div></div>`).join('')||'<div class="empty" style="padding:14px">暂无跟进记录</div>'}`,
     `<button class="btn ghost" onclick="editCustomer('${id}')">编辑</button><button class="btn gold" onclick="closeModal()">关闭</button>`);
   drawDetailChart('chDetail',lm.labels,mS,mP);
 }
@@ -1018,6 +1171,176 @@ function openProductDetail(id){
     `<button class="btn ghost" onclick="editProduct('${id}')">编辑</button><button class="btn gold" onclick="closeModal()">关闭</button>`);
   drawDetailChart('chDetail',lm.labels,mS,mP);
 }
+/* ==================== 财务 FINANCE ==================== */
+function viewFinance(){
+  const t=totals();
+  const exps=expensesInPeriod(); const rets=returnsInPeriod();
+  const expTotal=exps.reduce((s,e)=>s+(+e.amount||0),0);
+  const monthsN={all:7,'12m':12,'6m':6,'3m':3}[period]||7;
+  const monthlyExp=expTotal/(monthsN||1);
+  const be=t.margin>0?monthlyExp/t.margin:0;
+  const ar=arOutstanding(); const aging=arAging();
+  const ecat={}; exps.forEach(e=>{ecat[e.category||'其他']=(ecat[e.category||'其他']||0)+(+e.amount||0);});
+  const arRows=Object.entries(ar.byCust).map(([cid,bal])=>({c:byId(DB.customers,cid),bal})).filter(x=>x.c).sort((a,b)=>b.bal-a.bal);
+  const recentExp=[...exps].sort((a,b)=>a.date<b.date?1:-1).slice(0,30);
+  const recentRet=[...rets].sort((a,b)=>a.date<b.date?1:-1).slice(0,30);
+  const retTotal=rets.reduce((s,r)=>s+r.qty*r.unitPrice,0);
+  return `
+  <div class="kpis">
+    <div class="kpi c2"><div class="lbl">💰 净利 Net Profit</div><div class="val">${P(t.netProfit)}</div><div class="delta">净利率 ${DB.settings.hideProfit?'•••':pct(t.netMargin)}</div></div>
+    <div class="kpi c1"><div class="lbl">📈 毛利 Gross Profit</div><div class="val">${P(t.grossProfit)}</div><div class="delta">毛利率 ${DB.settings.hideProfit?'•••':pct(t.margin)}</div></div>
+    <div class="kpi c3"><div class="lbl">💸 营运开销 Expenses</div><div class="val">${money(t.expenses)}</div><div class="delta">${periodLabel[period]}</div></div>
+    <div class="kpi c4"><div class="lbl">🧾 应收账款 Receivables</div><div class="val">${money(t.ar)}</div><div class="delta">${arRows.length} 个客户未付清</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>💵 现金流（收 vs 支）</h3><div class="csub">收：已收款 · 支：进货 + 开销</div><div class="chwrap"><canvas id="chCash"></canvas></div></div>
+    <div class="card"><h3>⚖️ 盈亏平衡</h3><div class="csub">每月需做多少销售才回本</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+        <div class="rpt-bar" style="border-color:var(--border);background:rgba(255,255,255,.04);color:var(--ink)"><span class="muted">月均开销</span><b class="mono">${money(monthlyExp)}</b></div>
+        <div class="rpt-bar" style="border-color:var(--border);background:rgba(255,255,255,.04);color:var(--ink)"><span class="muted">毛利率</span><b class="mono">${DB.settings.hideProfit?'•••':pct(t.margin)}</b></div>
+        <div class="rpt-bar" style="border-color:rgba(91,141,239,.4);background:rgba(91,141,239,.12);color:#fff"><span>每月盈亏平衡销售额</span><b class="mono">${be>0?money(be):'—'}</b></div>
+        <div style="font-size:12px;color:var(--muted)">即：每月销售额需 ≥ <b>${be>0?money(be):'—'}</b> 才能覆盖开销开始盈利。</div>
+      </div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>📊 开销分类占比</h3><div class="csub">钱花在哪</div><div class="chwrap"><canvas id="chExpCat"></canvas></div></div>
+    <div class="card"><h3>🧾 应收账款账龄</h3><div class="csub">越久未收风险越高</div>
+      <div style="margin-top:6px">${Object.entries(aging).map(([k,v])=>{const max=Math.max(...Object.values(aging),1);
+        const col=k==='90+'?'#F0989C':k==='61-90'?'#F0A878':k==='31-60'?'#E6C260':'#5FC08A';
+        return `<div class="rankrow"><div class="rnm" style="max-width:70px">${k} 天</div><div style="flex:1;height:9px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden;max-width:200px"><i style="display:block;height:100%;width:${v/max*100}%;background:${col};border-radius:6px"></i></div><div class="rval">${money(v)}</div></div>`;}).join('')}</div>
+      <div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>客户</th><th class="num">未收金额</th></tr></thead><tbody>
+      ${arRows.map(x=>`<tr><td><b style="cursor:pointer" onclick="openCustomerDetail('${x.c.id}')">${esc(x.c.name)}</b></td><td class="num" style="color:#F0A878;font-weight:600">${money(x.bal)}</td></tr>`).join('')||'<tr><td colspan="2" class="empty">👍 没有未收款</td></tr>'}
+      </tbody></table></div></div>
+  </div>
+  <div class="card" style="margin-top:0"><h3>💸 营运开销</h3>
+    <div class="toolbar no-print" style="margin-bottom:12px"><div class="csub" style="margin:0">记录租金 / 薪水 / 水电 / marketing 等</div><div class="spacer"></div><button class="btn gold sm" onclick="editExpense()">＋ 新增开销</button></div>
+    <div class="tablewrap"><table><thead><tr><th>日期</th><th>分类</th><th class="num">金额</th><th>备注</th><th></th></tr></thead><tbody>
+    ${recentExp.map(e=>`<tr><td class="mono">${e.date}</td><td>${esc(e.category||'其他')}</td><td class="num">${money(e.amount)}</td><td style="color:var(--muted)">${esc(e.note||'')}</td>
+      <td class="no-print"><button class="icbtn" onclick="editExpense('${e.id}')">✎</button> <button class="icbtn" onclick="delExpense('${e.id}')">🗑</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">暂无开销记录</td></tr>'}
+    </tbody></table></div></div>
+  <div class="card" style="margin-top:16px"><h3>↩️ 退货 / 退款</h3>
+    <div class="toolbar no-print" style="margin-bottom:12px"><div class="csub" style="margin:0">退货金额 ${money(retTotal)} · 货品自动退回库存</div><div class="spacer"></div><button class="btn gold sm" onclick="editReturn()">＋ 记录退货</button></div>
+    <div class="tablewrap"><table><thead><tr><th>日期</th><th>产品</th><th>客户</th><th class="num">数量</th><th class="num">退款额</th><th>原因</th><th></th></tr></thead><tbody>
+    ${recentRet.map(r=>{const p=byId(DB.products,r.productId),c=byId(DB.customers,r.customerId);return `<tr><td class="mono">${r.date}</td><td>${esc(p?p.name:'—')}</td><td>${esc(c?c.name:'—')}</td>
+      <td class="num">${num(r.qty)}</td><td class="num" style="color:#F0989C">${money(r.qty*r.unitPrice)}</td><td style="color:var(--muted)">${esc(r.reason||'')}</td>
+      <td class="no-print"><button class="icbtn" onclick="editReturn('${r.id}')">✎</button> <button class="icbtn" onclick="delReturn('${r.id}')">🗑</button></td></tr>`;}).join('')||'<tr><td colspan="7" class="empty">暂无退货记录</td></tr>'}
+    </tbody></table></div></div>`;
+}
+function afterFinance(){
+  const cf=cashflowMonthly();
+  const e1=document.getElementById('chCash');
+  if(e1) charts.cash=new Chart(e1,{type:'bar',data:{labels:cf.labels,datasets:[
+    {label:'收入',data:cf.inflow,backgroundColor:'#5FC08A',borderRadius:5},
+    {label:'支出',data:cf.outflow,backgroundColor:'#F0989C',borderRadius:5}]},options:barOpts(false,true)});
+  const exps=expensesInPeriod(); const ecat={}; exps.forEach(e=>{ecat[e.category||'其他']=(ecat[e.category||'其他']||0)+(+e.amount||0);});
+  const arr=Object.entries(ecat).sort((a,b)=>b[1]-a[1]);
+  const cols=['#5B8DEF','#3FC8C0','#E6C260','#E0935A','#E87FA8','#9B8CEF','#5FC08A','#A0AEC0','#E8A33D'];
+  const e2=document.getElementById('chExpCat');
+  if(e2) charts.expcat=new Chart(e2,{type:'doughnut',data:{labels:arr.map(x=>x[0]),datasets:[{data:arr.map(x=>R(x[1])),backgroundColor:cols,borderWidth:2,borderColor:'#101A2E'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:7,usePointStyle:true,boxWidth:8}}}}});
+}
+function editExpense(id){
+  const e=id?(DB.expenses||[]).find(x=>x.id===id):null;
+  openModal(id?'编辑开销':'新增开销',`
+    <div class="frow"><div class="field"><label>日期</label><input id="ex_date" type="date" value="${e?e.date:today()}"></div>
+      <div class="field"><label>分类</label><select id="ex_cat">${optList(D('expenseCats'),e?e.category:'其他')}</select></div></div>
+    <div class="field"><label>金额 (RM) *</label><input id="ex_amt" type="number" step="0.01" value="${e?e.amount:''}"></div>
+    <div class="field"><label>备注</label><input id="ex_note" value="${esc(e?e.note||'':'')}" placeholder="选填"></div>`,
+    `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveExpense('${id||''}')">保存</button>`);
+}
+function saveExpense(id){
+  const amt=+document.getElementById('ex_amt').value||0; if(amt<=0){toast('请输入金额');return;}
+  const data={date:document.getElementById('ex_date').value||today(),category:document.getElementById('ex_cat').value,amount:amt,note:document.getElementById('ex_note').value.trim()};
+  DB.expenses=DB.expenses||[];
+  if(id)Object.assign(DB.expenses.find(x=>x.id===id),data); else DB.expenses.push({id:uid('ex'),...data});
+  save();closeModal();render('finance');toast('开销已保存');
+}
+function delExpense(id){ confirmBox('确定删除这笔开销？',()=>{DB.expenses=DB.expenses.filter(x=>x.id!==id);save();render('finance');toast('已删除');}); }
+function editReturn(id){
+  const r=id?(DB.returns||[]).find(x=>x.id===id):null;
+  const pid=r?r.productId:''; const cid=r?r.customerId:'';
+  const prodOpts=DB.products.map(p=>`<option value="${p.id}" ${pid===p.id?'selected':''}>${esc(p.name)}</option>`).join('');
+  const custOpts=DB.customers.map(c=>`<option value="${c.id}" ${cid===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+  openModal(id?'编辑退货':'记录退货',`
+    <div class="frow"><div class="field"><label>日期</label><input id="rt_date" type="date" value="${r?r.date:today()}"></div>
+      <div class="field"><label>产品 *</label><select id="rt_prod" onchange="rtFill()"><option value="">— 选产品 —</option>${prodOpts}</select></div></div>
+    <div class="field"><label>客户</label><select id="rt_cust"><option value="">— 选客户（选填）—</option>${custOpts}</select></div>
+    <div class="frow3"><div class="field"><label>数量 *</label><input id="rt_qty" type="number" min="1" value="${r?r.qty:1}"></div>
+      <div class="field"><label>退款单价</label><input id="rt_price" type="number" step="0.01" value="${r?r.unitPrice:''}"></div>
+      <div class="field"><label>成本单价</label><input id="rt_cost" type="number" step="0.01" value="${r?r.unitCost:''}"></div></div>
+    <div class="field"><label>原因</label><input id="rt_reason" value="${esc(r?r.reason||'':'')}" placeholder="选填"></div>`,
+    `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveReturn('${id||''}')">保存</button>`);
+}
+function rtFill(){ const p=byId(DB.products,document.getElementById('rt_prod').value); if(p){ if(!document.getElementById('rt_price').value)document.getElementById('rt_price').value=p.price; if(!document.getElementById('rt_cost').value)document.getElementById('rt_cost').value=p.cost; } }
+function saveReturn(id){
+  const productId=document.getElementById('rt_prod').value; if(!productId){toast('请选择产品');return;}
+  const data={date:document.getElementById('rt_date').value||today(),productId,customerId:document.getElementById('rt_cust').value,
+    qty:+document.getElementById('rt_qty').value||0,unitPrice:+document.getElementById('rt_price').value||0,unitCost:+document.getElementById('rt_cost').value||0,
+    reason:document.getElementById('rt_reason').value.trim()};
+  if(data.qty<=0){toast('数量需大于0');return;}
+  DB.returns=DB.returns||[];
+  if(id)Object.assign(DB.returns.find(x=>x.id===id),data); else DB.returns.push({id:uid('rt'),...data});
+  save();closeModal();render('finance');toast('退货已记录');
+}
+function delReturn(id){ confirmBox('确定删除这笔退货？',()=>{DB.returns=DB.returns.filter(x=>x.id!==id);save();render('finance');toast('已删除');}); }
+
+/* ==================== 客户跟进 CRM ==================== */
+function viewCRM(){
+  const fu=(DB.followups||[]);
+  const pending=fu.filter(f=>!f.done).sort((a,b)=>(a.due||'')<(b.due||'')?-1:1);
+  const doneList=fu.filter(f=>f.done).sort((a,b)=>(a.doneDate||'')<(b.doneDate||'')?1:-1).slice(0,15);
+  const cs=customerStats();
+  const haveFu={}; pending.forEach(f=>haveFu[f.customerId]=1);
+  const suggest=cs.filter(c=>(c.tier==='risk'||c.tier==='lost')&&!haveFu[c.id]).sort((a,b)=>b.profit-a.profit).slice(0,12);
+  const td=today();
+  return `
+  <div class="kpis">
+    <div class="kpi c3"><div class="lbl">📌 待跟进</div><div class="val">${pending.length}</div><div class="delta">${pending.filter(f=>f.due&&f.due<=td).length} 个已到期</div></div>
+    <div class="kpi c4"><div class="lbl">🔔 建议跟进</div><div class="val">${suggest.length}</div><div class="delta">风险/流失且无安排</div></div>
+    <div class="kpi c2"><div class="lbl">✅ 已完成（近期）</div><div class="val">${doneList.length}</div><div class="delta">最近完成的跟进</div></div>
+    <div class="kpi c1"><div class="lbl">👥 客户总数</div><div class="val">${DB.customers.length}</div><div class="delta">点客户名看互动记录</div></div>
+  </div>
+  <div class="toolbar no-print"><div class="csub" style="margin:0">把「会流失的客户」变成「安排好跟进的客户」</div><div class="spacer"></div><button class="btn gold" onclick="editFollowup()">＋ 新增跟进</button></div>
+  <div class="card"><h3>📌 待跟进任务</h3>
+    <div class="tablewrap"><table><thead><tr><th>到期日</th><th>客户</th><th>事项</th><th></th></tr></thead><tbody>
+    ${pending.map(f=>{const c=byId(DB.customers,f.customerId);const overdue=f.due&&f.due<=td;
+      return `<tr><td class="mono" style="color:${overdue?'#F0989C':'var(--ink)'}">${f.due||'—'}${overdue?' ⚠️':''}</td>
+        <td><b style="cursor:pointer" onclick="openCustomerDetail('${f.customerId}')">${esc(c?c.name:'—')}</b></td>
+        <td>${esc(f.note||'')}</td>
+        <td class="no-print"><button class="btn ghost sm" onclick="doneFollowup('${f.id}')">✓ 完成</button> <button class="icbtn" onclick="editFollowup('${f.id}')">✎</button> <button class="icbtn" onclick="delFollowup('${f.id}')">🗑</button></td></tr>`;}).join('')||'<tr><td colspan="4" class="empty"><div class="big">📭</div>没有待跟进任务</td></tr>'}
+    </tbody></table></div></div>
+  ${suggest.length?`<div class="card" style="margin-top:16px"><h3>🔔 建议跟进（风险 / 流失客户）</h3><div class="csub">这些客户快流失了又没安排跟进，点「安排」加入待办</div>
+    <div class="tablewrap"><table><thead><tr><th>客户</th><th>等级</th><th class="num">历史利润</th><th class="num">未购买天数</th><th></th></tr></thead><tbody>
+    ${suggest.map(c=>`<tr><td><b style="cursor:pointer" onclick="openCustomerDetail('${c.id}')">${esc(c.name)}</b></td><td><span class="tag2 ${c.tier}">${tierName[c.tier]}</span></td>
+      <td class="num">${P(c.profit)}</td><td class="num" style="color:#F0A878">${c.recency!=null?c.recency+' 天':'—'}</td>
+      <td class="no-print"><button class="btn gold sm" onclick="editFollowup('','${c.id}')">安排跟进</button></td></tr>`).join('')}
+    </tbody></table></div></div>`:''}
+  ${doneList.length?`<div class="card" style="margin-top:16px"><h3>✅ 已完成</h3>
+    <div class="tablewrap"><table><thead><tr><th>完成日</th><th>客户</th><th>事项</th></tr></thead><tbody>
+    ${doneList.map(f=>{const c=byId(DB.customers,f.customerId);return `<tr><td class="mono">${f.doneDate||''}</td><td>${esc(c?c.name:'—')}</td><td style="color:var(--muted)">${esc(f.note||'')}</td></tr>`;}).join('')}
+    </tbody></table></div></div>`:''}`;
+}
+function editFollowup(id,presetCust){
+  const f=id?(DB.followups||[]).find(x=>x.id===id):null;
+  const cid=f?f.customerId:(presetCust||'');
+  const custOpts=DB.customers.map(c=>`<option value="${c.id}" ${cid===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+  openModal(id?'编辑跟进':'新增跟进',`
+    <div class="field"><label>客户 *</label><select id="fu_cust"><option value="">— 选客户 —</option>${custOpts}</select></div>
+    <div class="field"><label>跟进日期</label><input id="fu_due" type="date" value="${f?f.due:today()}"></div>
+    <div class="field"><label>事项 / 备注</label><textarea id="fu_note" rows="3" placeholder="例如：回访了解近况，推荐新产品">${esc(f?f.note||'':'')}</textarea></div>`,
+    `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveFollowup('${id||''}')">保存</button>`);
+}
+function saveFollowup(id){
+  const customerId=document.getElementById('fu_cust').value; if(!customerId){toast('请选择客户');return;}
+  const data={customerId,due:document.getElementById('fu_due').value||today(),note:document.getElementById('fu_note').value.trim()};
+  DB.followups=DB.followups||[];
+  if(id)Object.assign(DB.followups.find(x=>x.id===id),data);
+  else DB.followups.push({id:uid('fu'),created:today(),done:false,doneDate:null,...data});
+  save();closeModal(); if(curView==='crm')render('crm'); else {closeModal();render(curView);} toast('跟进已保存');
+}
+function doneFollowup(id){ const f=(DB.followups||[]).find(x=>x.id===id); if(f){f.done=true;f.doneDate=today();save();render('crm');toast('已完成 ✓');} }
+function delFollowup(id){ DB.followups=DB.followups.filter(x=>x.id!==id); save(); render(curView==='crm'?'crm':curView); }
+
 /* ==================== ORDERS ==================== */
 let orderSearch='';
 function viewOrders(){
@@ -1031,23 +1354,26 @@ function viewOrders(){
 }
 function refreshOrders(){
   const el=document.getElementById('orderTable'); if(!el)return;
-  let arr=[...DB.orders];
-  if(orderSearch){const q=orderSearch.toLowerCase();
-    arr=arr.filter(o=>{const c=byId(DB.customers,o.customerId);return (o.orderNo+(c?c.name:'')).toLowerCase().includes(q);});}
-  arr.sort((a,b)=>a.date<b.date?1:-1);
+  let arr=DB.orders.map(o=>{const c=byId(DB.customers,o.customerId),s=byId(DB.salespersons,o.salespersonId);
+    return {...o,cName:c?c.name:'—',sName:s?s.name:'—',nItems:o.items.length};});
+  if(orderSearch){const q=orderSearch.toLowerCase(); arr=arr.filter(o=>(o.orderNo+o.cName).toLowerCase().includes(q));}
+  arr.sort(cmpBy(orderSort.k,orderSort.d));
+  const total=arr.length, rows=arr.slice(0,orderShow);
   el.innerHTML=`<div class="tablewrap"><table><thead><tr>
-    <th>订单号</th><th>日期</th><th>客户</th><th>销售员</th><th class="num">项目</th>
-    <th class="num">金额</th><th class="num">成本</th><th class="num">利润</th><th></th>
-    </tr></thead><tbody>${arr.map(o=>{
-      const c=byId(DB.customers,o.customerId),s=byId(DB.salespersons,o.salespersonId);
+    ${thsort('订单号','orderNo',orderSort,'sortOrder')}${thsort('日期','date',orderSort,'sortOrder')}${thsort('客户','cName',orderSort,'sortOrder')}${thsort('销售员','sName',orderSort,'sortOrder')}
+    ${thsort('项目','nItems',orderSort,'sortOrder',1)}${thsort('金额','totalAmount',orderSort,'sortOrder',1)}${thsort('成本','totalCost',orderSort,'sortOrder',1)}${thsort('利润','totalProfit',orderSort,'sortOrder',1)}<th>收款</th><th></th>
+    </tr></thead><tbody>${rows.map(o=>{const pst=o.paymentStatus||'paid';
+      const pb={paid:['ok','已收'],partial:['risk','部分'],unpaid:['lo','未收']}[pst]||['gray','—'];
       return `<tr>
         <td class="mono">${esc(o.orderNo)}</td><td class="mono">${o.date}</td>
-        <td>${esc(c?c.name:'—')}</td><td>${esc(s?s.name:'—')}</td>
-        <td class="num">${o.items.length}</td>
-        <td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--muted)">${money(o.totalCost)}</td>
-        <td class="num" style="color:var(--lime);font-weight:600">${money(o.totalProfit)}</td>
+        <td>${esc(o.cName)}</td><td>${esc(o.sName)}</td>
+        <td class="num">${o.nItems}</td>
+        <td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--muted)">${P(o.totalCost)}</td>
+        <td class="num" style="color:var(--lime);font-weight:600">${P(o.totalProfit)}</td>
+        <td><span class="tag2 ${pb[0]}">${pb[1]}</span></td>
         <td class="no-print"><button class="icbtn" onclick="editOrder('${o.id}')">✎</button> <button class="icbtn" onclick="delOrder('${o.id}')">🗑</button></td>
-      </tr>`;}).join('')||'<tr><td colspan="9" class="empty"><div class="big">🧾</div>暂无订单，点击「新增订单」开始</td></tr>'}
+      </tr>`;}).join('')||'<tr><td colspan="10" class="empty"><div class="big">🧾</div>暂无订单，点击「新增订单」开始</td></tr>'}
+      ${moreRow(10,total,orderShow,'orderShow=1e9;refreshOrders()')}
     </tbody></table></div>`;
 }
 let _items=[],_discount=0;
@@ -1067,6 +1393,13 @@ function editOrder(id){
     <div class="frow">
       <div class="field"><label>付款方式</label><select id="o_pay">${optList(D('payMethods'),o?o.payMethod:'银行转账')}</select></div>
       <div class="field"><label>销售渠道</label><select id="o_channel">${optList(D('channels'),o?o.channel:'店面')}</select></div>
+    </div>
+    <div class="frow">
+      <div class="field"><label>收款状态</label><select id="o_paystat">
+        <option value="paid" ${(!o||o.paymentStatus==='paid')?'selected':''}>已收款</option>
+        <option value="partial" ${o&&o.paymentStatus==='partial'?'selected':''}>部分收款</option>
+        <option value="unpaid" ${o&&o.paymentStatus==='unpaid'?'selected':''}>未收款</option></select></div>
+      <div class="field"><label>已收金额 (RM)</label><input id="o_paid" type="number" step="0.01" value="${o&&o.paidAmount!=null?o.paidAmount:''}" placeholder="留空=按状态自动"></div>
     </div>
     <label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:8px">订单项目</label>
     <div id="o_items"></div>
@@ -1113,9 +1446,13 @@ function saveOrder(id){
   const totalCost=items.reduce((s,i)=>s+i.qty*i.unitCost,0);
   const discount=+document.getElementById('o_disc').value||0;
   const totalAmount=gross-discount;
+  const payStat=document.getElementById('o_paystat').value;
+  const paidInput=document.getElementById('o_paid').value;
+  let paidAmount = paidInput!==''? (+paidInput||0) : (payStat==='paid'?totalAmount:(payStat==='partial'?Math.round(totalAmount*0.5):0));
   const data={orderNo:document.getElementById('o_no').value.trim()||('PO-'+Date.now()),
     date:document.getElementById('o_date').value||today(),customerId,salespersonId,
     payMethod:document.getElementById('o_pay').value,channel:document.getElementById('o_channel').value,discount,
+    paymentStatus:payStat,paidAmount,
     items,totalAmount,totalCost,totalProfit:totalAmount-totalCost};
   if(id)Object.assign(byId(DB.orders,id),data);
   else DB.orders.unshift({id:uid('or'),...data});
@@ -1200,6 +1537,18 @@ function abcSummaryHTML(mode){
   return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box('A','关键少数','#5FC08A')}${box('B','次要','#E6C260')}${box('C','长尾','#93A4C0')}</div>`;
 }
 function setAbc(m){ abcMode=m; render('profit'); }
+/* ---- table sort + pagination helpers ---- */
+let custSort={k:'profit',d:-1},prodSort={k:'profit',d:-1},orderSort={k:'date',d:-1};
+let custShow=60,prodShow=60,orderShow=60;
+function thsort(label,key,state,fn,numeric){ const a=state.k===key?(state.d<0?' ▾':' ▴'):''; return `<th class="${numeric?'num ':''}thsort" onclick="${fn}('${key}')">${label}${a}</th>`; }
+function cmpBy(key,dir){ return (a,b)=>{ let x=a[key],y=b[key];
+  if(typeof x==='string'||typeof y==='string'){return dir*String(x==null?'':x).localeCompare(String(y==null?'':y),'zh');}
+  return dir*((x||0)-(y||0)); }; }
+function toggleSort(state,key){ if(state.k===key)state.d*=-1; else {state.k=key;state.d=['name','industry','region','sku','orderNo','date','customer'].includes(key)?1:-1;} }
+function moreRow(cols,total,shown,fn){ return total>shown?`<tr class="no-print"><td colspan="${cols}" style="text-align:center;padding:14px"><button class="btn ghost sm" onclick="${fn}">显示全部 ${total} 行 ↓</button></td></tr>`:''; }
+function sortCust(k){toggleSort(custSort,k);refreshCust();}
+function sortProd(k){toggleSort(prodSort,k);refreshProd();}
+function sortOrder(k){toggleSort(orderSort,k);refreshOrders();}
 function rankRow(i,name,val,frac){
   const g=i<3?'g'+(i+1):'';
   return `<div class="rankrow"><div class="rk ${g}">${i+1}</div><div class="rnm">${esc(name)}</div>
@@ -1245,7 +1594,18 @@ function viewInsights(){
       return `<div class="rankrow"><div class="rnm" style="max-width:120px"><span class="tag2 ${payClass[h]}">${h}</span></div>
         <div style="flex:1;height:8px;background:var(--soft);border-radius:6px;overflow:hidden;max-width:240px"><i style="display:block;height:100%;width:${n/tot*100}%;background:var(--sky);border-radius:6px"></i></div>
         <div class="rval">${n} 户</div></div>`;}).join('')}</div>
-    <div class="note" style="margin-top:16px;margin-bottom:0">${insightText()}</div></div>`;
+    <div class="note" style="margin-top:16px;margin-bottom:0">${insightText()}</div></div>
+  ${(function(){const clv=clvSummary();const co=cohortData();return `
+  <div class="card" style="margin-top:16px"><h3>🔁 复购 / 留存 / 客户终身价值 (CLV)</h3><div class="csub">客户质量与忠诚度</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 14px">
+      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">平均客户终身价值</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:#fff">${P(clv.avgCLV)}</div></div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">复购率</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:#fff">${pct(clv.repeatRate)}</div></div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">有购买客户</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:#fff">${clv.buyers}</div></div>
+    </div>
+    <div class="csub">按「首次购买月份」分群 — 看不同时期进来的客户表现</div>
+    <div class="tablewrap"><table><thead><tr><th>首购月份</th><th class="num">客户数</th><th class="num">复购率</th><th class="num">累计利润</th><th class="num">平均每户(CLV)</th></tr></thead><tbody>
+    ${co.map(r=>`<tr><td class="mono">${r.month}</td><td class="num">${r.n}</td><td class="num">${pct(r.repeatRate)}</td><td class="num">${P(r.profit)}</td><td class="num" style="color:var(--lime);font-weight:600">${P(r.avgCLV)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">暂无数据</td></tr>'}
+    </tbody></table></div></div>`;})()}`;
 }
 function insightText(){
   const reg=aggBy('region').filter(x=>x.key!=='未分类'),ind=aggBy('industry').filter(x=>x.key!=='未分类'),src=aggBy('source').filter(s=>s.custs>0&&s.key!=='未分类');
@@ -1323,7 +1683,10 @@ function delSP(id){DB.salespersons=DB.salespersons.filter(x=>x.id!==id);save();r
 /* ==================== REPORTS ==================== */
 function viewReports(){
   const t=totals();
-  return `<div class="note">📑 报告中心可将分析结果导出为 <b>Excel</b>（多工作表）或打印成 <b>PDF</b>。导出的 Excel 包含客户利润、产品利润、销售员业绩与订单明细。</div>
+  return `<div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(91,141,239,.16),rgba(63,200,192,.08))">
+    <h3>🖨 一键经营报告</h3><div class="csub">自动汇总当前数据范围（${periodLabel[period]}）生成精排版报告，可直接打印或存成 PDF</div>
+    <div style="margin-top:12px"><button class="btn gold" onclick="generateMonthlyReport()">📄 生成经营报告 PDF</button></div></div>
+  <div class="note">📑 也可将各分析单独导出为 <b>Excel</b>（多工作表）。导出内容包含客户利润、产品利润、库存进货、销售员业绩与订单明细。</div>
   <div class="grid2">
     <div class="card"><h3>📊 客户利润报告</h3><div class="csub">客户销售额、利润、订单数、等级分层</div>
       <div style="display:flex;gap:10px;margin-top:14px"><button class="btn gold sm" onclick="exportExcel('customers')">⬇ 导出 Excel</button>
@@ -1356,6 +1719,66 @@ function insights(){
   return out;
 }
 function printReport(type){ window.print(); }
+function rptTable(head,rows){ return `<table><thead><tr>${head}</tr></thead><tbody>${rows||'<tr><td>暂无</td></tr>'}</tbody></table>`; }
+function generateMonthlyReport(){
+  const t=totals(); const mom=momGrowth(); const tg=DB.settings.targets||{};
+  const cs=customerStats(); const ps=productStats();
+  const topC=cs.filter(c=>c.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,10);
+  const topP=ps.filter(p=>p.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,10);
+  const tr=monthlyTrend();
+  const reg=aggBy('region').filter(x=>x.key!=='未分类').slice(0,5);
+  const ind=aggBy('industry').filter(x=>x.key!=='未分类').slice(0,5);
+  const risk=cs.filter(c=>c.tier==='risk'||c.tier==='lost').sort((a,b)=>b.profit-a.profit).slice(0,10);
+  const lowS=ps.filter(p=>p.lowStock||p.outOfStock).sort((a,b)=>a.stock-b.stock);
+  const abc=abcData('customer'); const g={A:0,B:0,C:0}; abc.arr.forEach(x=>g[x.cls]++);
+  const prog=(a,b)=>b>0?Math.min(100,a/b*100).toFixed(0)+'%':'—';
+  const html=`<div class="rpt">
+    <div class="rpt-actions no-print"><button class="btn gold" onclick="window.print()">🖨 打印 / 存为 PDF</button><button class="btn ghost" onclick="closeReport()">关闭</button></div>
+    <div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #1C2541;padding-bottom:12px;margin-bottom:6px">
+      <img src="data:image/png;base64,__LOGO__" style="height:42px"><div><div style="font-size:22px;font-weight:800;font-family:Sora,sans-serif;color:#1C2541">ProRadar 经营分析报告</div>
+      <div style="font-size:12px;color:#667">生成日期 ${today()} · 数据范围：${periodLabel[period]}</div></div></div>
+    <h2>① 关键指标</h2>
+    <div class="rpt-kpi">
+      <div><small>总销售额</small><b>${money(t.rev)}</b></div><div><small>毛利</small><b>${money(t.grossProfit)}</b></div>
+      <div><small>净利</small><b>${money(t.netProfit)}</b></div><div><small>营运开销</small><b>${money(t.expenses)}</b></div>
+      <div><small>应收账款</small><b>${money(t.ar)}</b></div><div><small>库存总值</small><b>${money(t.stockValue)}</b></div>
+    </div>
+    ${(tg.sales>0||tg.profit>0)?`<h2>② 本月目标达成</h2>
+    <div class="rpt-bar"><span>销售额　${money(mom.curRev)} / ${money(tg.sales)}</span><b>${prog(mom.curRev,tg.sales)}</b></div>
+    <div class="rpt-bar"><span>利润　　${money(mom.curPft)} / ${money(tg.profit)}</span><b>${prog(mom.curPft,tg.profit)}</b></div>`:''}
+    <h2>③ 月度趋势</h2>
+    ${rptTable('<th>月份</th><th class="n">销售额</th><th class="n">利润</th>',
+      tr.labels.map((l,i)=>`<tr><td>${l}</td><td class="n">${money(tr.sales[i])}</td><td class="n">${money(tr.profit[i])}</td></tr>`).join(''))}
+    <h2>④ Top 10 客户（按利润）</h2>
+    ${rptTable('<th>客户</th><th>地区</th><th>行业</th><th class="n">销售额</th><th class="n">利润</th><th class="n">订单</th>',
+      topC.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.region||'—')}</td><td>${esc(c.industry||'—')}</td><td class="n">${money(c.sales)}</td><td class="n">${money(c.profit)}</td><td class="n">${c.count}</td></tr>`).join(''))}
+    <h2>⑤ Top 10 产品（按利润）</h2>
+    ${rptTable('<th>产品</th><th class="n">销量</th><th class="n">销售额</th><th class="n">利润</th><th class="n">利润率</th><th class="n">库存</th>',
+      topP.map(p=>`<tr><td>${esc(p.name)}</td><td class="n">${num(p.qty)}</td><td class="n">${money(p.sales)}</td><td class="n">${money(p.profit)}</td><td class="n">${pct(p.margin)}</td><td class="n">${num(p.stock)}</td></tr>`).join(''))}
+    <h2>⑥ ABC 客户分层</h2>
+    <div class="rpt-bar"><span>A 类（关键少数，约80%利润）</span><b>${g.A} 户</b></div>
+    <div class="rpt-bar"><span>B 类（次要）</span><b>${g.B} 户</b></div>
+    <div class="rpt-bar"><span>C 类（长尾）</span><b>${g.C} 户</b></div>
+    <h2>⑦ 地区 / 行业 利润 Top 5</h2>
+    <div style="display:flex;gap:18px;flex-wrap:wrap"><div style="flex:1;min-width:260px">${rptTable('<th>地区</th><th class="n">利润</th><th class="n">客户</th>',reg.map(r=>`<tr><td>${esc(r.key)}</td><td class="n">${money(r.profit)}</td><td class="n">${r.custs}</td></tr>`).join(''))}</div>
+    <div style="flex:1;min-width:260px">${rptTable('<th>行业</th><th class="n">利润</th><th class="n">客户</th>',ind.map(r=>`<tr><td>${esc(r.key)}</td><td class="n">${money(r.profit)}</td><td class="n">${r.custs}</td></tr>`).join(''))}</div></div>
+    <h2>⑧ 风险 / 流失客户</h2>
+    ${rptTable('<th>客户</th><th>等级</th><th class="n">历史利润</th><th class="n">未购买天数</th>',
+      risk.map(c=>`<tr><td>${esc(c.name)}</td><td>${tierName[c.tier]}</td><td class="n">${money(c.profit)}</td><td class="n">${c.recency!=null?c.recency:'—'}</td></tr>`).join(''))}
+    <h2>⑨ 库存预警</h2>
+    ${rptTable('<th>产品</th><th class="n">当前库存</th><th class="n">安全库存</th><th>状态</th><th class="n">建议进货</th>',
+      lowS.map(p=>`<tr><td>${esc(p.name)}</td><td class="n">${num(p.stock)}</td><td class="n">${num(p.safety)}</td><td>${p.outOfStock?'缺货':'低库存'}</td><td class="n">${num(p.suggestQty)}</td></tr>`).join(''))}
+    <h2>⑩ 经营摘要</h2>
+    <ul style="line-height:1.9;font-size:13px">${insights().map(x=>`<li>${x}</li>`).join('')}<li>${insightText()}</li></ul>
+    <div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:11px;color:#889">本报告由 ProRadar™ 盈利导航系统自动生成 · ${today()}</div>
+  </div>`;
+  let ov=document.getElementById('reportOverlay');
+  if(!ov){ov=document.createElement('div');ov.id='reportOverlay';document.body.appendChild(ov);}
+  const logoSrc=(document.querySelector('.sb-head .dot img')||{}).src||'';
+  ov.innerHTML=html.replace('data:image/png;base64,__LOGO__', logoSrc);
+  document.body.classList.add('reporting'); ov.scrollTop=0; window.scrollTo(0,0);
+}
+function closeReport(){ document.body.classList.remove('reporting'); const ov=document.getElementById('reportOverlay'); if(ov)ov.remove(); }
 
 /* ==================== SETTINGS ==================== */
 function viewSettings(){
@@ -1381,6 +1804,7 @@ function viewSettings(){
       ${dictBlock('payMethods','💵 付款方式')}
       ${dictBlock('channels','🛒 销售渠道')}
       ${dictBlock('units','📐 产品单位')}
+      ${dictBlock('expenseCats','💸 开销分类')}
     </div></div>
 
   <div class="card" style="margin-top:16px"><h3>📂 产品分类管理</h3><div class="csub">管理产品的分类标签</div>
@@ -1401,6 +1825,8 @@ function viewSettings(){
   <div class="card" style="margin-top:16px"><h3>🔐 系统配置</h3>
     <div class="setrow"><div class="l"><b>登录密码保护</b><span>开启后每次进入需输入密码</span></div>
       <div class="switch ${s.gateOn?'on':''}" id="gateSw" onclick="toggleGate()"><i></i></div></div>
+    <div class="setrow"><div class="l"><b>员工视图（隐藏利润 / 成本）</b><span>开启后利润、成本、净利等敏感数字显示为 •••，适合给员工看</span></div>
+      <div class="switch ${s.hideProfit?'on':''}" id="hpSw" onclick="toggleHideProfit()"><i></i></div></div>
     <div class="setrow"><div class="l"><b>登录密码</b><span>当前用于进入系统</span></div>
       <input id="set_pw" value="${esc(s.password)}" style="width:140px;border:1px solid var(--border);padding:8px 12px;border-radius:10px"></div>
     <div class="setrow"><div class="l"><b>存储方式</b><span>${Store.ok?'浏览器本地存储（数据保留在此设备）':'⚠️ 预览模式（内存，刷新后重置）— 部署到网站后将自动持久保存'}</span></div>
@@ -1415,6 +1841,11 @@ function viewSettings(){
     <button class="btn gold sm" onclick="saveTargets()">保存目标</button></div>
 
   <div class="card" style="margin-top:16px"><h3>⚠️ 数据管理</h3>
+    <div class="setrow"><div class="l"><b>💾 备份 / 还原（强烈建议定期备份）</b><span>数据存在浏览器本地，导出 JSON 备份可防止清缓存 / 换设备丢失</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn gold sm" onclick="exportBackup()">⬇ 导出备份</button>
+        <label class="btn ghost sm" style="cursor:pointer">⬆ 导入备份<input type="file" hidden accept=".json" onchange="importBackup(event)"></label>
+      </div></div>
     <div class="setrow"><div class="l"><b>重置为示范数据</b><span>清空现有数据并恢复示范数据</span></div>
       <button class="btn ghost sm" onclick="confirmBox('确定重置为示范数据？现有数据将被覆盖。',()=>{seedDemo();go('dashboard');toast('已重置');})">重置</button></div>
     <div class="setrow"><div class="l"><b>清空所有数据</b><span>删除全部客户、产品与订单</span></div>
@@ -1435,7 +1866,25 @@ function saveTargets(){
   DB.settings.targets={sales:+document.getElementById('tg_sales').value||0,profit:+document.getElementById('tg_profit').value||0};
   save();toast('目标已保存');
 }
+function exportBackup(){
+  try{ const blob=new Blob([JSON.stringify(DB)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`ProRadar_备份_${today()}.json`; document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},100); toast('备份已导出');
+  }catch(e){toast('导出失败');}
+}
+function importBackup(ev){
+  const f=ev.target.files[0]; if(!f)return; const rd=new FileReader();
+  rd.onload=e=>{ let obj; try{obj=JSON.parse(e.target.result);}catch(err){toast('文件解析失败');return;}
+    if(!obj||!Array.isArray(obj.products)||!Array.isArray(obj.customers)){toast('不是有效的 ProRadar 备份');return;}
+    confirmBox('确定用此备份覆盖当前所有数据？现有数据将被替换。',()=>{
+      DB=obj; normalizeDB(); save(); buildNav(); updateSyncPill(); go('dashboard'); toast('已从备份还原 ✓');
+    });
+  };
+  rd.readAsText(f); ev.target.value='';
+}
 function toggleGate(){DB.settings.gateOn=!DB.settings.gateOn;document.getElementById('gateSw').classList.toggle('on');save();}
+function toggleHideProfit(){DB.settings.hideProfit=!DB.settings.hideProfit;save();render('settings');toast(DB.settings.hideProfit?'已开启员工视图':'已关闭员工视图');}
 
 /* ---- editable dictionaries / categories / module toggles ---- */
 function jesc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
@@ -1622,6 +2071,13 @@ function exportExcel(type){
           product:p?p.name:'',qty:it.qty,unitPrice:it.unitPrice,unitCost:it.unitCost,discount:o.discount||0,小计利润:R(it.qty*(it.unitPrice-it.unitCost))});});});
     XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'订单明细');
   }
+  if(type==='all'){
+    const ex=(DB.expenses||[]).slice().sort((a,b)=>a.date<b.date?1:-1).map(e=>({date:e.date,category:e.category,amount:e.amount,note:e.note||''}));
+    if(ex.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(ex),'营运开销');
+    const rt=(DB.returns||[]).slice().sort((a,b)=>a.date<b.date?1:-1).map(r=>{const p=byId(DB.products,r.productId),c=byId(DB.customers,r.customerId);
+      return {date:r.date,product:p?p.name:'',customer:c?c.name:'',qty:r.qty,unitPrice:r.unitPrice,unitCost:r.unitCost,退款额:R(r.qty*r.unitPrice),reason:r.reason||''};});
+    if(rt.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rt),'退货记录');
+  }
   XLSX.writeFile(wb,`ProRadar_${type}_${today()}.xlsx`); toast('Excel 已导出');
 }
 function exportTemplate(){
@@ -1630,6 +2086,7 @@ function exportTemplate(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{sku:'SKU-001',name:'示范产品',category:'配件',brand:'本地',unit:'pcs',cost:10,price:30,openingStock:0,safetyStock:10}]),'products');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{orderNo:'PO-0001',date:today(),customer:'示范客户',salesperson:'陈伟豪',channel:'店面',payMethod:'现金',product:'示范产品',qty:2,unitPrice:30,unitCost:10,discount:0}]),'orders');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{date:today(),product:'示范产品',qty:50,unitCost:10,supplier:'供应商A',note:'补货'}]),'purchases');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{date:today(),category:'租金',amount:3500,note:'店面租金'}]),'expenses');
   XLSX.writeFile(wb,'ProRadar_导入模板.xlsx'); toast('模板已下载');
 }
 
