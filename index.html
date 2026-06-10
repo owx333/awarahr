@@ -103,6 +103,16 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .seg2 button.on{background:var(--brand);color:#06101F}
 .thsort{cursor:pointer;user-select:none;white-space:nowrap}
 .thsort:hover{color:var(--ink)}
+.section-title{font-family:'Sora','Noto Sans SC',sans-serif;font-size:14px;font-weight:700;color:var(--ink);margin:18px 0 10px}
+.ai-chat{display:flex;flex-direction:column;gap:12px;min-height:200px;max-height:52vh;overflow:auto;padding:6px 2px}
+.ai-msg{display:flex}
+.ai-msg.user{justify-content:flex-end}
+.ai-msg .bubble{max-width:80%;padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.65}
+.ai-msg.user .bubble{background:var(--brand);color:#06101F;border-bottom-right-radius:4px;font-weight:500}
+.ai-msg.bot .bubble{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--ink);border-bottom-left-radius:4px}
+.ai-input{display:flex;gap:8px;margin-top:12px}
+.ai-input input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--ink);padding:12px 14px;border-radius:12px;font-size:14px;outline:none}
+.ai-input input:focus{border-color:#5B8DEF}
 .sync-pill.live .led{background:#3FC8C0;box-shadow:0 0 0 3px rgba(63,200,192,.22)}
 .content{padding:22px 26px 60px;max-width:1400px;width:100%}
 .view{display:none;animation:fade .3s}
@@ -357,6 +367,64 @@ const payClass={'准时付款':'ok','正常':'potential','偶尔拖延':'risk','
 function optList(arr,sel){return arr.map(x=>`<option value="${x}" ${sel===x?'selected':''}>${x}</option>`).join('');}
 /* hide-profit (员工视图) helper: wrap profit/cost money displays */
 function P(v,d=0){ return DB.settings.hideProfit ? '•••' : money(v,d); }
+/* ===== 自定义字段（组装）===== */
+function cfList(entity){ return (DB.settings.customFields&&DB.settings.customFields[entity])||[]; }
+function cfTypeName(t){return {text:'文本',number:'数字',select:'下拉',date:'日期',textarea:'多行',checkbox:'勾选'}[t]||t;}
+function cfFormHTML(entity,obj){
+  const defs=cfList(entity); if(!defs.length)return '';
+  const cf=(obj&&obj.cf)||{};
+  return `<details open style="margin-top:6px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">🧩 自定义资料</summary><div style="margin-top:10px">`+
+    defs.map(f=>{const v=cf[f.id]!=null?cf[f.id]:'';
+      let input;
+      if(f.type==='select') input=`<select id="cf_${f.id}"><option value="">—</option>${(f.options||[]).map(o=>`<option ${v===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+      else if(f.type==='textarea') input=`<textarea id="cf_${f.id}" rows="2">${esc(v)}</textarea>`;
+      else if(f.type==='checkbox') input=`<label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:13px"><input type="checkbox" id="cf_${f.id}" ${v?'checked':''} style="width:auto;flex:none"> 是</label>`;
+      else if(f.type==='number') input=`<input id="cf_${f.id}" type="number" value="${esc(v)}">`;
+      else if(f.type==='date') input=`<input id="cf_${f.id}" type="date" value="${esc(v)}">`;
+      else input=`<input id="cf_${f.id}" value="${esc(v)}">`;
+      return `<div class="field"><label>${esc(f.label)}</label>${input}</div>`;
+    }).join('')+`</div></details>`;
+}
+function cfCollect(entity){
+  const out={};
+  cfList(entity).forEach(f=>{const el=document.getElementById('cf_'+f.id); if(!el)return;
+    out[f.id]= f.type==='checkbox'? el.checked : (f.type==='number'? (el.value===''?'':(+el.value||0)) : el.value);});
+  return out;
+}
+function cfDisplayHTML(entity,obj){
+  const cf=(obj&&obj.cf)||{}; const rows=cfList(entity).filter(f=>cf[f.id]!==''&&cf[f.id]!=null&&cf[f.id]!==false);
+  if(!rows.length)return '';
+  return `<div style="font-weight:700;font-size:13px;margin:14px 0 8px">🧩 自定义资料</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">`+
+    rows.map(f=>{let v=cf[f.id]; if(f.type==='checkbox')v='是';
+      return `<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">${esc(f.label)}</div><div style="font-size:13px;margin-top:2px">${esc(String(v))}</div></div>`;}).join('')+`</div>`;
+}
+function addCustomField(entity){
+  openModal('添加自定义字段',`
+    <div class="csub" style="margin-bottom:10px">为「${({customer:'客户',product:'产品',salesperson:'销售员',order:'订单'})[entity]}」新增一个资料栏，之后录入时就会出现。</div>
+    <div class="field"><label>字段名称 *</label><input id="ncf_label" placeholder="例如：信用额度 / 批发价 / 客户编号 / 营业执照"></div>
+    <div class="field"><label>类型</label><select id="ncf_type" onchange="document.getElementById('ncf_optwrap').style.display=this.value==='select'?'block':'none'">
+      <option value="text">文本</option><option value="number">数字</option><option value="select">下拉选择</option><option value="date">日期</option><option value="textarea">多行文本</option><option value="checkbox">勾选(是/否)</option></select></div>
+    <div class="field" id="ncf_optwrap" style="display:none"><label>下拉选项（每行一个）</label><textarea id="ncf_opts" rows="3" placeholder="批发&#10;零售&#10;门市"></textarea></div>`,
+    `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveCustomField('${entity}')">添加</button>`);
+}
+function saveCustomField(entity){
+  const label=document.getElementById('ncf_label').value.trim(); if(!label){toast('请输入字段名称');return;}
+  const type=document.getElementById('ncf_type').value;
+  const options=type==='select'?document.getElementById('ncf_opts').value.split(/\n|,/).map(s=>s.trim()).filter(Boolean):undefined;
+  DB.settings.customFields=DB.settings.customFields||{};
+  DB.settings.customFields[entity]=DB.settings.customFields[entity]||[];
+  DB.settings.customFields[entity].push({id:uid('cf'),label,type,options});
+  save(); closeModal(); render('settings'); toast('字段已添加');
+}
+function delCustomField(entity,id){ confirmBox('删除此字段？已录入的数据会保留但不再显示。',()=>{DB.settings.customFields[entity]=(DB.settings.customFields[entity]||[]).filter(f=>f.id!==id); save(); render('settings');}); }
+function cfManagerHTML(){
+  const ents=[['customer','👥 客户'],['product','📦 产品'],['salesperson','🎯 销售员'],['order','🧾 订单']];
+  return ents.map(e=>{const defs=cfList(e[0]);
+    return `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;margin-bottom:8px"><b style="flex:1;font-size:13px">${e[1]}</b><button class="btn ghost sm" onclick="addCustomField('${e[0]}')">＋ 添加字段</button></div>
+      ${defs.length?`<div style="display:flex;flex-wrap:wrap;gap:6px">${defs.map(f=>`<span class="chip">${esc(f.label)} <span style="color:var(--muted)">·${cfTypeName(f.type)}</span> <span style="cursor:pointer;color:#F0989C;margin-left:4px" onclick="delCustomField('${e[0]}','${f.id}')">✕</span></span>`).join('')}</div>`:'<div style="font-size:12px;color:var(--muted)">暂无自定义字段</div>'}</div>`;
+  }).join('');
+}
 
 function save(){ Store.set(KEY, JSON.stringify(DB)); }
 function load(){
@@ -374,7 +442,11 @@ function normalizeDB(){
   for(const k in DICT_DEFAULTS){ if(!Array.isArray(DB.settings.dict[k])||!DB.settings.dict[k].length) DB.settings.dict[k]=[...DICT_DEFAULTS[k]]; }
   DB.settings.hiddenViews=DB.settings.hiddenViews||[];
   DB.settings.targets=DB.settings.targets||{sales:0,profit:0};
+  DB.settings.budget=DB.settings.budget||{expense:0};
+  DB.settings.alerts=Object.assign({netMarginMin:5,arMax:0,aging90Max:0,lapseDays:60},DB.settings.alerts||{});
   DB.settings.hideProfit=DB.settings.hideProfit||false;
+  DB.settings.customFields=DB.settings.customFields||{customer:[],product:[],salesperson:[],order:[]};
+  ['customer','product','salesperson','order'].forEach(e=>{DB.settings.customFields[e]=DB.settings.customFields[e]||[];});
   DB.purchases=DB.purchases||[]; DB.expenses=DB.expenses||[]; DB.returns=DB.returns||[]; DB.followups=DB.followups||[];
   // default older orders to paid
   DB.orders.forEach(o=>{ if(o.paymentStatus===undefined){o.paymentStatus='paid';o.paidAmount=o.totalAmount;} });
@@ -452,6 +524,7 @@ function seedDemo(){
   const customers=custDefs.map((c,i)=>({id:'cu'+(i+1),name:c[0],phone:c[1],company:c[2],
     ssm:'SSM'+(2010+i)+(100+i),sst:'',taxNo:'',salespersonId:c[3],
     industry:c[4]||'',region:c[5]||'',source:c[6]||'',payHabit:c[7]||'正常',
+    cf:{cf_ctype:['批发','零售','门市'][i%3]},
     createdAt:offsetDate(-(200-i*8))}));
 
   // orders spread over last ~210 days
@@ -518,7 +591,8 @@ function seedDemo(){
   DB={categories:cats,products,customers,salespersons:sps,orders,purchases,expenses,returns,followups,
     settings:{password:'8888',gateOn:true,sheetId:'',sheetTabs:{customers:'customers',products:'products',orders:'orders'},
       dict:{industries:[...INDUSTRIES],regions:[...REGIONS],sources:[...SOURCES],payHabits:[...PAYHABITS],payMethods:[...PAYMETHODS],channels:[...CHANNELS],units:[...UNITS],expenseCats:[...EXPENSECATS]},
-      hiddenViews:[],targets:{sales:0,profit:0},hideProfit:false}};
+      hiddenViews:[],targets:{sales:0,profit:0},budget:{expense:0},alerts:{netMarginMin:5,arMax:0,aging90Max:0,lapseDays:60},hideProfit:false,
+      customFields:{customer:[{id:'cf_ctype',label:'客户类型',type:'select',options:['批发','零售','门市']}],product:[],salesperson:[],order:[]}}};
   save();
 }
 function offsetDate(days){ const d=new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
@@ -689,6 +763,18 @@ function periodCompare(){
   const g=(c,p)=>p>0?(c-p)/p:(c>0?1:0);
   return {revPct:g(cR,pR),pftPct:g(cP,pP),hasPrev:(pR>0||pP>0)};
 }
+function smartAlerts(){
+  const a=DB.settings.alerts||{}; const t=totals(); const out=[];
+  if(a.netMarginMin>0 && t.rev>0 && t.netMargin*100 < a.netMarginMin) out.push({lv:'red',msg:`净利率 ${pct(t.netMargin)} 低于预警线 ${a.netMarginMin}%`});
+  if(a.arMax>0 && t.ar > a.arMax) out.push({lv:'red',msg:`应收账款 ${money(t.ar)} 超过上限 ${money(a.arMax)}`});
+  const ag=arAging(); if(a.aging90Max>=0 && ag['90+']>(a.aging90Max||0)) out.push({lv:'red',msg:`超过 90 天未收 ${money(ag['90+'])}，催收风险高`});
+  const ps=productStats(); const outStock=ps.filter(p=>p.outOfStock).length, lowStock=ps.filter(p=>p.lowStock).length;
+  if(outStock) out.push({lv:'red',msg:`${outStock} 个产品已缺货`});
+  if(lowStock) out.push({lv:'amber',msg:`${lowStock} 个产品低于安全库存`});
+  if(a.lapseDays>0){ const cs=customerStats(); const big=cs.filter(c=>c.tier==='vip'&&c.recency!=null&&c.recency>=a.lapseDays);
+    if(big.length) out.push({lv:'amber',msg:`${big.length} 个 VIP 客户已 ${a.lapseDays} 天以上没下单`}); }
+  return out;
+}
 function forecast(series,n){
   const N=series.length; if(N<2) return Array(n).fill(series[N-1]||0);
   let sx=0,sy=0,sxx=0,sxy=0; series.forEach((y,x)=>{sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;});
@@ -716,12 +802,14 @@ function logout(){ authed=false; document.getElementById('app').style.display='n
 /* ---------- Navigation ---------- */
 const NAV=[
   {id:'dashboard',name:'仪表盘',ic:'📊',crumb:'关键经营指标总览'},
+  {id:'ai',name:'AI 分析师',ic:'🤖',crumb:'自然语言问答 · 自动洞察'},
   {id:'customers',name:'客户管理',ic:'👥',crumb:'客户资料与价值分层'},
   {id:'products',name:'产品管理',ic:'📦',crumb:'产品利润与滞销分析'},
   {id:'inventory',name:'库存 / 进货',ic:'🏷️',crumb:'库存水位 · 进货记录 · 低库存预警'},
   {id:'orders',name:'销售记录',ic:'🧾',crumb:'订单数据 · 分析核心来源'},
   {id:'profit',name:'利润分析',ic:'💰',crumb:'客户 / 产品 / 销售利润洞察'},
   {id:'insights',name:'经营洞察',ic:'📍',crumb:'地区 / 行业 / 来源 多维分析'},
+  {id:'builder',name:'自定义报表',ic:'🧩',crumb:'拖拽式自助分析 · 自建图表'},
   {id:'finance',name:'财务',ic:'💸',crumb:'净利 · 开销 · 应收账款 · 现金流'},
   {id:'team',name:'销售团队',ic:'🎯',crumb:'销售员业绩排行'},
   {id:'crm',name:'客户跟进',ic:'📞',crumb:'跟进任务 · 待办 · 客户互动'},
@@ -757,9 +845,9 @@ function updateSyncPill(){
 }
 function render(id){
   const fn={dashboard:viewDashboard,customers:viewCustomers,products:viewProducts,
-    orders:viewOrders,profit:viewProfit,insights:viewInsights,team:viewTeam,reports:viewReports,settings:viewSettings,inventory:viewInventory,finance:viewFinance,crm:viewCRM}[id];
+    orders:viewOrders,profit:viewProfit,insights:viewInsights,team:viewTeam,reports:viewReports,settings:viewSettings,inventory:viewInventory,finance:viewFinance,crm:viewCRM,ai:viewAI,builder:viewBuilder}[id];
   document.getElementById('content').innerHTML=fn();
-  const after={dashboard:afterDashboard,profit:afterProfit,insights:afterInsights,team:afterTeam,inventory:afterInventory,finance:afterFinance}[id];
+  const after={dashboard:afterDashboard,profit:afterProfit,insights:afterInsights,team:afterTeam,inventory:afterInventory,finance:afterFinance,builder:afterBuilder,ai:renderAIChat}[id];
   if(after) setTimeout(after,30);
 }
 /* ==================== DASHBOARD ==================== */
@@ -789,6 +877,8 @@ function viewDashboard(){
     <div class="kpi c3"><div class="lbl">🧾 应收账款 AR</div><div class="val">${money(t.ar)}</div><div class="delta">本期开销 ${money(t.expenses)}</div></div>
     <div class="kpi c4"><div class="lbl">👥 客户 / 订单</div><div class="val">${num(t.custs)}</div><div class="delta">${t.orders} 单 · 库存值 ${money(t.stockValue)}</div></div>
   </div>
+  ${(function(){const al=smartAlerts(); if(!al.length)return ''; return `<div class="card" style="margin-bottom:16px;border-color:rgba(240,152,156,.35)"><h3>🔔 智能预警</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${al.map(x=>`<span class="chip" style="border-color:${x.lv==='red'?'rgba(240,152,156,.5)':'rgba(240,168,120,.5)'};background:${x.lv==='red'?'rgba(240,152,156,.12)':'rgba(240,168,120,.12)'}">${x.lv==='red'?'🔴':'🟠'} ${x.msg}</span>`).join('')}</div></div>`;})()}
   <div class="grid2">
     <div class="card"><h3>🎯 本月目标达成</h3><div class="csub">本自然月销售 / 利润 vs 目标</div>${tgBlock}</div>
     <div class="card"><h3>⚠️ 待关注</h3><div class="csub">需要你处理的经营信号（点击查看）</div>
@@ -926,7 +1016,8 @@ function editCustomer(id){
       <div class="field"><label>SSM</label><input id="f_ssm" value="${esc(c.ssm||'')}"></div>
       <div class="field"><label>SST</label><input id="f_sst" value="${esc(c.sst||'')}"></div>
       <div class="field"><label>税务号</label><input id="f_tax" value="${esc(c.taxNo||'')}"></div>
-    </div></details>`,
+    </div></details>
+    ${cfFormHTML('customer',c)}`,
     `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveCustomer('${id||''}')">保存</button>`);
 }
 function saveCustomer(id){
@@ -938,7 +1029,7 @@ function saveCustomer(id){
     source:document.getElementById('f_source').value,payHabit:document.getElementById('f_pay').value,
     ssm:document.getElementById('f_ssm').value.trim(),
     sst:document.getElementById('f_sst').value.trim(),taxNo:document.getElementById('f_tax').value.trim(),
-    salespersonId:document.getElementById('f_sp').value};
+    salespersonId:document.getElementById('f_sp').value,cf:cfCollect('customer')};
   if(id){ Object.assign(byId(DB.customers,id),data); }
   else { DB.customers.push({id:uid('cu'),createdAt:today(),...data}); }
   save(); closeModal(); refreshCust(); toast('客户已保存');
@@ -1007,7 +1098,8 @@ function editProduct(id){
     <div class="frow"><div class="field"><label>成本 (RM)</label><input id="p_cost" type="number" step="0.01" value="${p.cost??''}"></div>
       <div class="field"><label>售价 (RM)</label><input id="p_price" type="number" step="0.01" value="${p.price??''}"></div></div>
     <div class="frow"><div class="field"><label>期初库存</label><input id="p_open" type="number" value="${p.openingStock??0}"></div>
-      <div class="field"><label>安全库存（低于则预警）</label><input id="p_safe" type="number" value="${p.safetyStock??0}"></div></div>`,
+      <div class="field"><label>安全库存（低于则预警）</label><input id="p_safe" type="number" value="${p.safetyStock??0}"></div></div>
+    ${cfFormHTML('product',p)}`,
     `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveProduct('${id||''}')">保存</button>`);
 }
 function saveProduct(id){
@@ -1016,7 +1108,7 @@ function saveProduct(id){
   const data={sku,name,categoryId:document.getElementById('p_cat').value,
     brand:document.getElementById('p_brand').value.trim(),unit:document.getElementById('p_unit').value.trim()||'pcs',
     openingStock:+document.getElementById('p_open').value||0,safetyStock:+document.getElementById('p_safe').value||0,
-    cost:+document.getElementById('p_cost').value||0,price:+document.getElementById('p_price').value||0};
+    cost:+document.getElementById('p_cost').value||0,price:+document.getElementById('p_price').value||0,cf:cfCollect('product')};
   if(id)Object.assign(byId(DB.products,id),data);
   else DB.products.push({id:uid('pr'),...data});
   save();closeModal();refreshProd();toast('产品已保存');
@@ -1138,7 +1230,8 @@ function openCustomerDetail(id){
       ${c.industry?`<span class="tag2 gray">${esc(c.industry)}</span>`:''}${c.region?`<span class="tag2 gray">${esc(c.region)}</span>`:''}
       ${c.source?`<span class="tag2 gray">来源:${esc(c.source)}</span>`:''}${c.payHabit?`<span class="tag2 ${payClass[c.payHabit]||'gray'}">${esc(c.payHabit)}</span>`:''}</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${esc(c.company||'')} ${c.phone?'· '+esc(c.phone):''} · 负责:${esc((byId(DB.salespersons,c.salespersonId)||{}).name||'—')}</div>
-    ${dkpi([['总销售额',money(sales)],['总利润',money(profit)],['订单数',count],['客单价 AOV',money(aov)],['复购',count>1?'是':'否'],['最近购买',last||'从未']])}
+    ${dkpi([['总销售额',money(sales)],['总利润',P(profit)],['订单数',count],['客单价 AOV',money(aov)],['复购',count>1?'是':'否'],['最近购买',last||'从未']])}
+    ${cfDisplayHTML('customer',c)}
     <div class="card" style="padding:14px;margin-bottom:14px"><h3 style="font-size:13px">📈 近12月 销售/利润</h3><div class="chwrap sm" style="height:180px"><canvas id="chDetail"></canvas></div></div>
     <div style="font-weight:700;font-size:13px;margin-bottom:8px">🛒 购买偏好（按利润）</div>
     ${topProd.map(([nm,pf])=>`<div class="rankrow"><div class="rnm">${esc(nm)}</div><div class="rval">${money(pf)}</div></div>`).join('')||'<div class="empty" style="padding:14px">暂无</div>'}
@@ -1164,7 +1257,8 @@ function openProductDetail(id){
   const margin=sales>0?profit/sales:0;
   openModal(`📦 ${esc(p.name)}`,`
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${esc(p.sku)} · ${esc(cat?cat.name:'未分类')} · ${esc(p.brand||'—')} · 单位 ${esc(p.unit||'')}</div>
-    ${dkpi([['累计销量',num(sold)],['销售额',money(sales)],['利润',money(profit)],['利润率',pct(margin)],['当前库存',num(ps.stock||0)],['库存价值',money(ps.stockValue||0)]])}
+    ${dkpi([['累计销量',num(sold)],['销售额',money(sales)],['利润',P(profit)],['利润率',DB.settings.hideProfit?'•••':pct(margin)],['当前库存',num(ps.stock||0)],['库存价值',money(ps.stockValue||0)]])}
+    ${cfDisplayHTML('product',p)}
     <div class="card" style="padding:14px;margin-bottom:14px"><h3 style="font-size:13px">📈 近12月 销售/利润</h3><div class="chwrap sm" style="height:180px"><canvas id="chDetail"></canvas></div></div>
     <div style="font-weight:700;font-size:13px;margin-bottom:8px">👥 主要客户（按利润）</div>
     ${topCust.map(([nm,pf])=>`<div class="rankrow"><div class="rnm">${esc(nm)}</div><div class="rval">${money(pf)}</div></div>`).join('')||'<div class="empty" style="padding:14px">暂无</div>'}`,
@@ -1192,6 +1286,15 @@ function viewFinance(){
     <div class="kpi c3"><div class="lbl">💸 营运开销 Expenses</div><div class="val">${money(t.expenses)}</div><div class="delta">${periodLabel[period]}</div></div>
     <div class="kpi c4"><div class="lbl">🧾 应收账款 Receivables</div><div class="val">${money(t.ar)}</div><div class="delta">${arRows.length} 个客户未付清</div></div>
   </div>
+  ${(function(){const tg=DB.settings.targets||{},bd=DB.settings.budget||{};const mom=momGrowth();
+    const cm=new Date().toISOString().slice(0,7); let mExp=0;(DB.expenses||[]).forEach(e=>{if(ym(e.date)===cm)mExp+=(+e.amount||0);});
+    if(!(tg.sales>0||tg.profit>0||bd.expense>0))return '';
+    const bar=(lbl,act,tgt,inv)=>{const p=tgt>0?Math.min(100,act/tgt*100):0;const good=inv?act<=tgt:act>=tgt;
+      return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span class="muted">${lbl} ${money(act)} / ${money(tgt)}</span><b style="color:${tgt>0?(good?'#5FC08A':'#F0A878'):'var(--muted)'}">${tgt>0?p.toFixed(0)+'%':'—'}</b></div><div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${p}%;background:${inv?(good?'#5FC08A':'#F0989C'):'linear-gradient(90deg,#5B8DEF,#6FD3E8)'}"></i></div></div>`;};
+    return `<div class="card" style="margin-bottom:16px"><h3>📋 本月预算 vs 实际</h3><div class="csub">本自然月达成情况</div><div style="margin-top:8px">
+      ${tg.sales>0?bar('销售额',mom.curRev,tg.sales,false):''}
+      ${tg.profit>0?bar('利润',mom.curPft,tg.profit,false):''}
+      ${bd.expense>0?bar('开销（越低越好）',mExp,bd.expense,true):''}</div></div>`;})()}
   <div class="grid2">
     <div class="card"><h3>💵 现金流（收 vs 支）</h3><div class="csub">收：已收款 · 支：进货 + 开销</div><div class="chwrap"><canvas id="chCash"></canvas></div></div>
     <div class="card"><h3>⚖️ 盈亏平衡</h3><div class="csub">每月需做多少销售才回本</div>
@@ -1341,6 +1444,136 @@ function saveFollowup(id){
 function doneFollowup(id){ const f=(DB.followups||[]).find(x=>x.id===id); if(f){f.done=true;f.doneDate=today();save();render('crm');toast('已完成 ✓');} }
 function delFollowup(id){ DB.followups=DB.followups.filter(x=>x.id!==id); save(); render(curView==='crm'?'crm':curView); }
 
+/* ==================== AI 分析师 ==================== */
+function aiContext(){
+  const t=totals(); const cs=customerStats(); const ps=productStats();
+  const topC=cs.filter(c=>c.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,10).map(c=>({名:c.name,地区:c.region,行业:c.industry,利润:R(c.profit),销售:R(c.sales),订单:c.count,等级:tierName[c.tier],最近未购天:c.recency}));
+  const topP=ps.filter(p=>p.sales>0).sort((a,b)=>b.profit-a.profit).slice(0,10).map(p=>({名:p.name,销量:p.qty,销售:R(p.sales),利润:R(p.profit),毛利率:+(p.margin*100).toFixed(1),库存:p.stock,建议进货:p.suggestQty}));
+  const tiers={}; cs.forEach(c=>tiers[tierName[c.tier]]=(tiers[tierName[c.tier]]||0)+1);
+  const region=aggBy('region').filter(x=>x.key!=='未分类').map(r=>({地区:r.key,利润:R(r.profit),客户:r.custs}));
+  const industry=aggBy('industry').filter(x=>x.key!=='未分类').map(r=>({行业:r.key,利润:R(r.profit),客户:r.custs}));
+  const src=aggBy('source').filter(x=>x.key!=='未分类'&&x.custs).map(r=>({来源:r.key,客户:r.custs,平均每户利润:R(r.profit/r.custs)}));
+  const clv=clvSummary();
+  const lowStock=ps.filter(p=>p.lowStock||p.outOfStock).map(p=>({产品:p.name,库存:p.stock,建议进货:p.suggestQty}));
+  const risk=cs.filter(c=>c.tier==='risk'||c.tier==='lost').sort((a,b)=>b.profit-a.profit).slice(0,8).map(c=>({名:c.name,等级:tierName[c.tier],历史利润:R(c.profit),未购天数:c.recency}));
+  return {时间范围:periodLabel[period],
+    财务:{总销售:R(t.rev),毛利:R(t.grossProfit),净利:R(t.netProfit),营运开销:R(t.expenses),应收账款:R(t.ar),毛利率pct:+(t.margin*100).toFixed(1),净利率pct:+(t.netMargin*100).toFixed(1),订单数:t.orders,库存总值:R(t.stockValue)},
+    应收账龄:arAging(),客户等级分布:tiers,复购率pct:+(clv.repeatRate*100).toFixed(1),平均客户终身价值:R(clv.avgCLV),
+    top10客户:topC,top10产品:topP,地区利润:region,行业利润:industry,来源ROI:src,流失风险客户:risk,库存预警:lowStock};
+}
+let aiMsgs=[];
+function viewAI(){
+  return `<div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,rgba(91,141,239,.16),rgba(63,200,192,.08))">
+    <h3>🤖 AI 智能分析师</h3><div class="csub">用大白话问你的生意数据，AI 基于当前数据（${periodLabel[period]}）直接回答并给建议</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button class="btn gold sm" onclick="autoInsight()">✨ 自动洞察（一键分析）</button>
+      ${['这个月生意怎么样？','哪些客户快流失了，怎么处理？','我应该多卖哪些产品？','现金流和应收有风险吗？','哪个地区/行业最值得加大投入？'].map(q=>`<button class="btn ghost sm" data-q="${esc(q)}" onclick="askAI(this.dataset.q)">${esc(q)}</button>`).join('')}
+    </div></div>
+  <div id="aiChat" class="ai-chat"></div>
+  <div class="ai-input no-print">
+    <input id="aiQ" placeholder="问我任何关于你生意的问题…" onkeydown="if(event.key==='Enter')askAI()">
+    <button class="btn gold" onclick="askAI()">发送</button>
+  </div>
+  <div class="csub" style="margin-top:10px">⚠️ 在 Claude 预览里可直接用；部署到自有网站需配置 Anthropic API key + 代理（可帮你架）。</div>`;
+}
+function renderAIChat(){
+  const el=document.getElementById('aiChat'); if(!el)return;
+  if(!aiMsgs.length){ el.innerHTML='<div class="empty" style="padding:30px"><div class="big">💬</div>点上面的问题，或自己输入提问</div>'; return; }
+  el.innerHTML=aiMsgs.map(m=>m.role==='user'
+    ? `<div class="ai-msg user"><div class="bubble">${esc(m.text)}</div></div>`
+    : `<div class="ai-msg bot"><div class="bubble">${m.loading?'<span class="muted">分析中…</span>':mdLite(m.text)}</div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function mdLite(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'$1').replace(/^[-*] (.+)$/gm,'• $1').replace(/\n/g,'<br>'); }
+async function askAI(q){
+  q = q || (document.getElementById('aiQ')||{}).value || ''; q=q.trim(); if(!q)return;
+  if(document.getElementById('aiQ'))document.getElementById('aiQ').value='';
+  aiMsgs.push({role:'user',text:q}); aiMsgs.push({role:'bot',loading:true,text:''}); renderAIChat();
+  const ctx=JSON.stringify(aiContext());
+  const sys=`你是 ProRadar 盈利导航系统的资深商业分析师，服务马来西亚中小企业老板。只根据提供的 JSON 经营数据用简体中文回答：口语化、直接、给可执行建议。货币 RM。只用数据里有的信息，数据不足就说明，绝不编造数字。回答控制在 6 句内，关键数字用 **加粗**。`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:`经营数据(JSON)：\n${ctx}\n\n老板的问题：${q}`}]})});
+    if(!r.ok)throw 0; const data=await r.json();
+    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()||'（AI 没有返回内容）';
+    aiMsgs[aiMsgs.length-1]={role:'bot',text:txt};
+  }catch(e){ aiMsgs[aiMsgs.length-1]={role:'bot',text:'⚠️ 连接 AI 失败。在 Claude 预览里可用；若已部署到自有网站，需要配置 Anthropic API key + 代理服务器（我可以帮你架设）。'}; }
+  renderAIChat();
+}
+function autoInsight(){ askAI('请基于全部数据，给我最重要的 5 条经营洞察与异常（涵盖利润、客户流失、产品、库存、现金流/应收），每条一句话并附一个具体建议。'); }
+
+/* ==================== 自定义报表生成器 ==================== */
+const BDIMS=[['customer','客户'],['product','产品'],['salesperson','销售员'],['region','地区'],['industry','行业'],['source','来源'],['channel','渠道'],['month','月份']];
+const BMEAS=[['profit','利润'],['sales','销售额'],['count','订单/客户数'],['qty','销量']];
+let builderState={dim:'region',meas:'profit',chart:'bar'};
+function dimLabel(d){return (BDIMS.find(x=>x[0]===d)||[])[1]||d;}
+function measLabel(m){return (BMEAS.find(x=>x[0]===m)||[])[1]||m;}
+function builderAgg(dim,meas){
+  let rows=[];
+  const pick=(o,p,s,c,q)=> meas==='profit'?p: meas==='sales'?s: meas==='qty'?q: c;
+  if(dim==='customer') rows=customerStats().map(c=>({label:c.name,value:pick(0,c.profit,c.sales,c.count,c.count)}));
+  else if(dim==='product') rows=productStats().map(p=>({label:p.name,value:pick(0,p.profit,p.sales,p.orders,p.qty)}));
+  else if(dim==='salesperson') rows=salespersonStats().map(s=>({label:s.name,value:pick(0,s.profit,s.sales,s.orders,s.orders)}));
+  else if(dim==='region'||dim==='industry'||dim==='source'){ rows=aggBy(dim).filter(x=>x.key!=='未分类').map(x=>({label:x.key,value:pick(0,x.profit,x.sales,x.custs,x.orders)})); }
+  else if(dim==='channel'){ rows=aggOrderBy('channel').filter(x=>x.key!=='未分类').map(x=>({label:x.key,value:pick(0,x.profit,x.amount,x.count,x.count)})); }
+  else if(dim==='month'){ const tr=monthlyTrend(); rows=tr.labels.map((l,i)=>({label:l,value: meas==='sales'?tr.sales[i]: tr.profit[i]})); return rows; }
+  rows=rows.filter(r=>r.value);
+  rows.sort((a,b)=>b.value-a.value);
+  return rows.slice(0,15);
+}
+function viewBuilder(){
+  const b=builderState; const saved=DB.settings.customReports||[];
+  return `<div class="card" style="margin-bottom:16px"><h3>🧩 自定义报表生成器</h3><div class="csub">自己选「看什么维度 + 用什么指标 + 哪种图」，拼出你要的分析（${periodLabel[period]}）</div>
+    <div class="frow3" style="margin-top:10px">
+      <div class="field"><label>分析维度</label><select id="b_dim">${BDIMS.map(d=>`<option value="${d[0]}" ${b.dim===d[0]?'selected':''}>${d[1]}</option>`).join('')}</select></div>
+      <div class="field"><label>指标</label><select id="b_meas">${BMEAS.map(m=>`<option value="${m[0]}" ${b.meas===m[0]?'selected':''}>${m[1]}</option>`).join('')}</select></div>
+      <div class="field"><label>图表</label><select id="b_chart">${[['bar','柱状图'],['line','折线图'],['doughnut','饼图'],['table','表格']].map(c=>`<option value="${c[0]}" ${b.chart===c[0]?'selected':''}>${c[1]}</option>`).join('')}</select></div>
+    </div>
+    <div style="display:flex;gap:8px"><button class="btn gold sm" onclick="runBuilder()">生成</button><button class="btn ghost sm" onclick="saveBuilder()">⭐ 保存到我的报表</button></div>
+  </div>
+  <div class="card" id="b_out"><div class="empty">选好维度和指标，点「生成」</div></div>
+  <div class="card" style="margin-top:16px"><h3>🧪 What-if 情景模拟</h3><div class="csub">假设涨价 / 降成本 / 改销量 / 砍开销，看净利会怎样（基于${periodLabel[period]}）</div>
+    <div class="frow" style="margin-top:10px">
+      <div class="field"><label>售价变动 %</label><input id="wi_price" type="number" value="0" oninput="whatIf()"></div>
+      <div class="field"><label>成本变动 %</label><input id="wi_cost" type="number" value="0" oninput="whatIf()"></div>
+      <div class="field"><label>销量变动 %</label><input id="wi_vol" type="number" value="0" oninput="whatIf()"></div>
+      <div class="field"><label>开销变动 %</label><input id="wi_exp" type="number" value="0" oninput="whatIf()"></div>
+    </div>
+    <div id="wi_out"></div></div>
+  ${saved.length?`<div class="section-title">📌 我的报表</div>${saved.map((r,i)=>`<div class="card" style="margin-bottom:12px"><div style="display:flex;align-items:center"><h3 style="flex:1;font-size:14px">${esc(r.name)}</h3><button class="icbtn no-print" onclick="delCustomReport(${i})">🗑</button></div><div class="csub">${dimLabel(r.dim)} · ${measLabel(r.meas)} · ${r.chart}</div>${r.chart==='table'?`<div id="saved_${i}"></div>`:`<div class="chwrap" id="saved_${i}"></div>`}</div>`).join('')}`:''}`;
+}
+function builderRender(target,dim,meas,chart){
+  const data=builderAgg(dim,meas);
+  if(!data.length){ document.getElementById(target).innerHTML='<div class="empty" style="padding:20px">该组合暂无数据</div>'; return; }
+  const money2=(meas==='profit'||meas==='sales');
+  if(chart==='table'){
+    document.getElementById(target).innerHTML=`<div class="tablewrap"><table><thead><tr><th>${dimLabel(dim)}</th><th class="num">${measLabel(meas)}</th></tr></thead><tbody>${data.map(r=>`<tr><td>${esc(r.label)}</td><td class="num">${money2?money(r.value):num(r.value)}</td></tr>`).join('')}</tbody></table></div>`;
+    return;
+  }
+  const cv=document.createElement('canvas'); const host=document.getElementById(target); host.innerHTML=''; host.appendChild(cv);
+  const cols=['#5B8DEF','#3FC8C0','#E6C260','#E0935A','#E87FA8','#9B8CEF','#5FC08A','#A0AEC0','#E8A33D','#7FB069','#D4A5D8','#5BC0BE','#EBCB6E','#F0989C','#8FB2F5'];
+  if(chart==='doughnut'){ new Chart(cv,{type:'doughnut',data:{labels:data.map(d=>d.label),datasets:[{data:data.map(d=>R(d.value)),backgroundColor:cols,borderWidth:2,borderColor:'#101A2E'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'52%',plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:6,usePointStyle:true,boxWidth:8}}}}}); }
+  else { new Chart(cv,{type:chart,data:{labels:data.map(d=>d.label),datasets:[{label:measLabel(meas),data:data.map(d=>R(d.value)),backgroundColor:chart==='line'?'rgba(91,141,239,.15)':'#5B8DEF',borderColor:'#5B8DEF',borderRadius:6,fill:chart==='line',tension:.3}]},options:chart==='bar'?barOpts(true):lineOpts()}); }
+}
+function runBuilder(){ builderState={dim:document.getElementById('b_dim').value,meas:document.getElementById('b_meas').value,chart:document.getElementById('b_chart').value};
+  const host=document.getElementById('b_out'); host.className='card'; host.innerHTML=builderState.chart==='table'?'<div id="b_render"></div>':'<div class="chwrap" id="b_render"></div>';
+  builderRender('b_render',builderState.dim,builderState.meas,builderState.chart); }
+function saveBuilder(){ runBuilder(); const name=`${dimLabel(builderState.dim)} 的 ${measLabel(builderState.meas)}`;
+  DB.settings.customReports=DB.settings.customReports||[]; DB.settings.customReports.push({name,...builderState}); save(); render('builder'); toast('已保存到我的报表'); }
+function delCustomReport(i){ DB.settings.customReports.splice(i,1); save(); render('builder'); }
+function afterBuilder(){ (DB.settings.customReports||[]).forEach((r,i)=>builderRender('saved_'+i,r.dim,r.meas,r.chart)); whatIf(); }
+function whatIf(){
+  const el=document.getElementById('wi_out'); if(!el)return;
+  const t=totals(); const base={rev:t.rev,cost:t.rev-t.grossProfit,exp:t.expenses,gross:t.grossProfit,net:t.netProfit};
+  const fp=1+(+document.getElementById('wi_price').value||0)/100;
+  const fc=1+(+document.getElementById('wi_cost').value||0)/100;
+  const fv=1+(+document.getElementById('wi_vol').value||0)/100;
+  const fe=1+(+document.getElementById('wi_exp').value||0)/100;
+  const nRev=base.rev*fp*fv, nCost=base.cost*fc*fv, nGross=nRev-nCost, nExp=base.exp*fe, nNet=nGross-nExp;
+  const row=(lbl,b,n)=>{const d=n-b;const col=d>=0?'#5FC08A':'#F0989C';return `<div class="rpt-bar" style="border-color:var(--border);background:rgba(255,255,255,.04);color:var(--ink)"><span class="muted">${lbl}</span><span><b class="mono">${money(n)}</b> <span style="color:${col};font-size:12px">(${d>=0?'+':''}${money(d)})</span></span></div>`;};
+  el.innerHTML=`<div style="margin-top:12px">${row('销售额',base.rev,nRev)}${row('毛利',base.gross,nGross)}${row('净利',base.net,nNet)}
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">净利率：${pct(base.rev?base.net/base.rev:0)} → <b style="color:#fff">${pct(nRev?nNet/nRev:0)}</b></div></div>`;
+}
 /* ==================== ORDERS ==================== */
 let orderSearch='';
 function viewOrders(){
@@ -1405,6 +1638,7 @@ function editOrder(id){
     <div id="o_items"></div>
     <button class="btn ghost sm" onclick="addItem()" style="margin-top:4px">＋ 添加产品</button>
     <div class="field" style="margin-top:12px;max-width:200px"><label>折扣 (RM)</label><input id="o_disc" type="number" step="0.01" min="0" value="${_discount}" onchange="_discount=+this.value||0;renderItems()"></div>
+    ${cfFormHTML('order',o)}
     <div class="order-sum" id="o_sum"></div>`,
     `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveOrder('${id||''}')">保存订单</button>`);
   renderItems();
@@ -1453,7 +1687,7 @@ function saveOrder(id){
     date:document.getElementById('o_date').value||today(),customerId,salespersonId,
     payMethod:document.getElementById('o_pay').value,channel:document.getElementById('o_channel').value,discount,
     paymentStatus:payStat,paidAmount,
-    items,totalAmount,totalCost,totalProfit:totalAmount-totalCost};
+    items,totalAmount,totalCost,totalProfit:totalAmount-totalCost,cf:cfCollect('order')};
   if(id)Object.assign(byId(DB.orders,id),data);
   else DB.orders.unshift({id:uid('or'),...data});
   save();closeModal();refreshOrders();toast('订单已保存');
@@ -1674,10 +1908,21 @@ function renderSPList(){
   document.getElementById('spList').innerHTML=DB.salespersons.map(s=>{
     const cnt=DB.customers.filter(c=>c.salespersonId===s.id).length;
     return `<div class="setrow" style="padding:10px 0"><div class="l"><b>${esc(s.name)}</b><span>${cnt} 个客户负责</span></div>
-      <button class="icbtn" onclick="delSP('${s.id}')">🗑</button></div>`;}).join('')||'<div class="empty" style="padding:20px">暂无销售员</div>';
+      <div><button class="icbtn" onclick="editSP('${s.id}')">✎</button> <button class="icbtn" onclick="delSP('${s.id}')">🗑</button></div></div>`;}).join('')||'<div class="empty" style="padding:20px">暂无销售员</div>';
 }
 function addSP(){const n=document.getElementById('newSP').value.trim();if(!n)return;
   DB.salespersons.push({id:uid('sp'),name:n,role:'sales'});save();renderSPList();document.getElementById('newSP').value='';}
+function editSP(id){ const s=id?byId(DB.salespersons,id):{};
+  openModal(id?'编辑销售员':'新增销售员',`
+    <div class="field"><label>姓名 *</label><input id="sp_name" value="${esc(s.name||'')}"></div>
+    ${cfFormHTML('salesperson',s)}`,
+    `<button class="btn ghost" onclick="manageSP()">返回</button><button class="btn gold" onclick="saveSP('${id||''}')">保存</button>`);
+}
+function saveSP(id){ const name=document.getElementById('sp_name').value.trim(); if(!name){toast('请输入姓名');return;}
+  const data={name,cf:cfCollect('salesperson')};
+  if(id)Object.assign(byId(DB.salespersons,id),data); else DB.salespersons.push({id:uid('sp'),role:'sales',...data});
+  save(); manageSP(); toast('已保存');
+}
 function delSP(id){DB.salespersons=DB.salespersons.filter(x=>x.id!==id);save();renderSPList();}
 
 /* ==================== REPORTS ==================== */
@@ -1833,12 +2078,22 @@ function viewSettings(){
       <button class="btn ghost sm" onclick="saveSettings()">保存设置</button></div>
   </div>
 
-  <div class="card" style="margin-top:16px"><h3>🎯 目标设定（本月）</h3><div class="csub">设定本自然月的销售额与利润目标，仪表盘「目标达成」会显示进度</div>
+  <div class="card" style="margin-top:16px"><h3>🧩 自定义字段（组装你要的资料）</h3>
+    <div class="csub">批发 / 零售 / 门市每个客户要记的资料都不同 —— 在这里自己加字段（如：客户类型、信用额度、批发价、营业执照…），之后录入表单和详情就会自动出现。</div>
+    <div style="margin-top:12px">${cfManagerHTML()}</div></div>
+
+  <div class="card" style="margin-top:16px"><h3>🎯 目标 / 预算 / 智能预警</h3><div class="csub">设定本月目标与预算（仪表盘和财务页显示达成），及自动预警的触发线</div>
     <div class="frow" style="margin-top:8px">
       <div class="field"><label>本月销售额目标 (RM)</label><input id="tg_sales" type="number" value="${DB.settings.targets.sales||0}"></div>
       <div class="field"><label>本月利润目标 (RM)</label><input id="tg_profit" type="number" value="${DB.settings.targets.profit||0}"></div>
+      <div class="field"><label>本月开销预算 (RM)</label><input id="bd_exp" type="number" value="${(DB.settings.budget||{}).expense||0}"></div>
     </div>
-    <button class="btn gold sm" onclick="saveTargets()">保存目标</button></div>
+    <div class="frow" style="margin-top:4px">
+      <div class="field"><label>净利率预警下限 (%)</label><input id="al_nm" type="number" value="${DB.settings.alerts.netMarginMin||0}"></div>
+      <div class="field"><label>应收账款上限 (RM，0=不预警)</label><input id="al_ar" type="number" value="${DB.settings.alerts.arMax||0}"></div>
+      <div class="field"><label>VIP 多少天没下单预警</label><input id="al_lapse" type="number" value="${DB.settings.alerts.lapseDays||0}"></div>
+    </div>
+    <button class="btn gold sm" onclick="saveTargets()">保存</button></div>
 
   <div class="card" style="margin-top:16px"><h3>⚠️ 数据管理</h3>
     <div class="setrow"><div class="l"><b>💾 备份 / 还原（强烈建议定期备份）</b><span>数据存在浏览器本地，导出 JSON 备份可防止清缓存 / 换设备丢失</span></div>
@@ -1864,7 +2119,9 @@ function saveSettings(){
 }
 function saveTargets(){
   DB.settings.targets={sales:+document.getElementById('tg_sales').value||0,profit:+document.getElementById('tg_profit').value||0};
-  save();toast('目标已保存');
+  DB.settings.budget={expense:+document.getElementById('bd_exp').value||0};
+  DB.settings.alerts=Object.assign(DB.settings.alerts||{},{netMarginMin:+document.getElementById('al_nm').value||0,arMax:+document.getElementById('al_ar').value||0,lapseDays:+document.getElementById('al_lapse').value||0});
+  save();toast('已保存');
 }
 function exportBackup(){
   try{ const blob=new Blob([JSON.stringify(DB)],{type:'application/json'});
