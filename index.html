@@ -1572,12 +1572,20 @@ const DB = {
   },
   
   deleteUserById(id) {
+    const target = this.user(id);
     const users = this.users().filter(u => u.id !== id);
     this.set(this.K.users, users);
     if (window.Cloud?.connected) {
       window.Cloud.deleteDoc('users', id).catch(e => 
         console.error('Failed to delete user from Firestore:', e)
       );
+      // CRITICAL: also delete auth_map — security rules grant access based on it.
+      // Without this, a deleted staff's Firebase token would still pass the rules.
+      if (target?.auth_uid) {
+        window.Cloud.deleteDoc('auth_map', target.auth_uid).catch(e =>
+          console.error('Failed to delete auth_map:', e)
+        );
+      }
     }
     return true;
   },
