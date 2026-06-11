@@ -19,7 +19,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{font-family:'Noto Sans SC','Sora',system-ui,sans-serif;color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased;
+body{font-family:'Noto Sans SC','Sora',system-ui,sans-serif;color:var(--ink);font-size:15px;-webkit-font-smoothing:antialiased;
   background:
    radial-gradient(1100px 680px at 82% -8%, rgba(91,141,239,.14), transparent 60%),
    radial-gradient(900px 620px at -5% 110%, rgba(63,200,192,.08), transparent 55%),
@@ -52,7 +52,7 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .login-card .sub{color:#8094b5;font-size:11px;margin-top:5px;letter-spacing:4px}
 .login-card .tag{color:#8FB2F5;font-size:12px;margin:14px 0 22px}
 .login-card input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
-  color:#fff;padding:13px 16px;border-radius:12px;text-align:center;letter-spacing:6px;font-size:18px;outline:none}
+  color:var(--ink);padding:13px 16px;border-radius:12px;text-align:center;letter-spacing:6px;font-size:18px;outline:none}
 .login-card input:focus{border-color:#5B8DEF;box-shadow:0 0 0 3px rgba(91,141,239,.18)}
 .login-card button{width:100%;margin-top:16px;background:var(--brand);color:#06101F;font-weight:700;
   padding:13px;border-radius:12px;font-size:15px;font-family:'Sora'}
@@ -66,39 +66,39 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .sb-head{padding:18px 18px 14px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--line)}
 .sb-head .dot{background:none;display:flex;align-items:center;justify-content:center}
 .sb-head .dot img{height:30px;width:auto;filter:drop-shadow(0 2px 8px rgba(91,141,239,.45))}
-.sb-head .nm{font-family:'Sora';font-weight:800;color:#fff;font-size:16px;line-height:1}
+.sb-head .nm{font-family:'Sora';font-weight:800;color:var(--ink);font-size:16px;line-height:1}
 .sb-head .nm small{display:block;font-weight:400;color:#6f82a3;font-size:10px;letter-spacing:2px;margin-top:3px}
 .nav{flex:1;padding:12px;overflow-y:auto}
 .nav a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:11px;color:#9fb0cd;
   font-size:13.5px;font-weight:500;margin-bottom:3px;text-decoration:none;transition:.15s;cursor:pointer}
 .nav a .ic{width:18px;text-align:center;font-size:15px}
-.nav a:hover{background:rgba(255,255,255,.05);color:#fff}
-.nav a.on{background:linear-gradient(135deg,rgba(91,141,239,.22),rgba(63,200,192,.10));color:#fff;
+.nav a:hover{background:var(--soft);color:var(--ink)}
+.nav a.on{background:linear-gradient(135deg,rgba(91,141,239,.22),rgba(63,200,192,.10));color:var(--ink);
   box-shadow:inset 2px 0 0 #5B8DEF}
 .sb-foot{padding:14px 16px;border-top:1px solid var(--line);font-size:11px;color:#6f82a3}
 .sb-foot button{color:#9fb0cd;font-size:12px;padding:6px 0}
 .main{flex:1;margin-left:230px;min-width:0;display:flex;flex-direction:column}
 .topbar{position:sticky;top:0;z-index:40;background:rgba(10,17,32,.72);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);padding:14px 26px;display:flex;align-items:center;gap:14px}
-.topbar h2{font-family:'Sora';font-size:19px;font-weight:700;color:#fff}
+.topbar h2{font-family:'Sora';font-size:19px;font-weight:700;color:var(--ink)}
 .topbar .crumb{color:var(--muted);font-size:12px}
 .topbar .spacer{flex:1}
 .hamb{display:none;font-size:22px;color:var(--ink)}
 .sync-pill{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);
-  background:rgba(255,255,255,.05);border:1px solid var(--border);padding:7px 13px;border-radius:30px;cursor:pointer}
+  background:var(--soft);border:1px solid var(--border);padding:7px 13px;border-radius:30px;cursor:pointer}
 .sync-pill .led{width:8px;height:8px;border-radius:50%;background:#56688a}
-.period-sel{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--ink);
+.period-sel{background:var(--soft);border:1px solid var(--border);color:var(--ink);
   padding:7px 11px;border-radius:30px;font-size:12px;outline:none;cursor:pointer}
 .period-sel:focus{border-color:#5B8DEF}
 .period-sel option{background:#101A2E;color:var(--ink)}
 .muted{color:var(--muted)}
 .attn{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px}
-.attn-i{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.15s}
-.attn-i:hover{background:rgba(255,255,255,.08)}
+.attn-i{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.15s}
+.attn-i:hover{background:var(--soft2)}
 .attn-i b{display:block;font-family:'JetBrains Mono';font-size:24px;line-height:1}
 .attn-i span{display:block;font-size:11px;color:var(--muted);margin-top:5px}
 @media(max-width:760px){.attn{grid-template-columns:repeat(3,1fr)}}
-.seg2{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.seg2{display:inline-flex;background:var(--soft);border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .seg2 button{padding:8px 16px;font-size:12.5px;color:var(--muted);font-weight:600}
 .seg2 button.on{background:var(--brand);color:#06101F}
 .thsort{cursor:pointer;user-select:none;white-space:nowrap}
@@ -109,9 +109,9 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .ai-msg.user{justify-content:flex-end}
 .ai-msg .bubble{max-width:80%;padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.65}
 .ai-msg.user .bubble{background:var(--brand);color:#06101F;border-bottom-right-radius:4px;font-weight:500}
-.ai-msg.bot .bubble{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--ink);border-bottom-left-radius:4px}
+.ai-msg.bot .bubble{background:var(--soft);border:1px solid var(--border);color:var(--ink);border-bottom-left-radius:4px}
 .ai-input{display:flex;gap:8px;margin-top:12px}
-.ai-input input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--ink);padding:12px 14px;border-radius:12px;font-size:14px;outline:none}
+.ai-input input{flex:1;background:var(--soft);border:1px solid var(--border);color:var(--ink);padding:12px 14px;border-radius:12px;font-size:14px;outline:none}
 .ai-input input:focus{border-color:#5B8DEF}
 .sync-pill.live .led{background:#3FC8C0;box-shadow:0 0 0 3px rgba(63,200,192,.22)}
 .content{padding:22px 26px 60px;max-width:1400px;width:100%}
@@ -123,35 +123,35 @@ input,select,textarea{font-family:inherit;font-size:14px}
   border-radius:11px;font-weight:700;font-size:13px;transition:.15s;box-shadow:0 6px 18px rgba(91,141,239,.25)}
 .btn:hover{filter:brightness(1.08)}
 .btn.gold{background:var(--brand);color:#06101F}
-.btn.ghost{background:rgba(255,255,255,.05);color:var(--ink);border:1px solid var(--border);box-shadow:none}
+.btn.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--border);box-shadow:none}
 .btn.sm{padding:7px 12px;font-size:12px;border-radius:9px}
 .btn.danger{background:#E5848A;color:#1a0b0c;box-shadow:none}
-.icbtn{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.05);color:var(--muted);
+.icbtn{width:32px;height:32px;border-radius:9px;background:var(--soft);color:var(--muted);
   display:inline-flex;align-items:center;justify-content:center;font-size:14px;border:1px solid var(--border)}
-.icbtn:hover{background:rgba(255,255,255,.12);color:#fff}
+.icbtn:hover{background:var(--soft2);color:var(--ink)}
 
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
-.kpi{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--border);
+.kpi{background:var(--kpibg);border:1px solid var(--border);
   border-radius:var(--r);padding:18px;position:relative;overflow:hidden;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
 .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
 .kpi.c1::before{background:#5B8DEF}.kpi.c2::before{background:#3FC8C0}
 .kpi.c3::before{background:#E0935A}.kpi.c4::before{background:#E87FA8}
 .kpi .lbl{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;font-weight:500}
-.kpi .val{font-family:'JetBrains Mono';font-size:26px;font-weight:700;margin-top:8px;color:#fff;letter-spacing:-.5px}
+.kpi .val{font-family:'JetBrains Mono';font-size:26px;font-weight:700;margin-top:8px;color:var(--ink);letter-spacing:-.5px}
 .kpi .delta{font-size:11px;margin-top:5px;font-weight:600;color:var(--muted)}
 
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .grid3{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px}
-.card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));border:1px solid var(--border);
+.card{background:var(--cardbg);border:1px solid var(--border);
   border-radius:var(--r);padding:18px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
-.card h3{font-family:'Sora';font-size:15px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px;color:#fff}
+.card h3{font-family:'Sora';font-size:15px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .card .csub{font-size:11.5px;color:var(--muted);margin-bottom:14px}
 .card .chwrap{position:relative;height:240px}
 .card .chwrap.sm{height:210px}
 
 .tablewrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.015)}
 table{width:100%;border-collapse:collapse;font-size:13px;background:transparent;color:var(--ink)}
-thead th{background:rgba(255,255,255,.04);color:var(--muted);font-weight:600;text-align:left;padding:11px 14px;
+thead th{background:var(--soft);color:var(--muted);font-weight:600;text-align:left;padding:11px 14px;
   font-size:11.5px;letter-spacing:.3px;white-space:nowrap;border-bottom:1px solid var(--border)}
 tbody td{padding:11px 14px;border-top:1px solid rgba(255,255,255,.06);white-space:nowrap}
 tbody tr:hover{background:rgba(255,255,255,.035)}
@@ -162,27 +162,27 @@ td.num,th.num{text-align:right;font-family:'JetBrains Mono'}
 .tag2.potential{background:rgba(91,141,239,.16);color:#8FB2F5}
 .tag2.risk{background:rgba(224,147,90,.18);color:#F0A878}
 .tag2.lost{background:rgba(229,132,138,.16);color:#F0989C}
-.tag2.gray{background:rgba(255,255,255,.07);color:#93A4C0}
+.tag2.gray{background:var(--soft);color:#93A4C0}
 .tag2.lo{background:rgba(229,132,138,.16);color:#F0989C}
 .tag2.slow{background:rgba(230,194,96,.16);color:#EBCB6E}
 .tag2.ok{background:rgba(95,192,138,.16);color:#7FD3A0}
 
 .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-.toolbar input[type=text],.toolbar select{background:rgba(255,255,255,.05);border:1px solid var(--border);
+.toolbar input[type=text],.toolbar select{background:var(--soft);border:1px solid var(--border);
   color:var(--ink);padding:9px 13px;border-radius:10px;outline:none;min-width:150px}
 .toolbar input::placeholder{color:#6f82a3}
 .toolbar input:focus,.toolbar select:focus{border-color:#5B8DEF}
 .toolbar .spacer{flex:1}
 .toolbar select option{background:#101A2E;color:var(--ink)}
 
-.section-title{font-family:'Sora';font-size:14px;font-weight:700;margin:22px 0 12px;color:#fff;display:flex;align-items:center;gap:8px}
+.section-title{font-family:'Sora';font-size:14px;font-weight:700;margin:22px 0 12px;color:var(--ink);display:flex;align-items:center;gap:8px}
 .rankrow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .rankrow:last-child{border-bottom:none}
-.rankrow .rk{width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.07);color:var(--muted);
+.rankrow .rk{width:22px;height:22px;border-radius:7px;background:var(--soft);color:var(--muted);
   font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .rankrow .rk.g1{background:#E6C260;color:#0E1729}.rankrow .rk.g2{background:#A9B6CE;color:#0E1729}.rankrow .rk.g3{background:#C98F5E;color:#0E1729}
 .rankrow .rnm{flex:1;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rankrow .rval{font-family:'JetBrains Mono';font-weight:600;font-size:12.5px;width:104px;text-align:right;color:#fff}
+.rankrow .rval{font-family:'JetBrains Mono';font-weight:600;font-size:12.5px;width:104px;text-align:right;color:var(--ink)}
 
 .modal{position:fixed;inset:0;z-index:200;background:rgba(3,7,15,.7);backdrop-filter:blur(4px);
   display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
@@ -191,12 +191,12 @@ td.num,th.num{text-align:right;font-family:'JetBrains Mono'}
   box-shadow:0 30px 90px rgba(0,0,0,.6);animation:pop .25s}
 @keyframes pop{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
 .modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center}
-.modal-head h3{font-family:'Sora';font-size:17px;font-weight:700;flex:1;color:#fff}
+.modal-head h3{font-family:'Sora';font-size:17px;font-weight:700;flex:1;color:var(--ink)}
 .modal-body{padding:22px;max-height:64vh;overflow-y:auto}
 .modal-foot{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
-.field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);
+.field input,.field select,.field textarea{width:100%;background:var(--soft);border:1px solid var(--border);
   color:var(--ink);padding:10px 12px;border-radius:10px;outline:none}
 .field input:focus,.field select:focus{border-color:#5B8DEF}
 .field select option{background:#111B30;color:var(--ink)}
@@ -205,9 +205,9 @@ td.num,th.num{text-align:right;font-family:'JetBrains Mono'}
 .frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .lineitem{display:grid;grid-template-columns:2.2fr .8fr 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
 .lineitem input,.lineitem select{padding:8px 10px}
-.order-sum{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;display:flex;justify-content:space-around;text-align:center}
+.order-sum{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;display:flex;justify-content:space-around;text-align:center}
 .order-sum div span{display:block;font-size:11px;color:var(--muted)}
-.order-sum div b{font-family:'JetBrains Mono';font-size:17px;color:#fff}
+.order-sum div b{font-family:'JetBrains Mono';font-size:17px;color:var(--ink)}
 
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
 .empty .big{font-size:40px;margin-bottom:10px;opacity:.4}
@@ -217,18 +217,18 @@ td.num,th.num{text-align:right;font-family:'JetBrains Mono'}
 .toast.show{transform:translateX(-50%);opacity:1}
 .note{background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.28);border-radius:12px;padding:14px 16px;
   font-size:12.5px;color:#cfe0ff;margin-bottom:16px;line-height:1.6}
-.note code{background:rgba(255,255,255,.08);padding:1px 6px;border-radius:5px;font-family:'JetBrains Mono';font-size:11.5px;color:#bcd2ff}
+.note code{background:var(--soft2);padding:1px 6px;border-radius:5px;font-family:'JetBrains Mono';font-size:11.5px;color:#bcd2ff}
 .setrow{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06);gap:16px;flex-wrap:wrap}
 .setrow:last-child{border-bottom:none}
 .setrow .l b{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
 .setrow .l span{font-size:12px;color:var(--muted)}
-.setrow input{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--ink)}
+.setrow input{background:var(--soft);border:1px solid var(--border);color:var(--ink)}
 .switch{width:46px;height:26px;border-radius:30px;background:rgba(255,255,255,.14);position:relative;transition:.2s;flex-shrink:0;cursor:pointer}
 .switch.on{background:#3FC8C0}
 .switch i{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .switch.on i{left:23px}
 .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid var(--border);padding:5px 8px 5px 11px;border-radius:30px;font-size:12px;color:var(--ink)}
-.chip button{background:rgba(255,255,255,.08);color:var(--muted);width:18px;height:18px;border-radius:50%;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.chip button{background:var(--soft2);color:var(--muted);width:18px;height:18px;border-radius:50%;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .chip button:hover{background:#E5848A;color:#1a0b0c}
 .chip.addchip{padding:3px 4px 3px 10px;background:rgba(91,141,239,.12);border-color:rgba(91,141,239,.3)}
 .chip.addchip input{background:none;border:none;outline:none;color:var(--ink);width:78px;font-size:12px}
@@ -239,9 +239,20 @@ td.num,th.num{text-align:right;font-family:'JetBrains Mono'}
 @media(max-width:760px){
   .sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}
   .main{margin-left:0}.hamb{display:block}
-  .content{padding:16px 14px 60px}.topbar{padding:12px 16px}.topbar h2{font-size:16px}
-  .kpis{gap:11px}.kpi .val{font-size:21px}
+  .content{padding:14px 12px 60px}.topbar{padding:10px 12px;gap:8px;flex-wrap:wrap}
+  .topbar h2{font-size:15px;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar .crumb{display:none}
+  .sync-pill span:last-child{display:none}.sync-pill{padding:7px 9px}
+  .period-sel{padding:6px 8px;font-size:11px}
+  .kpis{gap:10px}.kpi{padding:14px}.kpi .val{font-size:20px}
+  .frow,.frow3{grid-template-columns:1fr}
   .lineitem{grid-template-columns:1fr 1fr;gap:6px}
+  .modal-card{width:94vw;max-width:94vw}
+  .grid2,.grid3{gap:12px}.card{padding:15px}
+  .ai-msg .bubble{max-width:92%}
+  .seg2 button{padding:7px 11px;font-size:12px}
+  .rpt-kpi{grid-template-columns:1fr 1fr}
+  .toolbar{flex-wrap:wrap;gap:8px}
   .sb-mask.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
 }
 .sb-mask{display:none}
@@ -267,6 +278,40 @@ body.reporting{overflow:hidden}
   .rpt-actions{display:none!important}.rpt h2{break-after:avoid}
   @page{margin:14mm}
 }
+
+:root{--soft2:rgba(255,255,255,.10);--cardbg:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));--kpibg:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))}
+body.light{--bg:#EEF3FA;--navy:#FFFFFF;--navy2:#F6F9FF;--panel:#FFFFFF;--ink:#1C2541;--muted:#5A6B85;
+  --soft:rgba(28,37,65,.06);--soft2:rgba(28,37,65,.11);--border:rgba(28,37,65,.15);
+  --cardbg:#FFFFFF;--kpibg:#FFFFFF;
+  background:radial-gradient(1100px 680px at 82% -8%, rgba(91,141,239,.10), transparent 60%),linear-gradient(180deg,#EDF2FA,#E5EDF8);background-attachment:fixed,fixed}
+body.light .sidebar{background:#FFFFFF;border-right:1px solid var(--border)}
+body.light .topbar{background:rgba(255,255,255,.88);border-bottom:1px solid var(--border)}
+body.light .modal-card{background:#FFFFFF}
+body.light .card,body.light .kpi{box-shadow:0 4px 18px rgba(28,37,65,.07)}
+body.light .ai-msg.bot .bubble{background:#F2F6FC}
+body.light .period-sel option{background:#fff;color:#1C2541}
+@media print{
+  body:not(.reporting) *{color:#111!important;text-shadow:none!important;box-shadow:none!important;backdrop-filter:none!important}
+  body:not(.reporting){background:#fff!important}
+  body:not(.reporting) .card,body:not(.reporting) .kpi,body:not(.reporting) .tablewrap,body:not(.reporting) table,body:not(.reporting) th,body:not(.reporting) td{background:#fff!important;border-color:#bbb!important}
+  body:not(.reporting) .tag2,body:not(.reporting) .chip{background:#fff!important;border:1px solid #999!important}
+  body:not(.reporting) .login,body:not(.reporting) .ai-input{display:none!important}
+}
+
+.kico{width:27px;height:27px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;color:#fff;flex:none;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.kico svg{width:15px;height:15px}
+.kico.k1{background:linear-gradient(135deg,#5B8DEF,#6FD3E8)}
+.kico.k2{background:linear-gradient(135deg,#3FC8C0,#5FC08A)}
+.kico.k3{background:linear-gradient(135deg,#E0935A,#E6C260)}
+.kico.k4{background:linear-gradient(135deg,#E87FA8,#9B8CEF)}
+.card,.kpi{transition:transform .16s ease,box-shadow .16s ease}
+@media(min-width:761px){.card:hover,.kpi:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.18)}}
+.inv-h{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1C2541;padding-bottom:12px;margin-bottom:14px}
+.inv-meta{font-size:12px;color:#556;line-height:1.7}
+.inv-total{display:flex;justify-content:flex-end;margin-top:10px}
+.inv-total table{width:auto;min-width:260px}
+.inv-sign{display:flex;justify-content:space-between;margin-top:46px;font-size:12px;color:#556}
+.inv-sign div{width:42%;border-top:1px solid #999;padding-top:6px;text-align:center}
 
 </style>
 </head>
@@ -312,6 +357,7 @@ body.reporting{overflow:hidden}
         <div class="crumb" id="viewCrumb">关键经营指标总览</div>
       </div>
       <div class="spacer"></div>
+      <button class="icbtn" id="themeBtn" onclick="toggleTheme()" title="浅色/深色切换">🌙</button>
       <select id="periodSel" class="period-sel" onchange="setPeriod(this.value)" title="时间范围">
         <option value="all">全部时间</option><option value="12m">近12个月</option><option value="6m">近6个月</option><option value="3m">近3个月</option>
       </select>
@@ -367,6 +413,156 @@ const payClass={'准时付款':'ok','正常':'potential','偶尔拖延':'risk','
 function optList(arr,sel){return arr.map(x=>`<option value="${x}" ${sel===x?'selected':''}>${x}</option>`).join('');}
 /* hide-profit (员工视图) helper: wrap profit/cost money displays */
 function P(v,d=0){ return DB.settings.hideProfit ? '•••' : money(v,d); }
+function gridCol(){return document.body.classList.contains('light')?'rgba(28,37,65,.09)':'rgba(255,255,255,.07)';}
+function panelCol(){return document.body.classList.contains('light')?'#FFFFFF':'#101A2E';}
+function applyTheme(){
+  const light = DB.settings.theme!=='dark';
+  document.body.classList.toggle('light',light);
+  const b=document.getElementById('themeBtn'); if(b)b.textContent=light?'🌙':'☀️';
+  if(typeof Chart!=='undefined') Chart.defaults.color = light? '#5A6B85' : '#93A4C0';
+  document.documentElement.style.zoom = (window.innerWidth>900) ? (DB.settings.fontScale||1) : 1;
+}
+window.addEventListener('resize',()=>{ document.documentElement.style.zoom=(window.innerWidth>900)?(DB.settings.fontScale||1):1; });
+function toggleTheme(){ DB.settings.theme = (DB.settings.theme==='dark')?'light':'dark'; save(); applyTheme(); render(curView); }
+function setFontScale(v){ DB.settings.fontScale=v; save(); applyTheme(); render('settings'); }
+const ICO={
+ rev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2v20M17 5.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+ pft:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>',
+ ar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>',
+ cust:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'};
+function animVals(){
+  document.querySelectorAll('.kpi .val').forEach(el=>{
+    const txt=el.textContent; const m=txt.match(/([\-\d,\.]+)/); if(!m||txt.includes('•'))return;
+    const target=parseFloat(m[1].replace(/,/g,'')); if(!isFinite(target))return;
+    const pre=txt.slice(0,m.index), suf=txt.slice(m.index+m[1].length);
+    const dec=(m[1].split('.')[1]||'').length; const t0=performance.now(), dur=520;
+    function step(t){ const k=Math.min(1,(t-t0)/dur); const e=1-Math.pow(1-k,3);
+      el.textContent=pre+(target*e).toLocaleString('en-MY',{minimumFractionDigits:dec,maximumFractionDigits:dec})+suf;
+      if(k<1)requestAnimationFrame(step); else el.textContent=txt; }
+    requestAnimationFrame(step);
+  });
+}
+function saveCompany(){
+  DB.settings.company={name:document.getElementById('co_name').value.trim(),reg:document.getElementById('co_reg').value.trim(),
+    addr:document.getElementById('co_addr').value.trim(),phone:document.getElementById('co_phone').value.trim()};
+  save();toast('公司资料已保存');
+}
+function printInvoice(id){
+  const o=byId(DB.orders,id); if(!o)return;
+  const c=byId(DB.customers,o.customerId)||{}; const sp=byId(DB.salespersons,o.salespersonId)||{};
+  const co=DB.settings.company||{};
+  const paid=o.paidAmount!=null?o.paidAmount:(o.paymentStatus==='paid'?o.totalAmount:0);
+  const bal=o.totalAmount-paid;
+  const logoSrc=(document.querySelector('.sb-head .dot img')||{}).src||'';
+  const rows=o.items.map((it,i)=>{const p=byId(DB.products,it.productId)||{};
+    return `<tr><td class="n">${i+1}</td><td>${esc(p.name||'—')}<div style="font-size:11px;color:#889">${esc(p.sku||'')}</div></td><td class="n">${num(it.qty)} ${esc(p.unit||'')}</td><td class="n">${money(it.unitPrice,2)}</td><td class="n">${money(it.qty*it.unitPrice,2)}</td></tr>`;}).join('');
+  const html=`<div class="rpt">
+    <div class="rpt-actions no-print"><button class="btn gold" onclick="window.print()">🖨 打印 / 存为 PDF</button><button class="btn ghost" onclick="closeReport()">关闭</button></div>
+    <div class="inv-h">
+      <div style="display:flex;gap:12px;align-items:center">${logoSrc?`<img src="${logoSrc}" style="height:46px">`:''}
+        <div><div style="font-family:Sora;font-size:20px;font-weight:800;color:#1C2541">${esc(co.name||'ProRadar 商户')}</div>
+        <div class="inv-meta">${esc(co.reg||'')}${co.reg?'<br>':''}${esc(co.addr||'')}${co.addr?'<br>':''}${esc(co.phone||'')}</div></div></div>
+      <div style="text-align:right"><div style="font-family:Sora;font-size:24px;font-weight:800;color:#5B8DEF;letter-spacing:2px">INVOICE</div>
+        <div class="inv-meta">单号 ${esc(o.orderNo)}<br>日期 ${o.date}<br>销售员 ${esc(sp.name||'—')}</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+      <div class="inv-meta"><b style="color:#1C2541">客户 Bill To</b><br>${esc(c.name||'—')}${c.company?'<br>'+esc(c.company):''}${c.phone?'<br>'+esc(c.phone):''}</div>
+      <div class="inv-meta" style="text-align:right"><b style="color:#1C2541">付款方式</b><br>${esc(o.payMethod||'—')}<br>${o.paymentStatus==='paid'?'✅ 已收款':o.paymentStatus==='partial'?'🟠 部分收款':'🔴 未收款'}</div>
+    </div>
+    <table><thead><tr><th class="n" style="width:36px">#</th><th>产品</th><th class="n">数量</th><th class="n">单价</th><th class="n">金额</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="inv-total"><table>
+      <tr><td>小计</td><td class="n">${money(o.totalAmount+(o.discount||0),2)}</td></tr>
+      ${o.discount?`<tr><td>折扣</td><td class="n">- ${money(o.discount,2)}</td></tr>`:''}
+      <tr><td><b>总额</b></td><td class="n"><b>${money(o.totalAmount,2)}</b></td></tr>
+      <tr><td>已收</td><td class="n">${money(paid,2)}</td></tr>
+      ${bal>0.005?`<tr><td style="color:#C0392B"><b>未收余额</b></td><td class="n" style="color:#C0392B"><b>${money(bal,2)}</b></td></tr>`:''}
+    </table></div>
+    <div class="inv-sign"><div>收货人签名 Received By</div><div>授权签名 Authorized By</div></div>
+    <div style="margin-top:26px;padding-top:10px;border-top:1px solid #ddd;font-size:11px;color:#889">由 ProRadar™ 盈利导航系统生成 · ${today()}</div>
+  </div>`;
+  let ov=document.getElementById('reportOverlay');
+  if(!ov){ov=document.createElement('div');ov.id='reportOverlay';document.body.appendChild(ov);}
+  ov.innerHTML=html; document.body.classList.add('reporting'); ov.scrollTop=0; window.scrollTo(0,0);
+}
+const DASHW=[['kpis','核心指标 KPI'],['alerts','智能预警'],['target','本月目标达成'],['attention','待关注'],['trend','销售与利润趋势'],['custRank','客户利润排行'],['prodRank','产品利润排行'],['tier','客户等级分布'],['recentOrders','最近订单'],['recentCust','最近新增客户']];
+/* ===== 表格栏位引擎（可调顺序/显示）===== */
+const COLS={
+ customer:[
+  {k:'name',l:'客户名称',s:'name',r:c=>`<b style="cursor:pointer" onclick="openCustomerDetail('${c.id}')">${esc(c.name)}</b><div style="font-size:11px;color:var(--muted)">${esc(c.company||'')}</div>`},
+  {k:'phone',l:'电话',s:'phone',r:c=>`<span class="mono">${esc(c.phone||'—')}</span>`},
+  {k:'industry',l:'行业',s:'industry',r:c=>esc(c.industry||'—')},
+  {k:'region',l:'地区',s:'region',r:c=>esc(c.region||'—')},
+  {k:'sp',l:'负责销售',r:c=>esc(c.spName||'—')},
+  {k:'tier',l:'等级',s:'tier',r:c=>`<span class="tag2 ${c.tier}">${tierName[c.tier]}</span>`},
+  {k:'pay',l:'付款',r:c=>{const ph=c.payHabit||'正常';return `<span class="tag2 ${payClass[ph]||'gray'}">${esc(ph)}</span>`;}},
+  {k:'sales',l:'总销售额',s:'sales',n:1,r:c=>money(c.sales)},
+  {k:'profit',l:'总利润',s:'profit',n:1,r:c=>`<span style="color:var(--lime);font-weight:600">${P(c.profit)}</span>`},
+  {k:'count',l:'订单数',s:'count',n:1,r:c=>c.count},
+  {k:'last',l:'最近购买',s:'last',r:c=>c.last?c.last+(c.recency!=null?` <span style="color:var(--muted)">(${c.recency}天前)</span>`:''):'<span style="color:var(--muted)">从未</span>'}
+ ],
+ product:[
+  {k:'sku',l:'SKU',s:'sku',r:p=>`<span class="mono">${esc(p.sku)}</span>`},
+  {k:'name',l:'产品名称',s:'name',r:p=>`<b style="cursor:pointer" onclick="openProductDetail('${p.id}')">${esc(p.name)}</b>`},
+  {k:'cat',l:'分类',r:p=>esc(p.catName||'—')},
+  {k:'brand',l:'品牌/供应商',s:'brand',r:p=>esc(p.brand||'—')},
+  {k:'cost',l:'成本',s:'cost',n:1,r:p=>P(p.cost,2)},
+  {k:'price',l:'售价',s:'price',n:1,r:p=>money(p.price,2)},
+  {k:'priceWS',l:'批发价',s:'priceWS',n:1,r:p=>+p.priceWS>0?money(p.priceWS,2):'—'},
+  {k:'qty',l:'销量',s:'qty',n:1,r:p=>`${num(p.qty)} <span style="color:var(--muted);font-size:11px">${esc(p.unit||'')}</span>`},
+  {k:'sales',l:'销售额',s:'sales',n:1,r:p=>money(p.sales)},
+  {k:'profit',l:'利润',s:'profit',n:1,r:p=>`<span style="color:var(--lime);font-weight:600">${P(p.profit)}</span>`},
+  {k:'margin',l:'利润率',s:'margin',n:1,r:p=>DB.settings.hideProfit?'•••':pct(p.margin)},
+  {k:'stock',l:'库存',s:'stock',n:1,r:p=>stockCell(p)},
+  {k:'status',l:'状态',r:p=>{let b='';if(p.lowProfit)b+='<span class="tag2 lo">低利润</span> ';if(p.slow)b+='<span class="tag2 slow">滞销</span>';if(!b&&p.qty>0)b='<span class="tag2 ok">正常</span>';return b||'—';}}
+ ],
+ order:[
+  {k:'orderNo',l:'订单号',s:'orderNo',r:o=>`<span class="mono">${esc(o.orderNo)}</span>`},
+  {k:'date',l:'日期',s:'date',r:o=>`<span class="mono">${o.date}</span>`},
+  {k:'cName',l:'客户',s:'cName',r:o=>esc(o.cName)},
+  {k:'sName',l:'销售员',s:'sName',r:o=>esc(o.sName)},
+  {k:'nItems',l:'项目',s:'nItems',n:1,r:o=>o.nItems},
+  {k:'totalAmount',l:'金额',s:'totalAmount',n:1,r:o=>money(o.totalAmount)},
+  {k:'totalCost',l:'成本',s:'totalCost',n:1,r:o=>`<span style="color:var(--muted)">${P(o.totalCost)}</span>`},
+  {k:'totalProfit',l:'利润',s:'totalProfit',n:1,r:o=>`<span style="color:var(--lime);font-weight:600">${P(o.totalProfit)}</span>`},
+  {k:'pay',l:'收款',r:o=>{const pb={paid:['ok','已收'],partial:['risk','部分'],unpaid:['lo','未收']}[o.paymentStatus||'paid']||['gray','—'];return `<span class="tag2 ${pb[0]}">${pb[1]}</span>`;}}
+ ]
+};
+function colSeq(entity){
+  const cfg=(DB.settings.cols||{})[entity]||{order:COLS[entity].map(c=>c.k),hide:[]};
+  const hide=new Set(cfg.hide||[]);
+  return (cfg.order||[]).map(k=>COLS[entity].find(c=>c.k===k)).filter(c=>c&&!hide.has(c.k));
+}
+function buildTable(entity,rows,sortState,sortFn,showN,moreFn,actions,emptyMsg){
+  const seq=colSeq(entity);
+  const head=seq.map(c=>c.s?thsort(c.l,c.s,sortState,sortFn,c.n):`<th${c.n?' class="num"':''}>${c.l}</th>`).join('')+'<th></th>';
+  const body=rows.slice(0,showN).map(r=>'<tr>'+seq.map(c=>`<td${c.n?' class="num"':''}>${c.r(r)}</td>`).join('')+`<td class="no-print">${actions(r)}</td></tr>`).join('')
+    || `<tr><td colspan="${seq.length+1}" class="empty">${emptyMsg}</td></tr>`;
+  return `<div class="tablewrap"><table><thead><tr>${head}</tr></thead><tbody>${body}${moreRow(seq.length+1,rows.length,showN,moreFn)}</tbody></table></div>`;
+}
+function arrMove(a,i,d){const j=i+d;if(i<0||j<0||j>=a.length)return;const t=a[i];a[i]=a[j];a[j]=t;}
+function moveCol(e,k,d){const o=DB.settings.cols[e].order;arrMove(o,o.indexOf(k),d);save();render('settings');}
+function toggleColV(e,k){const h=DB.settings.cols[e].hide;const i=h.indexOf(k);if(i<0)h.push(k);else h.splice(i,1);save();render('settings');}
+function moveDash(k,d){const o=DB.settings.dash.order;arrMove(o,o.indexOf(k),d);save();render('settings');}
+function toggleDash(k){const h=DB.settings.dash.hide;const i=h.indexOf(k);if(i<0)h.push(k);else h.splice(i,1);save();render('settings');}
+function colMgrHTML(){
+  const ents=[['customer','👥 客户表'],['product','📦 产品表'],['order','🧾 订单表']];
+  return ents.map(e=>{const cfg=DB.settings.cols[e[0]];const hide=new Set(cfg.hide);
+    return `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)"><b style="font-size:13px">${e[1]}</b>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${cfg.order.map(k=>{const c=COLS[e[0]].find(x=>x.k===k);if(!c)return '';const off=hide.has(k);
+        return `<span class="chip" style="${off?'opacity:.45':''}">${c.l}
+          <span style="cursor:pointer;margin-left:5px" onclick="moveCol('${e[0]}','${k}',-1)">◀</span>
+          <span style="cursor:pointer" onclick="moveCol('${e[0]}','${k}',1)">▶</span>
+          <span style="cursor:pointer;margin-left:3px" onclick="toggleColV('${e[0]}','${k}')">${off?'🚫':'👁'}</span></span>`;}).join('')}</div></div>`;
+  }).join('');
+}
+function dashMgrHTML(){
+  const cfg=DB.settings.dash;const hide=new Set(cfg.hide);
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px">${cfg.order.map(k=>{const d=DASHW.find(x=>x[0]===k);if(!d)return '';const off=hide.has(k);
+    return `<span class="chip" style="${off?'opacity:.45':''}">${d[1]}
+      <span style="cursor:pointer;margin-left:5px" onclick="moveDash('${k}',-1)">◀</span>
+      <span style="cursor:pointer" onclick="moveDash('${k}',1)">▶</span>
+      <span style="cursor:pointer;margin-left:3px" onclick="toggleDash('${k}')">${off?'🚫':'👁'}</span></span>`;}).join('')}</div>`;
+}
 /* ===== 自定义字段（组装）===== */
 function cfList(entity){ return (DB.settings.customFields&&DB.settings.customFields[entity])||[]; }
 function cfTypeName(t){return {text:'文本',number:'数字',select:'下拉',date:'日期',textarea:'多行',checkbox:'勾选'}[t]||t;}
@@ -396,7 +592,7 @@ function cfDisplayHTML(entity,obj){
   if(!rows.length)return '';
   return `<div style="font-weight:700;font-size:13px;margin:14px 0 8px">🧩 自定义资料</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">`+
     rows.map(f=>{let v=cf[f.id]; if(f.type==='checkbox')v='是';
-      return `<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">${esc(f.label)}</div><div style="font-size:13px;margin-top:2px">${esc(String(v))}</div></div>`;}).join('')+`</div>`;
+      return `<div style="background:var(--soft);border:1px solid var(--border);border-radius:8px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">${esc(f.label)}</div><div style="font-size:13px;margin-top:2px">${esc(String(v))}</div></div>`;}).join('')+`</div>`;
 }
 function addCustomField(entity){
   openModal('添加自定义字段',`
@@ -446,6 +642,18 @@ function normalizeDB(){
   DB.settings.alerts=Object.assign({netMarginMin:5,arMax:0,aging90Max:0,lapseDays:60},DB.settings.alerts||{});
   DB.settings.hideProfit=DB.settings.hideProfit||false;
   DB.settings.customFields=DB.settings.customFields||{customer:[],product:[],salesperson:[],order:[]};
+  DB.settings.theme=DB.settings.theme||'light';
+  DB.settings.fontScale=DB.settings.fontScale||1.12;
+  DB.settings.company=Object.assign({name:'',reg:'',addr:'',phone:''},DB.settings.company||{});
+  DB.settings.cols=DB.settings.cols||{};
+  Object.keys(COLS).forEach(e=>{
+    const def=COLS[e].map(c=>c.k);
+    const cfg=DB.settings.cols[e]=DB.settings.cols[e]||{order:[...def],hide:[]};
+    cfg.order=(cfg.order||[]).filter(k=>def.includes(k)); def.forEach(k=>{if(!cfg.order.includes(k))cfg.order.push(k);});
+    cfg.hide=(cfg.hide||[]).filter(k=>def.includes(k));
+  });
+  DB.settings.dash=DB.settings.dash||{order:DASHW.map(d=>d[0]),hide:[]};
+  DASHW.forEach(d=>{if(!DB.settings.dash.order.includes(d[0]))DB.settings.dash.order.push(d[0]);});
   ['customer','product','salesperson','order'].forEach(e=>{DB.settings.customFields[e]=DB.settings.customFields[e]||[];});
   DB.purchases=DB.purchases||[]; DB.expenses=DB.expenses||[]; DB.returns=DB.returns||[]; DB.followups=DB.followups||[];
   // default older orders to paid
@@ -503,7 +711,7 @@ function seedDemo(){
     ['SKU-B202','备用电池','cat1',55,95,'Panasonic','pcs'],
     ['SKU-C302','清洁剂（升）','cat3',9,15,'本地','公升'],
   ];
-  const products=prodDefs.map((p,i)=>({id:'pr'+(i+1),sku:p[0],name:p[1],categoryId:p[2],cost:p[3],price:p[4],brand:p[5]||'',unit:p[6]||'pcs',
+  const products=prodDefs.map((p,i)=>({id:'pr'+(i+1),sku:p[0],name:p[1],categoryId:p[2],cost:p[3],price:p[4],priceWS:Math.round(p[4]*0.88*100)/100,brand:p[5]||'',unit:p[6]||'pcs',
     openingStock:0,safetyStock:[20,15,10,5,10,20,15,8,30,25,12,6][i]||10}));
   const custDefs=[
     ['宏达机械有限公司','019-2334455','宏达机械','sp1','制造业','槟城','老客户介绍','准时付款'],
@@ -525,6 +733,7 @@ function seedDemo(){
     ssm:'SSM'+(2010+i)+(100+i),sst:'',taxNo:'',salespersonId:c[3],
     industry:c[4]||'',region:c[5]||'',source:c[6]||'',payHabit:c[7]||'正常',
     cf:{cf_ctype:['批发','零售','门市'][i%3]},
+    priceTier:(i%3===0?'批发价':'零售价'),creditLimit:(i===1||i===6?2500:0),
     createdAt:offsetDate(-(200-i*8))}));
 
   // orders spread over last ~210 days
@@ -773,6 +982,9 @@ function smartAlerts(){
   if(lowStock) out.push({lv:'amber',msg:`${lowStock} 个产品低于安全库存`});
   if(a.lapseDays>0){ const cs=customerStats(); const big=cs.filter(c=>c.tier==='vip'&&c.recency!=null&&c.recency>=a.lapseDays);
     if(big.length) out.push({lv:'amber',msg:`${big.length} 个 VIP 客户已 ${a.lapseDays} 天以上没下单`}); }
+  const arBy=arOutstanding().byCust;
+  const over=DB.customers.filter(c=>+c.creditLimit>0&&(arBy[c.id]||0)>+c.creditLimit);
+  if(over.length) out.push({lv:'red',msg:`${over.length} 个客户应收已超信用额度（${over.slice(0,3).map(c=>c.name).join('、')}${over.length>3?'…':''}）`});
   return out;
 }
 function forecast(series,n){
@@ -854,96 +1066,91 @@ function render(id){
 function deltaHTML(p){ if(!isFinite(p)||p===0) return '<span style="color:var(--muted)">持平</span>';
   const up=p>0; return `<span style="color:${up?'#5FC08A':'#F2888C'};font-weight:700">${up?'▲':'▼'} ${Math.abs(p*100).toFixed(1)}%</span>`; }
 function viewDashboard(){
-  const t=totals(); const mom=momGrowth(); const tg=DB.settings.targets||{sales:0,profit:0};
+  const t=totals(); const tg=DB.settings.targets||{sales:0,profit:0};
   const cs=customerStats(); const ps=productStats();
   const riskN=cs.filter(c=>c.tier==='risk'||c.tier==='lost').length;
   const lowProfitN=ps.filter(p=>p.lowProfit).length, slowN=ps.filter(p=>p.slow).length;
   const lowStockN=ps.filter(p=>p.lowStock).length, outN=ps.filter(p=>p.outOfStock).length;
   const cmp = period==='all'? momGrowth() : periodCompare();
   const cmpLbl = period==='all'? '环比' : 'vs 上期';
+  const mom=momGrowth();
   const revDelta = (cmp&&cmp.hasPrev)? deltaHTML(cmp.revPct)+' '+cmpLbl : `${t.orders} 张订单`;
   const pftDelta = (cmp&&cmp.hasPrev)? deltaHTML(cmp.pftPct)+' '+cmpLbl : (DB.settings.hideProfit?'毛利率 •••':`毛利率 ${pct(t.margin)}`);
   const prog=(a,b)=> b>0? Math.min(100,a/b*100):0;
   const tgBlock = (tg.sales>0||tg.profit>0) ? `
       <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="muted">销售额 ${money(mom.curRev)} / ${money(tg.sales)}</span><b>${prog(mom.curRev,tg.sales).toFixed(0)}%</b></div>
-        <div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curRev,tg.sales)}%;background:linear-gradient(90deg,#5B8DEF,#6FD3E8)"></i></div></div>
+        <div style="height:8px;background:var(--soft);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curRev,tg.sales)}%;background:linear-gradient(90deg,#5B8DEF,#6FD3E8)"></i></div></div>
       <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="muted">利润 ${DB.settings.hideProfit?'•••':money(mom.curPft)} / ${money(tg.profit)}</span><b>${prog(mom.curPft,tg.profit).toFixed(0)}%</b></div>
-        <div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curPft,tg.profit)}%;background:linear-gradient(90deg,#3FC8C0,#62B847)"></i></div></div>`
+        <div style="height:8px;background:var(--soft);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${prog(mom.curPft,tg.profit)}%;background:linear-gradient(90deg,#3FC8C0,#62B847)"></i></div></div>`
     : `<div class="empty" style="padding:24px 10px;font-size:12.5px">未设定本月目标。到 <b>系统设置 → 目标设定</b> 设定后这里会显示达成进度。</div>`;
-  return `
-  <div class="kpis">
-    <div class="kpi c1"><div class="lbl">💵 总销售额 Revenue</div><div class="val">${money(t.rev)}</div><div class="delta">${revDelta}</div></div>
-    <div class="kpi c2"><div class="lbl">💰 净利 Net Profit</div><div class="val">${P(t.netProfit)}</div><div class="delta">毛利 ${P(t.grossProfit)} · ${pftDelta}</div></div>
-    <div class="kpi c3"><div class="lbl">🧾 应收账款 AR</div><div class="val">${money(t.ar)}</div><div class="delta">本期开销 ${money(t.expenses)}</div></div>
-    <div class="kpi c4"><div class="lbl">👥 客户 / 订单</div><div class="val">${num(t.custs)}</div><div class="delta">${t.orders} 单 · 库存值 ${money(t.stockValue)}</div></div>
-  </div>
-  ${(function(){const al=smartAlerts(); if(!al.length)return ''; return `<div class="card" style="margin-bottom:16px;border-color:rgba(240,152,156,.35)"><h3>🔔 智能预警</h3>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${al.map(x=>`<span class="chip" style="border-color:${x.lv==='red'?'rgba(240,152,156,.5)':'rgba(240,168,120,.5)'};background:${x.lv==='red'?'rgba(240,152,156,.12)':'rgba(240,168,120,.12)'}">${x.lv==='red'?'🔴':'🟠'} ${x.msg}</span>`).join('')}</div></div>`;})()}
-  <div class="grid2">
-    <div class="card"><h3>🎯 本月目标达成</h3><div class="csub">本自然月销售 / 利润 vs 目标</div>${tgBlock}</div>
-    <div class="card"><h3>⚠️ 待关注</h3><div class="csub">需要你处理的经营信号（点击查看）</div>
+  const W={};
+  W.target=`<div class="card"><h3>🎯 本月目标达成</h3><div class="csub">本自然月销售 / 利润 vs 目标</div>${tgBlock}</div>`;
+  W.attention=`<div class="card"><h3>⚠️ 待关注</h3><div class="csub">需要你处理的经营信号（点击查看）</div>
       <div class="attn">
-        <div class="attn-i" onclick="custFilter='risk';go('customers')"><b style="color:#F0A878">${riskN}</b><span>风险/流失客户</span></div>
-        <div class="attn-i" onclick="prodFilter='low';go('products')"><b style="color:#F0989C">${lowProfitN}</b><span>低利润产品</span></div>
-        <div class="attn-i" onclick="prodFilter='slow';go('products')"><b style="color:#EBCB6E">${slowN}</b><span>滞销产品</span></div>
-        <div class="attn-i" onclick="go('inventory')"><b style="color:#F0A878">${lowStockN}</b><span>低库存</span></div>
-        <div class="attn-i" onclick="go('inventory')"><b style="color:#F0989C">${outN}</b><span>缺货</span></div>
-      </div></div>
-  </div>
-  <div class="grid2">
-    <div class="card"><h3>📈 销售与利润趋势</h3><div class="csub">${periodLabel[period]} · 月度走势（虚线 = 未来 3 月预测）</div><div class="chwrap"><canvas id="chTrend"></canvas></div></div>
-    <div class="card"><h3>🏆 客户利润排行 Top 6</h3><div class="csub">最赚钱的客户</div><div class="chwrap"><canvas id="chCustRank"></canvas></div></div>
-  </div>
-  <div class="grid2">
-    <div class="card"><h3>📦 产品利润排行 Top 6</h3><div class="csub">最赚钱的产品</div><div class="chwrap"><canvas id="chProdRank"></canvas></div></div>
-    <div class="card"><h3>🥧 客户等级分布</h3><div class="csub">RFM 价值分层</div><div class="chwrap"><canvas id="chTier"></canvas></div></div>
-  </div>
-  <div class="grid2">
-    <div class="card"><h3>🧾 最近订单</h3><div class="csub">最新成交记录</div>
+        <div class="attn-i" onclick="custFilter='risk';go('customers')"><b style="color:#E0935A">${riskN}</b><span>风险/流失客户</span></div>
+        <div class="attn-i" onclick="prodFilter='low';go('products')"><b style="color:#E26A6F">${lowProfitN}</b><span>低利润产品</span></div>
+        <div class="attn-i" onclick="prodFilter='slow';go('products')"><b style="color:#C99A2E">${slowN}</b><span>滞销产品</span></div>
+        <div class="attn-i" onclick="go('inventory')"><b style="color:#E0935A">${lowStockN}</b><span>低库存</span></div>
+        <div class="attn-i" onclick="go('inventory')"><b style="color:#E26A6F">${outN}</b><span>缺货</span></div>
+      </div></div>`;
+  W.trend=`<div class="card"><h3>📈 销售与利润趋势</h3><div class="csub">${periodLabel[period]} · 月度走势（虚线 = 未来 3 月预测）</div><div class="chwrap"><canvas id="chTrend"></canvas></div></div>`;
+  W.custRank=`<div class="card"><h3>🏆 客户利润排行 Top 6</h3><div class="csub">最赚钱的客户</div><div class="chwrap"><canvas id="chCustRank"></canvas></div></div>`;
+  W.prodRank=`<div class="card"><h3>📦 产品利润排行 Top 6</h3><div class="csub">最赚钱的产品</div><div class="chwrap"><canvas id="chProdRank"></canvas></div></div>`;
+  W.tier=`<div class="card"><h3>🥧 客户等级分布</h3><div class="csub">RFM 价值分层</div><div class="chwrap"><canvas id="chTier"></canvas></div></div>`;
+  W.recentOrders=`<div class="card"><h3>🧾 最近订单</h3><div class="csub">最新成交记录</div>
       <div class="tablewrap"><table><thead><tr><th>订单号</th><th>客户</th><th class="num">金额</th><th class="num">利润</th></tr></thead><tbody>
-      ${DB.orders.slice(0,6).map(o=>{const c=byId(DB.customers,o.customerId);return `<tr><td class="mono">${esc(o.orderNo)}</td><td>${esc(c?c.name:'—')}</td><td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--lime)">${money(o.totalProfit)}</td></tr>`;}).join('')||'<tr><td colspan="4" class="empty">暂无订单</td></tr>'}
-      </tbody></table></div></div>
-    <div class="card"><h3>✨ 最近新增客户</h3><div class="csub">新进客户</div>
+      ${DB.orders.slice(0,6).map(o=>{const c=byId(DB.customers,o.customerId);return `<tr><td class="mono">${esc(o.orderNo)}</td><td>${esc(c?c.name:'—')}</td><td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--lime)">${P(o.totalProfit)}</td></tr>`;}).join('')||'<tr><td colspan="4" class="empty">暂无订单</td></tr>'}
+      </tbody></table></div></div>`;
+  W.recentCust=`<div class="card"><h3>✨ 最近新增客户</h3><div class="csub">新进客户</div>
       <div class="tablewrap"><table><thead><tr><th>客户名称</th><th>电话</th><th>负责销售</th></tr></thead><tbody>
       ${[...DB.customers].sort((a,b)=>(a.createdAt<b.createdAt?1:-1)).slice(0,5).map(c=>{const s=byId(DB.salespersons,c.salespersonId);return `<tr><td>${esc(c.name)}</td><td class="mono">${esc(c.phone)}</td><td>${esc(s?s.name:'—')}</td></tr>`;}).join('')||'<tr><td colspan="3" class="empty">暂无客户</td></tr>'}
-      </tbody></table></div></div>
+      </tbody></table></div></div>`;
+  const dash=DB.settings.dash||{order:DASHW.map(d=>d[0]),hide:[]};
+  const hide=new Set(dash.hide||[]);
+  const kpiHTML = hide.has('kpis')?'':`<div class="kpis">
+    <div class="kpi c1"><div class="lbl"><span class="kico k1">${ICO.rev}</span> 总销售额 Revenue</div><div class="val">${money(t.rev)}</div><div class="delta">${revDelta}</div></div>
+    <div class="kpi c2"><div class="lbl"><span class="kico k2">${ICO.pft}</span> 净利 Net Profit</div><div class="val">${P(t.netProfit)}</div><div class="delta">毛利 ${P(t.grossProfit)} · ${pftDelta}</div></div>
+    <div class="kpi c3"><div class="lbl"><span class="kico k3">${ICO.ar}</span> 应收账款 AR</div><div class="val">${money(t.ar)}</div><div class="delta">本期开销 ${money(t.expenses)}</div></div>
+    <div class="kpi c4"><div class="lbl"><span class="kico k4">${ICO.cust}</span> 客户 / 订单</div><div class="val">${num(t.custs)}</div><div class="delta">${t.orders} 单 · 库存值 ${money(t.stockValue)}</div></div>
   </div>`;
+  const alertsHTML = hide.has('alerts')?'':(function(){const al=smartAlerts(); if(!al.length)return ''; return `<div class="card" style="margin-bottom:16px;border-color:rgba(226,106,111,.4)"><h3>🔔 智能预警</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${al.map(x=>`<span class="chip" style="border-color:${x.lv==='red'?'rgba(226,106,111,.5)':'rgba(224,147,90,.5)'};background:${x.lv==='red'?'rgba(226,106,111,.10)':'rgba(224,147,90,.10)'}">${x.lv==='red'?'🔴':'🟠'} ${x.msg}</span>`).join('')}</div></div>`;})();
+  const cards=(dash.order||[]).filter(k=>W[k]&&!hide.has(k)).map(k=>W[k]).join('');
+  return kpiHTML+alertsHTML+`<div class="grid2">${cards}</div>`;
 }
+
 function afterDashboard(){
-  const tr=monthlyTrend();
-  const fN=3; const fs=forecast(tr.sales,fN), fp=forecast(tr.profit,fN);
-  const nd=new Date(); const fLabels=[]; for(let i=1;i<=fN;i++){const d=new Date(nd.getFullYear(),nd.getMonth()+i,1);fLabels.push((d.getMonth()+1)+'月');}
-  const allLabels=[...tr.labels,...fLabels];
-  const pad=(arr)=>[...arr,...Array(fN).fill(null)];
-  const fc=(hist,f)=>[...Array(hist.length-1).fill(null),hist[hist.length-1],...f];
-  charts.trend=new Chart(document.getElementById('chTrend'),{type:'line',
-    data:{labels:allLabels,datasets:[
-      {label:'销售额',data:pad(tr.sales),borderColor:'#5B8DEF',backgroundColor:'rgba(91,141,239,.12)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
-      {label:'利润',data:pad(tr.profit),borderColor:'#3FC8C0',backgroundColor:'rgba(63,200,192,.10)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
-      {label:'销售预测',data:fc(tr.sales,fs),borderColor:'#5B8DEF',borderDash:[5,4],borderWidth:2,pointRadius:2,fill:false,tension:.3},
-      {label:'利润预测',data:fc(tr.profit,fp),borderColor:'#3FC8C0',borderDash:[5,4],borderWidth:2,pointRadius:2,fill:false,tension:.3}
-    ]},options:lineOpts()});
-
-  const cs=customerStats().filter(c=>c.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,6);
-  charts.cust=new Chart(document.getElementById('chCustRank'),{type:'bar',
-    data:{labels:cs.map(c=>c.name),datasets:[{data:cs.map(c=>R(c.profit)),backgroundColor:'#E6C260',borderRadius:6}]},
-    options:barOpts(true)});
-
-  const ps=productStats().filter(p=>p.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,6);
-  charts.prod=new Chart(document.getElementById('chProdRank'),{type:'bar',
-    data:{labels:ps.map(p=>p.name),datasets:[{data:ps.map(p=>R(p.profit)),backgroundColor:'#E0935A',borderRadius:6}]},
-    options:barOpts(true)});
-
-  const tiers={vip:0,active:0,potential:0,risk:0,lost:0};
-  customerStats().forEach(c=>tiers[c.tier]++);
-  charts.tier=new Chart(document.getElementById('chTier'),{type:'doughnut',
-    data:{labels:['VIP','活跃','潜力','风险','流失'],datasets:[{data:[tiers.vip,tiers.active,tiers.potential,tiers.risk,tiers.lost],
-      backgroundColor:['#E6C260','#3FC8C0','#5B8DEF','#E0935A','#E5848A'],borderWidth:2,borderColor:'#101A2E'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:11},padding:10,usePointStyle:true}}}}});
+  setTimeout(animVals,30);
+  const eT=document.getElementById('chTrend');
+  if(eT){
+    const tr=monthlyTrend();
+    const fN=3; const fs=forecast(tr.sales,fN), fp=forecast(tr.profit,fN);
+    const nd=new Date(); const fLabels=[]; for(let i=1;i<=fN;i++){const d=new Date(nd.getFullYear(),nd.getMonth()+i,1);fLabels.push((d.getMonth()+1)+'月');}
+    const allLabels=[...tr.labels,...fLabels];
+    const pad=(arr)=>[...arr,...Array(fN).fill(null)];
+    const fc=(hist,f)=>[...Array(hist.length-1).fill(null),hist[hist.length-1],...f];
+    charts.trend=new Chart(eT,{type:'line',
+      data:{labels:allLabels,datasets:[
+        {label:'销售额',data:pad(tr.sales),borderColor:'#5B8DEF',backgroundColor:'rgba(91,141,239,.12)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
+        {label:'利润',data:pad(tr.profit),borderColor:'#3FC8C0',backgroundColor:'rgba(63,200,192,.10)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3},
+        {label:'销售预测',data:fc(tr.sales,fs),borderColor:'#5B8DEF',borderDash:[5,4],borderWidth:2,pointRadius:2,fill:false,tension:.3},
+        {label:'利润预测',data:fc(tr.profit,fp),borderColor:'#3FC8C0',borderDash:[5,4],borderWidth:2,pointRadius:2,fill:false,tension:.3}
+      ]},options:lineOpts()});
+  }
+  const eC=document.getElementById('chCustRank');
+  if(eC){ const top=customerStats().filter(c=>c.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,6);
+    charts.crank=new Chart(eC,{type:'bar',data:{labels:top.map(c=>c.name),datasets:[{data:top.map(c=>R(c.profit)),backgroundColor:'#5B8DEF',borderRadius:6}]},options:barOpts(true)}); }
+  const eP=document.getElementById('chProdRank');
+  if(eP){ const top=productStats().filter(p=>p.profit>0).sort((a,b)=>b.profit-a.profit).slice(0,6);
+    charts.prank=new Chart(eP,{type:'bar',data:{labels:top.map(p=>p.name),datasets:[{data:top.map(p=>R(p.profit)),backgroundColor:'#3FC8C0',borderRadius:6}]},options:barOpts(true)}); }
+  const eTi=document.getElementById('chTier');
+  if(eTi){ const cs=customerStats(); const cnt={vip:0,active:0,potential:0,risk:0,lost:0};
+    cs.forEach(c=>{if(cnt[c.tier]!=null)cnt[c.tier]++;});
+    charts.tier=new Chart(eTi,{type:'doughnut',data:{labels:['VIP','活跃','潜力','风险','流失'],
+      datasets:[{data:[cnt.vip,cnt.active,cnt.potential,cnt.risk,cnt.lost],backgroundColor:['#E6C260','#5FC08A','#5B8DEF','#E0935A','#A0AEC0'],borderWidth:2,borderColor:panelCol()}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:11},padding:8,usePointStyle:true,boxWidth:8}}}}}); }
 }
 
-/* ==================== CUSTOMERS ==================== */
-let custFilter='all',custSearch='',custRegion='all',custIndustry='all';
 function viewCustomers(){
   const regions=['all',...Array.from(new Set(DB.customers.map(c=>c.region).filter(Boolean)))];
   const inds=['all',...Array.from(new Set(DB.customers.map(c=>c.industry).filter(Boolean)))];
@@ -968,31 +1175,13 @@ function refreshCust(){
   if(custRegion!=='all') arr=arr.filter(c=>c.region===custRegion);
   if(custIndustry!=='all') arr=arr.filter(c=>c.industry===custIndustry);
   if(custSearch){const q=custSearch.toLowerCase(); arr=arr.filter(c=>(c.name+c.phone+c.company).toLowerCase().includes(q));}
+  arr.forEach(c=>{c.spName=(byId(DB.salespersons,c.salespersonId)||{}).name||'—';});
   arr.sort(cmpBy(custSort.k,custSort.d));
-  const total=arr.length; const rows=arr.slice(0,custShow);
-  el.innerHTML=`<div class="tablewrap"><table><thead><tr>
-    ${thsort('客户名称','name',custSort,'sortCust')}${thsort('行业','industry',custSort,'sortCust')}${thsort('地区','region',custSort,'sortCust')}
-    <th>负责销售</th>${thsort('等级','tier',custSort,'sortCust')}<th>付款</th>
-    ${thsort('总销售额','sales',custSort,'sortCust',1)}${thsort('总利润','profit',custSort,'sortCust',1)}${thsort('订单数','count',custSort,'sortCust',1)}${thsort('最近购买','last',custSort,'sortCust')}<th></th>
-    </tr></thead><tbody>${rows.map(c=>{
-      const s=byId(DB.salespersons,c.salespersonId);
-      const ph=c.payHabit||'正常';
-      return `<tr>
-        <td><b style="cursor:pointer" onclick="openCustomerDetail('${c.id}')">${esc(c.name)}</b><div style="font-size:11px;color:var(--muted)">${esc(c.company||'')}</div></td>
-        <td>${esc(c.industry||'—')}</td>
-        <td>${esc(c.region||'—')}</td>
-        <td>${esc(s?s.name:'—')}</td>
-        <td><span class="tag2 ${c.tier}">${tierName[c.tier]}</span></td>
-        <td><span class="tag2 ${payClass[ph]||'gray'}">${esc(ph)}</span></td>
-        <td class="num">${money(c.sales)}</td>
-        <td class="num" style="color:var(--lime);font-weight:600">${money(c.profit)}</td>
-        <td class="num">${c.count}</td>
-        <td>${c.last?c.last+(c.recency!=null?` <span style="color:var(--muted)">(${c.recency}天前)</span>`:''):'<span style="color:var(--muted)">从未</span>'}</td>
-        <td class="no-print"><button class="icbtn" onclick="openCustomerDetail('${c.id}')">👁</button> <button class="icbtn" onclick="editCustomer('${c.id}')">✎</button> <button class="icbtn" onclick="delCustomer('${c.id}')">🗑</button></td>
-      </tr>`;}).join('')||'<tr><td colspan="11" class="empty"><div class="big">👥</div>没有符合条件的客户</td></tr>'}
-      ${moreRow(11,total,custShow,'custShow=1e9;refreshCust()')}
-    </tbody></table></div>`;
+  el.innerHTML=buildTable('customer',arr,custSort,'sortCust',custShow,'custShow=1e9;refreshCust()',
+    c=>`<button class="icbtn" onclick="openCustomerDetail('${c.id}')">👁</button> <button class="icbtn" onclick="editCustomer('${c.id}')">✎</button> <button class="icbtn" onclick="delCustomer('${c.id}')">🗑</button>`,
+    '<div class="big">👥</div>没有符合条件的客户');
 }
+
 function editCustomer(id){
   const c=id?byId(DB.customers,id):{};
   const spOpts=DB.salespersons.map(s=>`<option value="${s.id}" ${c.salespersonId===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
@@ -1011,11 +1200,15 @@ function editCustomer(id){
       <div class="field"><label>付款习惯 / 信用</label><select id="f_pay">${optList(D('payHabits'),c.payHabit||'正常')}</select></div>
     </div>
     <div class="field"><label>负责销售员 *</label><select id="f_sp"><option value="">— 请选择 —</option>${spOpts}</select></div>
-    <details style="margin-top:4px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">更多资料（SSM / SST / 税务号）</summary>
+    <details style="margin-top:4px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">更多资料（SSM / SST / 税务号 / 价格层级 / 信用额度）</summary>
     <div class="frow3" style="margin-top:10px">
       <div class="field"><label>SSM</label><input id="f_ssm" value="${esc(c.ssm||'')}"></div>
       <div class="field"><label>SST</label><input id="f_sst" value="${esc(c.sst||'')}"></div>
       <div class="field"><label>税务号</label><input id="f_tax" value="${esc(c.taxNo||'')}"></div>
+    </div>
+    <div class="frow" style="margin-top:4px">
+      <div class="field"><label>价格层级（下单自动带价）</label><select id="f_tierp"><option ${c.priceTier!=='批发价'?'selected':''}>零售价</option><option ${c.priceTier==='批发价'?'selected':''}>批发价</option></select></div>
+      <div class="field"><label>信用额度 (RM，0=不限)</label><input id="f_credit" type="number" value="${c.creditLimit||0}"></div>
     </div></details>
     ${cfFormHTML('customer',c)}`,
     `<button class="btn ghost" onclick="closeModal()">取消</button><button class="btn gold" onclick="saveCustomer('${id||''}')">保存</button>`);
@@ -1029,7 +1222,9 @@ function saveCustomer(id){
     source:document.getElementById('f_source').value,payHabit:document.getElementById('f_pay').value,
     ssm:document.getElementById('f_ssm').value.trim(),
     sst:document.getElementById('f_sst').value.trim(),taxNo:document.getElementById('f_tax').value.trim(),
-    salespersonId:document.getElementById('f_sp').value,cf:cfCollect('customer')};
+    salespersonId:document.getElementById('f_sp').value,
+    priceTier:document.getElementById('f_tierp').value,creditLimit:+document.getElementById('f_credit').value||0,
+    cf:cfCollect('customer')};
   if(id){ Object.assign(byId(DB.customers,id),data); }
   else { DB.customers.push({id:uid('cu'),createdAt:today(),...data}); }
   save(); closeModal(); refreshCust(); toast('客户已保存');
@@ -1061,29 +1256,13 @@ function refreshProd(){
   if(prodFilter==='low')arr=arr.filter(p=>p.lowProfit);
   if(prodFilter==='slow')arr=arr.filter(p=>p.slow);
   if(prodSearch){const q=prodSearch.toLowerCase();arr=arr.filter(p=>(p.sku+p.name).toLowerCase().includes(q));}
+  arr.forEach(p=>{p.catName=(byId(DB.categories,p.categoryId)||{}).name||'—';});
   arr.sort(cmpBy(prodSort.k,prodSort.d));
-  const total=arr.length, rows=arr.slice(0,prodShow);
-  el.innerHTML=`<div class="tablewrap"><table><thead><tr>
-    ${thsort('SKU','sku',prodSort,'sortProd')}${thsort('产品名称','name',prodSort,'sortProd')}<th>分类</th><th>品牌/供应商</th>
-    ${thsort('成本','cost',prodSort,'sortProd',1)}${thsort('售价','price',prodSort,'sortProd',1)}${thsort('销量','qty',prodSort,'sortProd',1)}
-    ${thsort('销售额','sales',prodSort,'sortProd',1)}${thsort('利润','profit',prodSort,'sortProd',1)}${thsort('利润率','margin',prodSort,'sortProd',1)}${thsort('库存','stock',prodSort,'sortProd',1)}<th>状态</th><th></th>
-    </tr></thead><tbody>${rows.map(p=>{
-      const cat=byId(DB.categories,p.categoryId);
-      let badge='';
-      if(p.lowProfit)badge+='<span class="tag2 lo">低利润</span> ';
-      if(p.slow)badge+='<span class="tag2 slow">滞销</span>';
-      if(!badge&&p.qty>0)badge='<span class="tag2 ok">正常</span>';
-      return `<tr>
-        <td class="mono">${esc(p.sku)}</td><td><b style="cursor:pointer" onclick="openProductDetail('${p.id}')">${esc(p.name)}</b></td><td>${esc(cat?cat.name:'—')}</td><td>${esc(p.brand||'—')}</td>
-        <td class="num">${money(p.cost,2)}</td><td class="num">${money(p.price,2)}</td>
-        <td class="num">${num(p.qty)} <span style="color:var(--muted);font-size:11px">${esc(p.unit||'')}</span></td><td class="num">${money(p.sales)}</td>
-        <td class="num" style="color:var(--lime);font-weight:600">${money(p.profit)}</td>
-        <td class="num">${pct(p.margin)}</td><td class="num">${stockCell(p)}</td><td>${badge||'—'}</td>
-        <td class="no-print"><button class="icbtn" onclick="openProductDetail('${p.id}')">👁</button> <button class="icbtn" onclick="editProduct('${p.id}')">✎</button> <button class="icbtn" onclick="delProduct('${p.id}')">🗑</button></td>
-      </tr>`;}).join('')||'<tr><td colspan="13" class="empty"><div class="big">📦</div>没有符合条件的产品</td></tr>'}
-      ${moreRow(13,total,prodShow,'prodShow=1e9;refreshProd()')}
-    </tbody></table></div>`;
+  el.innerHTML=buildTable('product',arr,prodSort,'sortProd',prodShow,'prodShow=1e9;refreshProd()',
+    p=>`<button class="icbtn" onclick="openProductDetail('${p.id}')">👁</button> <button class="icbtn" onclick="editProduct('${p.id}')">✎</button> <button class="icbtn" onclick="delProduct('${p.id}')">🗑</button>`,
+    '<div class="big">📦</div>没有符合条件的产品');
 }
+
 function stockCell(p){ const c=p.outOfStock?'#F0989C':(p.lowStock?'#F0A878':'var(--ink)');
   return `<span style="color:${c};font-weight:600">${num(p.stock)}</span> <span style="color:var(--muted);font-size:11px">${esc(p.unit||'')}</span>`; }
 function editProduct(id){
@@ -1096,7 +1275,9 @@ function editProduct(id){
     <div class="frow"><div class="field"><label>品牌 / 供应商</label><input id="p_brand" value="${esc(p.brand||'')}" placeholder="例如 3M / 本地 / 自营"></div>
       <div class="field"><label>单位</label><input id="p_unit" list="unitList" value="${esc(p.unit||'pcs')}"><datalist id="unitList">${D('units').map(u=>`<option value="${u}">`).join('')}</datalist></div></div>
     <div class="frow"><div class="field"><label>成本 (RM)</label><input id="p_cost" type="number" step="0.01" value="${p.cost??''}"></div>
-      <div class="field"><label>售价 (RM)</label><input id="p_price" type="number" step="0.01" value="${p.price??''}"></div></div>
+      <div class="field"><label>售价（零售）(RM)</label><input id="p_price" type="number" step="0.01" value="${p.price??''}"></div></div>
+    <div class="frow"><div class="field"><label>批发价 (RM，选填)</label><input id="p_ws" type="number" step="0.01" value="${p.priceWS??''}"></div>
+      <div class="field"><label></label><div style="font-size:11.5px;color:var(--muted);padding-top:8px">客户「价格层级」设为批发价时，下单自动用此价</div></div></div>
     <div class="frow"><div class="field"><label>期初库存</label><input id="p_open" type="number" value="${p.openingStock??0}"></div>
       <div class="field"><label>安全库存（低于则预警）</label><input id="p_safe" type="number" value="${p.safetyStock??0}"></div></div>
     ${cfFormHTML('product',p)}`,
@@ -1108,7 +1289,8 @@ function saveProduct(id){
   const data={sku,name,categoryId:document.getElementById('p_cat').value,
     brand:document.getElementById('p_brand').value.trim(),unit:document.getElementById('p_unit').value.trim()||'pcs',
     openingStock:+document.getElementById('p_open').value||0,safetyStock:+document.getElementById('p_safe').value||0,
-    cost:+document.getElementById('p_cost').value||0,price:+document.getElementById('p_price').value||0,cf:cfCollect('product')};
+    cost:+document.getElementById('p_cost').value||0,price:+document.getElementById('p_price').value||0,
+    priceWS:+document.getElementById('p_ws').value||0,cf:cfCollect('product')};
   if(id)Object.assign(byId(DB.products,id),data);
   else DB.products.push({id:uid('pr'),...data});
   save();closeModal();refreshProd();toast('产品已保存');
@@ -1203,7 +1385,7 @@ function delPurchase(id){ confirmBox('确定删除这笔进货记录？',()=>{DB
 function lastMonths(n){ const td=new Date(); const keys=[],labels=[];
   for(let i=n-1;i>=0;i--){const d=new Date(td.getFullYear(),td.getMonth()-i,1);keys.push(d.toISOString().slice(0,7));labels.push((d.getMonth()+1)+'月');}
   return {keys,labels}; }
-function dkpi(items){ return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 16px">${items.map(it=>`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">${it[0]}</div><div style="font-family:'JetBrains Mono';font-size:16px;font-weight:700;margin-top:3px;color:#fff">${it[1]}</div></div>`).join('')}</div>`; }
+function dkpi(items){ return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 16px">${items.map(it=>`<div style="background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">${it[0]}</div><div style="font-family:'JetBrains Mono';font-size:16px;font-weight:700;margin-top:3px;color:var(--ink)">${it[1]}</div></div>`).join('')}</div>`; }
 function drawDetailChart(cid,labels,sales,profit){
   setTimeout(()=>{ const el=document.getElementById(cid); if(!el)return;
     try{charts.detail&&charts.detail.destroy();}catch(e){}
@@ -1228,7 +1410,9 @@ function openCustomerDetail(id){
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
       <span class="tag2 ${cs.tier||'gray'}">${tierName[cs.tier]||'—'}</span>
       ${c.industry?`<span class="tag2 gray">${esc(c.industry)}</span>`:''}${c.region?`<span class="tag2 gray">${esc(c.region)}</span>`:''}
-      ${c.source?`<span class="tag2 gray">来源:${esc(c.source)}</span>`:''}${c.payHabit?`<span class="tag2 ${payClass[c.payHabit]||'gray'}">${esc(c.payHabit)}</span>`:''}</div>
+      ${c.source?`<span class="tag2 gray">来源:${esc(c.source)}</span>`:''}${c.payHabit?`<span class="tag2 ${payClass[c.payHabit]||'gray'}">${esc(c.payHabit)}</span>`:''}
+      ${c.priceTier?`<span class="tag2 gray">${esc(c.priceTier)}</span>`:''}
+      ${(function(){if(!(+c.creditLimit>0))return '';const bal=arOutstanding().byCust[c.id]||0;const over=bal>+c.creditLimit;return `<span class="tag2 ${over?'lo':'ok'}">额度 ${money(c.creditLimit)} · 已用 ${money(bal)}${over?' ⚠️超额':''}</span>`;})()}</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${esc(c.company||'')} ${c.phone?'· '+esc(c.phone):''} · 负责:${esc((byId(DB.salespersons,c.salespersonId)||{}).name||'—')}</div>
     ${dkpi([['总销售额',money(sales)],['总利润',P(profit)],['订单数',count],['客单价 AOV',money(aov)],['复购',count>1?'是':'否'],['最近购买',last||'从未']])}
     ${cfDisplayHTML('customer',c)}
@@ -1281,7 +1465,7 @@ function viewFinance(){
   const retTotal=rets.reduce((s,r)=>s+r.qty*r.unitPrice,0);
   return `
   <div class="kpis">
-    <div class="kpi c2"><div class="lbl">💰 净利 Net Profit</div><div class="val">${P(t.netProfit)}</div><div class="delta">净利率 ${DB.settings.hideProfit?'•••':pct(t.netMargin)}</div></div>
+    <div class="kpi c2"><div class="lbl"><span class="kico k2">${ICO.pft}</span> 净利 Net Profit</div><div class="val">${P(t.netProfit)}</div><div class="delta">净利率 ${DB.settings.hideProfit?'•••':pct(t.netMargin)}</div></div>
     <div class="kpi c1"><div class="lbl">📈 毛利 Gross Profit</div><div class="val">${P(t.grossProfit)}</div><div class="delta">毛利率 ${DB.settings.hideProfit?'•••':pct(t.margin)}</div></div>
     <div class="kpi c3"><div class="lbl">💸 营运开销 Expenses</div><div class="val">${money(t.expenses)}</div><div class="delta">${periodLabel[period]}</div></div>
     <div class="kpi c4"><div class="lbl">🧾 应收账款 Receivables</div><div class="val">${money(t.ar)}</div><div class="delta">${arRows.length} 个客户未付清</div></div>
@@ -1290,7 +1474,7 @@ function viewFinance(){
     const cm=new Date().toISOString().slice(0,7); let mExp=0;(DB.expenses||[]).forEach(e=>{if(ym(e.date)===cm)mExp+=(+e.amount||0);});
     if(!(tg.sales>0||tg.profit>0||bd.expense>0))return '';
     const bar=(lbl,act,tgt,inv)=>{const p=tgt>0?Math.min(100,act/tgt*100):0;const good=inv?act<=tgt:act>=tgt;
-      return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span class="muted">${lbl} ${money(act)} / ${money(tgt)}</span><b style="color:${tgt>0?(good?'#5FC08A':'#F0A878'):'var(--muted)'}">${tgt>0?p.toFixed(0)+'%':'—'}</b></div><div style="height:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${p}%;background:${inv?(good?'#5FC08A':'#F0989C'):'linear-gradient(90deg,#5B8DEF,#6FD3E8)'}"></i></div></div>`;};
+      return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span class="muted">${lbl} ${money(act)} / ${money(tgt)}</span><b style="color:${tgt>0?(good?'#5FC08A':'#F0A878'):'var(--muted)'}">${tgt>0?p.toFixed(0)+'%':'—'}</b></div><div style="height:8px;background:var(--soft);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${p}%;background:${inv?(good?'#5FC08A':'#F0989C'):'linear-gradient(90deg,#5B8DEF,#6FD3E8)'}"></i></div></div>`;};
     return `<div class="card" style="margin-bottom:16px"><h3>📋 本月预算 vs 实际</h3><div class="csub">本自然月达成情况</div><div style="margin-top:8px">
       ${tg.sales>0?bar('销售额',mom.curRev,tg.sales,false):''}
       ${tg.profit>0?bar('利润',mom.curPft,tg.profit,false):''}
@@ -1299,9 +1483,9 @@ function viewFinance(){
     <div class="card"><h3>💵 现金流（收 vs 支）</h3><div class="csub">收：已收款 · 支：进货 + 开销</div><div class="chwrap"><canvas id="chCash"></canvas></div></div>
     <div class="card"><h3>⚖️ 盈亏平衡</h3><div class="csub">每月需做多少销售才回本</div>
       <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-        <div class="rpt-bar" style="border-color:var(--border);background:rgba(255,255,255,.04);color:var(--ink)"><span class="muted">月均开销</span><b class="mono">${money(monthlyExp)}</b></div>
-        <div class="rpt-bar" style="border-color:var(--border);background:rgba(255,255,255,.04);color:var(--ink)"><span class="muted">毛利率</span><b class="mono">${DB.settings.hideProfit?'•••':pct(t.margin)}</b></div>
-        <div class="rpt-bar" style="border-color:rgba(91,141,239,.4);background:rgba(91,141,239,.12);color:#fff"><span>每月盈亏平衡销售额</span><b class="mono">${be>0?money(be):'—'}</b></div>
+        <div class="rpt-bar" style="border-color:var(--border);background:var(--soft);color:var(--ink)"><span class="muted">月均开销</span><b class="mono">${money(monthlyExp)}</b></div>
+        <div class="rpt-bar" style="border-color:var(--border);background:var(--soft);color:var(--ink)"><span class="muted">毛利率</span><b class="mono">${DB.settings.hideProfit?'•••':pct(t.margin)}</b></div>
+        <div class="rpt-bar" style="border-color:rgba(91,141,239,.4);background:rgba(91,141,239,.12);color:var(--ink)"><span>每月盈亏平衡销售额</span><b class="mono">${be>0?money(be):'—'}</b></div>
         <div style="font-size:12px;color:var(--muted)">即：每月销售额需 ≥ <b>${be>0?money(be):'—'}</b> 才能覆盖开销开始盈利。</div>
       </div></div>
   </div>
@@ -1310,7 +1494,7 @@ function viewFinance(){
     <div class="card"><h3>🧾 应收账款账龄</h3><div class="csub">越久未收风险越高</div>
       <div style="margin-top:6px">${Object.entries(aging).map(([k,v])=>{const max=Math.max(...Object.values(aging),1);
         const col=k==='90+'?'#F0989C':k==='61-90'?'#F0A878':k==='31-60'?'#E6C260':'#5FC08A';
-        return `<div class="rankrow"><div class="rnm" style="max-width:70px">${k} 天</div><div style="flex:1;height:9px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden;max-width:200px"><i style="display:block;height:100%;width:${v/max*100}%;background:${col};border-radius:6px"></i></div><div class="rval">${money(v)}</div></div>`;}).join('')}</div>
+        return `<div class="rankrow"><div class="rnm" style="max-width:70px">${k} 天</div><div style="flex:1;height:9px;background:var(--soft);border-radius:6px;overflow:hidden;max-width:200px"><i style="display:block;height:100%;width:${v/max*100}%;background:${col};border-radius:6px"></i></div><div class="rval">${money(v)}</div></div>`;}).join('')}</div>
       <div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>客户</th><th class="num">未收金额</th></tr></thead><tbody>
       ${arRows.map(x=>`<tr><td><b style="cursor:pointer" onclick="openCustomerDetail('${x.c.id}')">${esc(x.c.name)}</b></td><td class="num" style="color:#F0A878;font-weight:600">${money(x.bal)}</td></tr>`).join('')||'<tr><td colspan="2" class="empty">👍 没有未收款</td></tr>'}
       </tbody></table></div></div>
@@ -1339,7 +1523,7 @@ function afterFinance(){
   const arr=Object.entries(ecat).sort((a,b)=>b[1]-a[1]);
   const cols=['#5B8DEF','#3FC8C0','#E6C260','#E0935A','#E87FA8','#9B8CEF','#5FC08A','#A0AEC0','#E8A33D'];
   const e2=document.getElementById('chExpCat');
-  if(e2) charts.expcat=new Chart(e2,{type:'doughnut',data:{labels:arr.map(x=>x[0]),datasets:[{data:arr.map(x=>R(x[1])),backgroundColor:cols,borderWidth:2,borderColor:'#101A2E'}]},
+  if(e2) charts.expcat=new Chart(e2,{type:'doughnut',data:{labels:arr.map(x=>x[0]),datasets:[{data:arr.map(x=>R(x[1])),backgroundColor:cols,borderWidth:2,borderColor:panelCol()}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:7,usePointStyle:true,boxWidth:8}}}}});
 }
 function editExpense(id){
@@ -1552,7 +1736,7 @@ function builderRender(target,dim,meas,chart){
   }
   const cv=document.createElement('canvas'); const host=document.getElementById(target); host.innerHTML=''; host.appendChild(cv);
   const cols=['#5B8DEF','#3FC8C0','#E6C260','#E0935A','#E87FA8','#9B8CEF','#5FC08A','#A0AEC0','#E8A33D','#7FB069','#D4A5D8','#5BC0BE','#EBCB6E','#F0989C','#8FB2F5'];
-  if(chart==='doughnut'){ new Chart(cv,{type:'doughnut',data:{labels:data.map(d=>d.label),datasets:[{data:data.map(d=>R(d.value)),backgroundColor:cols,borderWidth:2,borderColor:'#101A2E'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'52%',plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:6,usePointStyle:true,boxWidth:8}}}}}); }
+  if(chart==='doughnut'){ new Chart(cv,{type:'doughnut',data:{labels:data.map(d=>d.label),datasets:[{data:data.map(d=>R(d.value)),backgroundColor:cols,borderWidth:2,borderColor:panelCol()}]},options:{responsive:true,maintainAspectRatio:false,cutout:'52%',plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:6,usePointStyle:true,boxWidth:8}}}}}); }
   else { new Chart(cv,{type:chart,data:{labels:data.map(d=>d.label),datasets:[{label:measLabel(meas),data:data.map(d=>R(d.value)),backgroundColor:chart==='line'?'rgba(91,141,239,.15)':'#5B8DEF',borderColor:'#5B8DEF',borderRadius:6,fill:chart==='line',tension:.3}]},options:chart==='bar'?barOpts(true):lineOpts()}); }
 }
 function runBuilder(){ builderState={dim:document.getElementById('b_dim').value,meas:document.getElementById('b_meas').value,chart:document.getElementById('b_chart').value};
@@ -1570,9 +1754,9 @@ function whatIf(){
   const fv=1+(+document.getElementById('wi_vol').value||0)/100;
   const fe=1+(+document.getElementById('wi_exp').value||0)/100;
   const nRev=base.rev*fp*fv, nCost=base.cost*fc*fv, nGross=nRev-nCost, nExp=base.exp*fe, nNet=nGross-nExp;
-  const row=(lbl,b,n)=>{const d=n-b;const col=d>=0?'#5FC08A':'#F0989C';return `<div class="rpt-bar" style="border-color:var(--border);background:rgba(255,255,255,.04);color:var(--ink)"><span class="muted">${lbl}</span><span><b class="mono">${money(n)}</b> <span style="color:${col};font-size:12px">(${d>=0?'+':''}${money(d)})</span></span></div>`;};
+  const row=(lbl,b,n)=>{const d=n-b;const col=d>=0?'#5FC08A':'#F0989C';return `<div class="rpt-bar" style="border-color:var(--border);background:var(--soft);color:var(--ink)"><span class="muted">${lbl}</span><span><b class="mono">${money(n)}</b> <span style="color:${col};font-size:12px">(${d>=0?'+':''}${money(d)})</span></span></div>`;};
   el.innerHTML=`<div style="margin-top:12px">${row('销售额',base.rev,nRev)}${row('毛利',base.gross,nGross)}${row('净利',base.net,nNet)}
-    <div style="font-size:12px;color:var(--muted);margin-top:6px">净利率：${pct(base.rev?base.net/base.rev:0)} → <b style="color:#fff">${pct(nRev?nNet/nRev:0)}</b></div></div>`;
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">净利率：${pct(base.rev?base.net/base.rev:0)} → <b style="color:var(--ink)">${pct(nRev?nNet/nRev:0)}</b></div></div>`;
 }
 /* ==================== ORDERS ==================== */
 let orderSearch='';
@@ -1587,28 +1771,15 @@ function viewOrders(){
 }
 function refreshOrders(){
   const el=document.getElementById('orderTable'); if(!el)return;
-  let arr=DB.orders.map(o=>{const c=byId(DB.customers,o.customerId),s=byId(DB.salespersons,o.salespersonId);
-    return {...o,cName:c?c.name:'—',sName:s?s.name:'—',nItems:o.items.length};});
+  let arr=DB.orders.map(o=>{const c=byId(DB.customers,o.customerId),s2=byId(DB.salespersons,o.salespersonId);
+    return {...o,cName:c?c.name:'—',sName:s2?s2.name:'—',nItems:o.items.length};});
   if(orderSearch){const q=orderSearch.toLowerCase(); arr=arr.filter(o=>(o.orderNo+o.cName).toLowerCase().includes(q));}
   arr.sort(cmpBy(orderSort.k,orderSort.d));
-  const total=arr.length, rows=arr.slice(0,orderShow);
-  el.innerHTML=`<div class="tablewrap"><table><thead><tr>
-    ${thsort('订单号','orderNo',orderSort,'sortOrder')}${thsort('日期','date',orderSort,'sortOrder')}${thsort('客户','cName',orderSort,'sortOrder')}${thsort('销售员','sName',orderSort,'sortOrder')}
-    ${thsort('项目','nItems',orderSort,'sortOrder',1)}${thsort('金额','totalAmount',orderSort,'sortOrder',1)}${thsort('成本','totalCost',orderSort,'sortOrder',1)}${thsort('利润','totalProfit',orderSort,'sortOrder',1)}<th>收款</th><th></th>
-    </tr></thead><tbody>${rows.map(o=>{const pst=o.paymentStatus||'paid';
-      const pb={paid:['ok','已收'],partial:['risk','部分'],unpaid:['lo','未收']}[pst]||['gray','—'];
-      return `<tr>
-        <td class="mono">${esc(o.orderNo)}</td><td class="mono">${o.date}</td>
-        <td>${esc(o.cName)}</td><td>${esc(o.sName)}</td>
-        <td class="num">${o.nItems}</td>
-        <td class="num">${money(o.totalAmount)}</td><td class="num" style="color:var(--muted)">${P(o.totalCost)}</td>
-        <td class="num" style="color:var(--lime);font-weight:600">${P(o.totalProfit)}</td>
-        <td><span class="tag2 ${pb[0]}">${pb[1]}</span></td>
-        <td class="no-print"><button class="icbtn" onclick="editOrder('${o.id}')">✎</button> <button class="icbtn" onclick="delOrder('${o.id}')">🗑</button></td>
-      </tr>`;}).join('')||'<tr><td colspan="10" class="empty"><div class="big">🧾</div>暂无订单，点击「新增订单」开始</td></tr>'}
-      ${moreRow(10,total,orderShow,'orderShow=1e9;refreshOrders()')}
-    </tbody></table></div>`;
+  el.innerHTML=buildTable('order',arr,orderSort,'sortOrder',orderShow,'orderShow=1e9;refreshOrders()',
+    o=>`<button class="icbtn" title="打印单据" onclick="printInvoice('${o.id}')">🖨</button> <button class="icbtn" onclick="editOrder('${o.id}')">✎</button> <button class="icbtn" onclick="delOrder('${o.id}')">🗑</button>`,
+    '<div class="big">🧾</div>暂无订单，点击「新增订单」开始');
 }
+
 let _items=[],_discount=0;
 function editOrder(id){
   const o=id?byId(DB.orders,id):null;
@@ -1661,9 +1832,14 @@ function renderItems(){
     <div><span>总成本</span><b style="color:var(--muted)">${money(cost)}</b></div>
     <div><span>总利润</span><b style="color:var(--lime)">${money(net-cost)}</b></div>`;
 }
+function tierPrice(p){
+  const c=byId(DB.customers,(document.getElementById('o_cust')||{}).value);
+  if(c&&c.priceTier==='批发价'&&+p.priceWS>0) return +p.priceWS;
+  return p.price;
+}
 function setItemProduct(i,pid){
   _items[i].productId=pid; const p=byId(DB.products,pid);
-  if(p){_items[i].unitPrice=p.price;_items[i].unitCost=p.cost;} renderItems();
+  if(p){_items[i].unitPrice=tierPrice(p);_items[i].unitCost=p.cost;} renderItems();
 }
 function addItem(){ _items.push({productId:'',qty:1,unitPrice:0,unitCost:0}); renderItems(); }
 function autoSalesperson(){
@@ -1740,7 +1916,7 @@ function afterProfit(){
   if(others>0){labels.push('其他客户');data.push(R(others));}
   const cols=['#E6C260','#E0935A','#5B8DEF','#3FC8C0','#E87FA8','#3FC8C0','#9B8CEF','#E5848A','#3A4A66'];
   charts.contrib=new Chart(document.getElementById('chContrib'),{type:'doughnut',
-    data:{labels,datasets:[{data,backgroundColor:cols,borderWidth:2,borderColor:'#101A2E'}]},
+    data:{labels,datasets:[{data,backgroundColor:cols,borderWidth:2,borderColor:panelCol()}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
       plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:7,usePointStyle:true,boxWidth:8}}}}});
   const ab=abcData(abcMode).arr.slice(0,15);
@@ -1750,7 +1926,7 @@ function afterProfit(){
     {type:'line',label:'累计 %',data:ab.map(x=>R(x.cum*100)),borderColor:'#5B8DEF',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2,borderWidth:2}
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
     plugins:{legend:{labels:{usePointStyle:true,padding:12}}},
-    scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.07)'},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}},
+    scales:{y:{beginAtZero:true,grid:{color:gridCol()},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}},
       y1:{position:'right',beginAtZero:true,max:100,grid:{display:false},ticks:{callback:v=>v+'%'}},
       x:{ticks:{font:{family:'Noto Sans SC',size:10}},grid:{display:false}}}}});
 }
@@ -1767,7 +1943,7 @@ function abcSummaryHTML(mode){
   const {arr,total}=abcData(mode); const g={A:{n:0,p:0},B:{n:0,p:0},C:{n:0,p:0}};
   arr.forEach(x=>{g[x.cls].n++;g[x.cls].p+=x.profit;});
   const unit=mode==='product'?'产品':'客户';
-  const box=(k,desc,col)=>`<div style="flex:1;min-width:150px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-left:3px solid ${col};border-radius:10px;padding:10px 12px"><div style="font-size:11.5px;color:var(--muted)">${k} 类 · ${desc}</div><div style="font-weight:700;margin-top:3px;font-size:13px">${g[k].n} 个${unit} · 占利润 ${pct(total?g[k].p/total:0)}</div></div>`;
+  const box=(k,desc,col)=>`<div style="flex:1;min-width:150px;background:var(--soft);border:1px solid var(--border);border-left:3px solid ${col};border-radius:10px;padding:10px 12px"><div style="font-size:11.5px;color:var(--muted)">${k} 类 · ${desc}</div><div style="font-weight:700;margin-top:3px;font-size:13px">${g[k].n} 个${unit} · 占利润 ${pct(total?g[k].p/total:0)}</div></div>`;
   return `<div style="display:flex;gap:10px;flex-wrap:wrap">${box('A','关键少数','#5FC08A')}${box('B','次要','#E6C260')}${box('C','长尾','#93A4C0')}</div>`;
 }
 function setAbc(m){ abcMode=m; render('profit'); }
@@ -1778,7 +1954,7 @@ function thsort(label,key,state,fn,numeric){ const a=state.k===key?(state.d<0?' 
 function cmpBy(key,dir){ return (a,b)=>{ let x=a[key],y=b[key];
   if(typeof x==='string'||typeof y==='string'){return dir*String(x==null?'':x).localeCompare(String(y==null?'':y),'zh');}
   return dir*((x||0)-(y||0)); }; }
-function toggleSort(state,key){ if(state.k===key)state.d*=-1; else {state.k=key;state.d=['name','industry','region','sku','orderNo','date','customer'].includes(key)?1:-1;} }
+function toggleSort(state,key){ if(state.k===key)state.d*=-1; else {state.k=key;state.d=['name','industry','region','sku','orderNo','date','customer','phone','cName','sName','brand'].includes(key)?1:-1;} }
 function moreRow(cols,total,shown,fn){ return total>shown?`<tr class="no-print"><td colspan="${cols}" style="text-align:center;padding:14px"><button class="btn ghost sm" onclick="${fn}">显示全部 ${total} 行 ↓</button></td></tr>`:''; }
 function sortCust(k){toggleSort(custSort,k);refreshCust();}
 function sortProd(k){toggleSort(prodSort,k);refreshProd();}
@@ -1832,9 +2008,9 @@ function viewInsights(){
   ${(function(){const clv=clvSummary();const co=cohortData();return `
   <div class="card" style="margin-top:16px"><h3>🔁 复购 / 留存 / 客户终身价值 (CLV)</h3><div class="csub">客户质量与忠诚度</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 14px">
-      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">平均客户终身价值</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:#fff">${P(clv.avgCLV)}</div></div>
-      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">复购率</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:#fff">${pct(clv.repeatRate)}</div></div>
-      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">有购买客户</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:#fff">${clv.buyers}</div></div>
+      <div style="background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">平均客户终身价值</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:var(--ink)">${P(clv.avgCLV)}</div></div>
+      <div style="background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">复购率</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:var(--ink)">${pct(clv.repeatRate)}</div></div>
+      <div style="background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:11px;color:var(--muted)">有购买客户</div><div style="font-family:'JetBrains Mono';font-size:17px;font-weight:700;margin-top:3px;color:var(--ink)">${clv.buyers}</div></div>
     </div>
     <div class="csub">按「首次购买月份」分群 — 看不同时期进来的客户表现</div>
     <div class="tablewrap"><table><thead><tr><th>首购月份</th><th class="num">客户数</th><th class="num">复购率</th><th class="num">累计利润</th><th class="num">平均每户(CLV)</th></tr></thead><tbody>
@@ -1860,7 +2036,7 @@ function afterInsights(){
   const ind=aggBy('industry').filter(x=>x.key!=='未分类');
   const cols=['#E6C260','#E0935A','#5B8DEF','#3FC8C0','#E87FA8','#3FC8C0','#9B8CEF','#E5848A','#5BC0BE','#3A4A66','#E8A33D','#7FB069','#D4A5D8','#A0AEC0'];
   charts.industry=new Chart(document.getElementById('chIndustry'),{type:'doughnut',
-    data:{labels:ind.map(i=>i.key),datasets:[{data:ind.map(i=>R(i.profit)),backgroundColor:cols,borderWidth:2,borderColor:'#101A2E'}]},
+    data:{labels:ind.map(i=>i.key),datasets:[{data:ind.map(i=>R(i.profit)),backgroundColor:cols,borderWidth:2,borderColor:panelCol()}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
       plugins:{legend:{position:'right',labels:{font:{family:'Noto Sans SC',size:10.5},padding:6,usePointStyle:true,boxWidth:8}}}}});
   const ch=aggOrderBy('channel').filter(x=>x.key!=='未分类');
@@ -1980,7 +2156,7 @@ function generateMonthlyReport(){
   const html=`<div class="rpt">
     <div class="rpt-actions no-print"><button class="btn gold" onclick="window.print()">🖨 打印 / 存为 PDF</button><button class="btn ghost" onclick="closeReport()">关闭</button></div>
     <div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #1C2541;padding-bottom:12px;margin-bottom:6px">
-      <img src="data:image/png;base64,__LOGO__" style="height:42px"><div><div style="font-size:22px;font-weight:800;font-family:Sora,sans-serif;color:#1C2541">ProRadar 经营分析报告</div>
+      <img src="data:image/png;base64,__LOGO__" style="height:42px"><div><div style="font-size:22px;font-weight:800;font-family:Sora,sans-serif;color:#1C2541">${esc((DB.settings.company||{}).name||'ProRadar')} · 经营分析报告</div>
       <div style="font-size:12px;color:#667">生成日期 ${today()} · 数据范围：${periodLabel[period]}</div></div></div>
     <h2>① 关键指标</h2>
     <div class="rpt-kpi">
@@ -2077,6 +2253,31 @@ function viewSettings(){
     <div class="setrow"><div class="l"><b>存储方式</b><span>${Store.ok?'浏览器本地存储（数据保留在此设备）':'⚠️ 预览模式（内存，刷新后重置）— 部署到网站后将自动持久保存'}</span></div>
       <button class="btn ghost sm" onclick="saveSettings()">保存设置</button></div>
   </div>
+
+  <div class="card" style="margin-top:16px"><h3>🏢 公司资料（打印单据 / 报告抬头）</h3>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>公司名称</label><input id="co_name" value="${esc((DB.settings.company||{}).name||'')}"></div>
+      <div class="field"><label>注册号 (SSM)</label><input id="co_reg" value="${esc((DB.settings.company||{}).reg||'')}"></div>
+    </div>
+    <div class="frow">
+      <div class="field"><label>地址</label><input id="co_addr" value="${esc((DB.settings.company||{}).addr||'')}"></div>
+      <div class="field"><label>电话</label><input id="co_phone" value="${esc((DB.settings.company||{}).phone||'')}"></div>
+    </div>
+    <button class="btn gold sm" onclick="saveCompany()">保存</button></div>
+
+  <div class="card" style="margin-top:16px"><h3>🎛 界面与排版</h3>
+    <div class="setrow"><div class="l"><b>浅色 / 深色主题</b><span>顶栏的 🌙/☀️ 按钮也可随时切换</span></div>
+      <div class="seg2"><button class="${DB.settings.theme!=='dark'?'on':''}" onclick="DB.settings.theme='light';save();applyTheme();render('settings')">☀️ 浅色</button><button class="${DB.settings.theme==='dark'?'on':''}" onclick="DB.settings.theme='dark';save();applyTheme();render('settings')">🌙 深色</button></div></div>
+    <div class="setrow"><div class="l"><b>字体大小</b><span>看不清就调大</span></div>
+      <div class="seg2"><button class="${(DB.settings.fontScale||1.12)===1?'on':''}" onclick="setFontScale(1)">标准</button><button class="${(DB.settings.fontScale||1.12)===1.12?'on':''}" onclick="setFontScale(1.12)">大</button><button class="${(DB.settings.fontScale||1.12)===1.25?'on':''}" onclick="setFontScale(1.25)">特大</button></div></div></div>
+
+  <div class="card" style="margin-top:16px"><h3>🧱 表格栏位顺序</h3>
+    <div class="csub">◀▶ 调整栏位前后次序，👁 显示 / 隐藏。例如把「电话」移到「客户名称」前面。</div>
+    <div style="margin-top:12px">${colMgrHTML()}</div></div>
+
+  <div class="card" style="margin-top:16px"><h3>📐 仪表盘客制化</h3>
+    <div class="csub">选择仪表盘要显示哪些板块、以及排列次序。</div>
+    <div style="margin-top:12px">${dashMgrHTML()}</div></div>
 
   <div class="card" style="margin-top:16px"><h3>🧩 自定义字段（组装你要的资料）</h3>
     <div class="csub">批发 / 零售 / 门市每个客户要记的资料都不同 —— 在这里自己加字段（如：客户类型、信用额度、批发价、营业执照…），之后录入表单和详情就会自动出现。</div>
@@ -2351,12 +2552,12 @@ function exportTemplate(){
 function lineOpts(){return{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
   plugins:{legend:{labels:{font:{family:'Noto Sans SC',size:11},usePointStyle:true,padding:14}},
     tooltip:{callbacks:{label:c=>c.dataset.label+': RM '+c.parsed.y.toLocaleString()}}},
-  scales:{y:{beginAtZero:true,ticks:{font:{family:'JetBrains Mono',size:10},callback:v=>'RM '+(v>=1000?(v/1000)+'k':v)},grid:{color:'rgba(255,255,255,.07)'}},
+  scales:{y:{beginAtZero:true,ticks:{font:{family:'JetBrains Mono',size:10},callback:v=>'RM '+(v>=1000?(v/1000)+'k':v)},grid:{color:gridCol()}},
     x:{ticks:{font:{family:'Noto Sans SC',size:11}},grid:{display:false}}}};}
 function barOpts(horizontal,legend){return{responsive:true,maintainAspectRatio:false,indexAxis:horizontal?'y':'x',
   plugins:{legend:{display:!!legend,labels:{font:{family:'Noto Sans SC',size:11},usePointStyle:true}},
     tooltip:{callbacks:{label:c=>(c.dataset.label?c.dataset.label+': ':'')+'RM '+c.parsed[horizontal?'x':'y'].toLocaleString()}}},
-  scales:{[horizontal?'x':'y']:{beginAtZero:true,ticks:{font:{family:'JetBrains Mono',size:10},callback:v=>v>=1000?(v/1000)+'k':v},grid:{color:'rgba(255,255,255,.07)'}},
+  scales:{[horizontal?'x':'y']:{beginAtZero:true,ticks:{font:{family:'JetBrains Mono',size:10},callback:v=>v>=1000?(v/1000)+'k':v},grid:{color:gridCol()}},
     [horizontal?'y':'x']:{ticks:{font:{family:'Noto Sans SC',size:11}},grid:{display:false}}}};}
 
 /* ==================== confirm box ==================== */
@@ -2376,6 +2577,7 @@ render=function(id){ _origRender(id);
 
 /* ==================== INIT ==================== */
 load();
+applyTheme();
 if(!DB.settings.gateOn){ enterApp(); }
 else { document.getElementById('login').style.display='flex'; setTimeout(()=>document.getElementById('pw').focus(),300); }
 
