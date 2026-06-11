@@ -313,6 +313,23 @@ body.light .period-sel option{background:#fff;color:#1C2541}
 .inv-sign{display:flex;justify-content:space-between;margin-top:46px;font-size:12px;color:#556}
 .inv-sign div{width:42%;border-top:1px solid #999;padding-top:6px;text-align:center}
 
+body.fs-lg{font-size:16px}
+body.fs-xl{font-size:17.5px}
+.fs-lg td,.fs-lg th{font-size:13.5px}.fs-xl td,.fs-xl th{font-size:14.5px}
+.fs-lg input,.fs-lg select,.fs-lg textarea{font-size:15px}.fs-xl input,.fs-xl select,.fs-xl textarea{font-size:16px}
+.fs-lg .nav a{font-size:14.5px}.fs-xl .nav a{font-size:15.5px}
+.fs-lg .csub{font-size:12.5px}.fs-xl .csub{font-size:13.5px}
+.fs-lg .kpi .lbl{font-size:13px}.fs-xl .kpi .lbl{font-size:14px}
+.fs-lg .kpi .delta{font-size:12px}.fs-xl .kpi .delta{font-size:13px}
+.fs-xl .kpi .val{font-size:28px}
+.fs-lg .chip{font-size:12.5px}.fs-xl .chip{font-size:13.5px}
+.fs-lg .ai-msg .bubble{font-size:14.5px}.fs-xl .ai-msg .bubble{font-size:15.5px}
+.fs-lg .card h3{font-size:16px}.fs-xl .card h3{font-size:17px}
+.login-card input{color:#fff!important;caret-color:#fff;background:rgba(255,255,255,.08)}
+body.light .login{background:linear-gradient(180deg,#0A1322,#0E1729)!important}
+select option{background:var(--panel);color:var(--ink)}
+body.light select option{background:#FFFFFF;color:#1C2541}
+
 </style>
 </head>
 <body>
@@ -420,9 +437,12 @@ function applyTheme(){
   document.body.classList.toggle('light',light);
   const b=document.getElementById('themeBtn'); if(b)b.textContent=light?'🌙':'☀️';
   if(typeof Chart!=='undefined') Chart.defaults.color = light? '#5A6B85' : '#93A4C0';
-  document.documentElement.style.zoom = (window.innerWidth>900) ? (DB.settings.fontScale||1) : 1;
+  document.documentElement.style.zoom='';
+  document.body.classList.remove('fs-lg','fs-xl');
+  const fsv=DB.settings.fontScale||1.12;
+  if(fsv>=1.25) document.body.classList.add('fs-xl');
+  else if(fsv>=1.12) document.body.classList.add('fs-lg');
 }
-window.addEventListener('resize',()=>{ document.documentElement.style.zoom=(window.innerWidth>900)?(DB.settings.fontScale||1):1; });
 function toggleTheme(){ DB.settings.theme = (DB.settings.theme==='dark')?'light':'dark'; save(); applyTheme(); render(curView); }
 function setFontScale(v){ DB.settings.fontScale=v; save(); applyTheme(); render('settings'); }
 const ICO={
@@ -645,6 +665,7 @@ function normalizeDB(){
   DB.settings.theme=DB.settings.theme||'light';
   DB.settings.fontScale=DB.settings.fontScale||1.12;
   DB.settings.company=Object.assign({name:'',reg:'',addr:'',phone:''},DB.settings.company||{});
+  DB.settings.aiKey=DB.settings.aiKey||'';
   DB.settings.cols=DB.settings.cols||{};
   Object.keys(COLS).forEach(e=>{
     const def=COLS[e].map(c=>c.k);
@@ -1022,7 +1043,7 @@ const NAV=[
   {id:'profit',name:'利润分析',ic:'💰',crumb:'客户 / 产品 / 销售利润洞察'},
   {id:'insights',name:'经营洞察',ic:'📍',crumb:'地区 / 行业 / 来源 多维分析'},
   {id:'builder',name:'自定义报表',ic:'🧩',crumb:'拖拽式自助分析 · 自建图表'},
-  {id:'finance',name:'财务',ic:'💸',crumb:'净利 · 开销 · 应收账款 · 现金流'},
+  {id:'finance',name:'财务报表',ic:'💸',crumb:'净利 · 开销 · 应收账款 · 现金流'},
   {id:'team',name:'销售团队',ic:'🎯',crumb:'销售员业绩排行'},
   {id:'crm',name:'客户跟进',ic:'📞',crumb:'跟进任务 · 待办 · 客户互动'},
   {id:'reports',name:'报告中心',ic:'📑',crumb:'导出 PDF / Excel 报告'},
@@ -1658,7 +1679,7 @@ function viewAI(){
     <input id="aiQ" placeholder="问我任何关于你生意的问题…" onkeydown="if(event.key==='Enter')askAI()">
     <button class="btn gold" onclick="askAI()">发送</button>
   </div>
-  <div class="csub" style="margin-top:10px">⚠️ 在 Claude 预览里可直接用；部署到自有网站需配置 Anthropic API key + 代理（可帮你架）。</div>`;
+  <div class="csub" style="margin-top:10px">💡 在 Claude 预览里可直接用；自有网站请到 系统设置 → 🤖 AI 分析师设置 填入 API Key 即可启用。</div>`;
 }
 function renderAIChat(){
   const el=document.getElementById('aiChat'); if(!el)return;
@@ -1676,12 +1697,15 @@ async function askAI(q){
   const ctx=JSON.stringify(aiContext());
   const sys=`你是 ProRadar 盈利导航系统的资深商业分析师，服务马来西亚中小企业老板。只根据提供的 JSON 经营数据用简体中文回答：口语化、直接、给可执行建议。货币 RM。只用数据里有的信息，数据不足就说明，绝不编造数字。回答控制在 6 句内，关键数字用 **加粗**。`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    const hdr={'Content-Type':'application/json'};
+    const key=(DB.settings.aiKey||'').trim();
+    if(key){hdr['x-api-key']=key;hdr['anthropic-version']='2023-06-01';hdr['anthropic-dangerous-direct-browser-access']='true';}
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:hdr,
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:`经营数据(JSON)：\n${ctx}\n\n老板的问题：${q}`}]})});
     if(!r.ok)throw 0; const data=await r.json();
     const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()||'（AI 没有返回内容）';
     aiMsgs[aiMsgs.length-1]={role:'bot',text:txt};
-  }catch(e){ aiMsgs[aiMsgs.length-1]={role:'bot',text:'⚠️ 连接 AI 失败。在 Claude 预览里可用；若已部署到自有网站，需要配置 Anthropic API key + 代理服务器（我可以帮你架设）。'}; }
+  }catch(e){ aiMsgs[aiMsgs.length-1]={role:'bot',text:'⚠️ 连接 AI 失败。若在自己网站使用：到 系统设置 → 🤖 AI 分析师设置 填入 Anthropic API Key 后再试。'}; }
   renderAIChat();
 }
 function autoInsight(){ askAI('请基于全部数据，给我最重要的 5 条经营洞察与异常（涵盖利润、客户流失、产品、库存、现金流/应收），每条一句话并附一个具体建议。'); }
@@ -2264,6 +2288,13 @@ function viewSettings(){
       <div class="field"><label>电话</label><input id="co_phone" value="${esc((DB.settings.company||{}).phone||'')}"></div>
     </div>
     <button class="btn gold sm" onclick="saveCompany()">保存</button></div>
+
+  <div class="card" style="margin-top:16px"><h3>🤖 AI 分析师设置</h3>
+    <div class="csub">在 Claude 预览里 AI 可直接用。部署到自己网站（如 wilsonooi.com）时，填入你的 Anthropic API Key 即可让 AI 分析师在线工作（Key 只存在你这台设备的浏览器里）。</div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>Anthropic API Key（sk-ant-...）</label><input id="ai_key" type="password" value="${esc(DB.settings.aiKey||'')}" placeholder="选填"></div>
+      <div class="field"><label></label><button class="btn gold sm" style="margin-top:24px" onclick="DB.settings.aiKey=document.getElementById('ai_key').value.trim();save();toast('AI Key 已保存')">保存 Key</button></div>
+    </div></div>
 
   <div class="card" style="margin-top:16px"><h3>🎛 界面与排版</h3>
     <div class="setrow"><div class="l"><b>浅色 / 深色主题</b><span>顶栏的 🌙/☀️ 按钮也可随时切换</span></div>
