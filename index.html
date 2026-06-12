@@ -341,8 +341,27 @@ body.light .period-sel option{background:#fff;color:#1C2541}
 .inv-sign{display:flex;justify-content:space-between;margin-top:46px;font-size:12px;color:#556}
 .inv-sign div{width:42%;border-top:1px solid #999;padding-top:6px;text-align:center}
 
+body.fs-sm{font-size:14px}
 body.fs-lg{font-size:16px}
 body.fs-xl{font-size:17.5px}
+body.fs-xxl{font-size:19px}
+.fs-sm td,.fs-sm th{font-size:12px}
+.fs-xxl td,.fs-xxl th{font-size:15.5px}
+.fs-xxl input,.fs-xxl select,.fs-xxl textarea{font-size:17px}
+.fs-xxl .nav a{font-size:17px;padding-top:12px;padding-bottom:12px}
+.fs-xxl .csub{font-size:14.5px}
+.fs-xxl .kpi .lbl{font-size:15px}
+.fs-xxl .kpi .delta{font-size:14px}
+.fs-xxl .kpi .val{font-size:32px}
+.fs-xl .kpi .val{font-size:28px}
+.fs-xxl .chip{font-size:14.5px}
+.fs-xxl .ai-msg .bubble{font-size:17px}
+.fs-xxl .card h3{font-size:19px}
+.fs-xxl .topbar h2{font-size:21px}
+.fs-xl .topbar h2{font-size:19px}
+.fs-xxl .btn{font-size:15.5px}
+.fs-xxl .attn-i b{font-size:28px}
+.fs-xxl .attn-i span{font-size:13px}
 .fs-lg td,.fs-lg th{font-size:13.5px}.fs-xl td,.fs-xl th{font-size:14.5px}
 .fs-lg input,.fs-lg select,.fs-lg textarea{font-size:15px}.fs-xl input,.fs-xl select,.fs-xl textarea{font-size:16px}
 .fs-lg .nav a{font-size:14.5px}.fs-xl .nav a{font-size:15.5px}
@@ -474,10 +493,12 @@ function applyTheme(){
   const b=document.getElementById('themeBtn'); if(b)b.textContent=light?'🌙':'☀️';
   if(typeof Chart!=='undefined') Chart.defaults.color = light? '#5A6B85' : '#93A4C0';
   document.documentElement.style.zoom='';
-  document.body.classList.remove('fs-lg','fs-xl');
+  document.body.classList.remove('fs-sm','fs-lg','fs-xl','fs-xxl');
   const fsv=DB.settings.fontScale||1.12;
-  if(fsv>=1.25) document.body.classList.add('fs-xl');
+  if(fsv>=1.4) document.body.classList.add('fs-xxl');
+  else if(fsv>=1.25) document.body.classList.add('fs-xl');
   else if(fsv>=1.12) document.body.classList.add('fs-lg');
+  else if(fsv<=0.95) document.body.classList.add('fs-sm');
 }
 function toggleTheme(){ DB.settings.theme = (DB.settings.theme==='dark')?'light':'dark'; save(); applyTheme(); render(curView); }
 function setFontScale(v){ DB.settings.fontScale=v; save(); applyTheme(); render('settings'); }
@@ -1069,6 +1090,8 @@ function periodCompare(){
 }
 function smartAlerts(){
   const a=DB.settings.alerts||{}; const t=totals(); const out=[];
+  if((DB.purchases||[]).length===0 && (DB.expenses||[]).length===0 && DB.orders.length>0)
+    out.push({lv:'amber',msg:'检测到旧版数据：缺少进货/开销记录，库存与财务会显示 0 — 到 系统设置→数据管理 重置示范数据，或自行录入进货与开销'});
   if(a.netMarginMin>0 && t.rev>0 && t.netMargin*100 < a.netMarginMin) out.push({lv:'red',msg:`净利率 ${pct(t.netMargin)} 低于预警线 ${a.netMarginMin}%`});
   if(a.arMax>0 && t.ar > a.arMax) out.push({lv:'red',msg:`应收账款 ${money(t.ar)} 超过上限 ${money(a.arMax)}`});
   const ag=arAging(); if(a.aging90Max>=0 && ag['90+']>(a.aging90Max||0)) out.push({lv:'red',msg:`超过 90 天未收 ${money(ag['90+'])}，催收风险高`});
@@ -2382,7 +2405,7 @@ function viewSettings(){
     <div class="setrow"><div class="l"><b>浅色 / 深色主题</b><span>顶栏的 🌙/☀️ 按钮也可随时切换</span></div>
       <div class="seg2"><button class="${DB.settings.theme!=='dark'?'on':''}" onclick="DB.settings.theme='light';save();applyTheme();render('settings')">☀️ 浅色</button><button class="${DB.settings.theme==='dark'?'on':''}" onclick="DB.settings.theme='dark';save();applyTheme();render('settings')">🌙 深色</button></div></div>
     <div class="setrow"><div class="l"><b>字体大小</b><span>看不清就调大</span></div>
-      <div class="seg2"><button class="${(DB.settings.fontScale||1.12)===1?'on':''}" onclick="setFontScale(1)">标准</button><button class="${(DB.settings.fontScale||1.12)===1.12?'on':''}" onclick="setFontScale(1.12)">大</button><button class="${(DB.settings.fontScale||1.12)===1.25?'on':''}" onclick="setFontScale(1.25)">特大</button></div></div></div>
+      <div class="seg2"><button class="${(DB.settings.fontScale||1.12)===0.95?'on':''}" onclick="setFontScale(0.95)">小</button><button class="${(DB.settings.fontScale||1.12)===1?'on':''}" onclick="setFontScale(1)">中</button><button class="${(DB.settings.fontScale||1.12)===1.12?'on':''}" onclick="setFontScale(1.12)">大</button><button class="${(DB.settings.fontScale||1.12)===1.25?'on':''}" onclick="setFontScale(1.25)">特大</button><button class="${(DB.settings.fontScale||1.12)===1.4?'on':''}" onclick="setFontScale(1.4)">巨大</button></div></div></div>
 
   <div class="card" style="margin-top:16px"><h3>🧱 表格栏位顺序</h3>
     <div class="csub">◀▶ 调整栏位前后次序，👁 显示 / 隐藏。例如把「电话」移到「客户名称」前面。</div>
